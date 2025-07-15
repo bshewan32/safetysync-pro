@@ -448,12 +448,9 @@
                     </button>
                   </span>
                 <% } %>
-                
-                <button class="btn btn-sm btn-outline-secondary ms-2 manage-category-btn" 
-                        data-category="<%= categoryName %>" 
-                        style="font-size: 0.7rem;"
-                        title="Edit category settings">
-                  <i class="fas fa-cog"></i>
+                <button class="btn btn-sm btn-outline-success ms-1 ai-generate-btn" data-category="<%= categoryName %>"
+                  data-document="<%= categoryName %>" style="font-size: 0.6rem;" title="AI Generate document">
+                  🤖 AI Generate
                 </button>
               </div>
               
@@ -478,13 +475,10 @@
                         <span class="ims-document-missing"><%= child.name %></span>
                       <% } %>
                       
-                      <button class="btn btn-sm btn-outline-secondary ms-auto manage-document-btn" 
-                              data-category="<%= categoryName %>" 
-                              data-document="<%= child.name %>"
-                              style="font-size: 0.6rem;">
-                        <i class="fas fa-link"></i>
-                      </button>
-                    </li>
+                      <button class="btn btn-sm btn-outline-success ms-1 ai-generate-btn" data-category="<%= categoryName %>"
+                        data-document="<%= child.name %>" style="font-size: 0.6rem;" title="AI Generate document">
+                        🤖 AI Generate
+                      </button>  </li>
                   <% }); %>
                 </ul>
               <% } %>

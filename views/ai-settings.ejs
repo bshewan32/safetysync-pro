@@ -56,8 +56,16 @@
                 <strong>Getting API Keys:</strong><br>
                 <small>
                   • <strong>OpenAI:</strong> Visit <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a><br>
-                  • <strong>Anthropic:</strong> Visit <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a>
+                  • <strong>Anthropic:</strong> Visit <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a><br>
+                  • <strong>DeepSeek:</strong> Visit <a href="https://platform.deepseek.com/" target="_blank">platform.deepseek.com</a><br>
+                  • <strong>Google AI:</strong> Visit <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a>
                 </small>
+              </div>
+              
+              <div class="alert alert-success" id="costInfo">
+                <i class="fas fa-dollar-sign"></i>
+                <strong>Cost Comparison:</strong><br>
+                <small id="costDetails">Select a provider to see cost information</small>
               </div>
               
               <button type="button" class="btn btn-primary" onclick="saveAIProvider()">
@@ -155,6 +163,63 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
   <script>
+    // Provider cost information
+    const providerCosts = {
+      openai: {
+        name: 'OpenAI GPT-4',
+        cost: '$15-30 per 1M tokens',
+        speed: 'Fast',
+        quality: 'Excellent',
+        note: 'Best for high-quality documents'
+      },
+      anthropic: {
+        name: 'Anthropic Claude',
+        cost: '$15-75 per 1M tokens',
+        speed: 'Fast',
+        quality: 'Excellent',
+        note: 'Great for detailed analysis'
+      },
+      deepseek: {
+        name: 'DeepSeek',
+        cost: '$0.14-2 per 1M tokens',
+        speed: 'Very Fast',
+        quality: 'Good',
+        note: 'Most cost-effective option'
+      },
+      gemini: {
+        name: 'Google Gemini',
+        cost: '$0.50-7 per 1M tokens',
+        speed: 'Fast',
+        quality: 'Very Good',
+        note: 'Good balance of cost and quality'
+      }
+    };
+    
+    // Update cost information when provider changes
+    document.getElementById('aiProvider').addEventListener('change', function() {
+      const provider = this.value;
+      const costInfo = providerCosts[provider];
+      
+      if (costInfo) {
+        document.getElementById('costDetails').innerHTML = `
+          <strong>${costInfo.name}:</strong> ${costInfo.cost}<br>
+          <strong>Speed:</strong> ${costInfo.speed} | <strong>Quality:</strong> ${costInfo.quality}<br>
+          <em>${costInfo.note}</em>
+        `;
+      }
+    });
+    
+    // Show cost info for current provider on page load
+    const currentProvider = document.getElementById('aiProvider').value;
+    if (currentProvider && providerCosts[currentProvider]) {
+      const costInfo = providerCosts[currentProvider];
+      document.getElementById('costDetails').innerHTML = `
+        <strong>${costInfo.name}:</strong> ${costInfo.cost}<br>
+        <strong>Speed:</strong> ${costInfo.speed} | <strong>Quality:</strong> ${costInfo.quality}<br>
+        <em>${costInfo.note}</em>
+      `;
+    }
+    
     // Toggle API key visibility
     document.getElementById('toggleApiKey').addEventListener('click', function() {
       const apiKeyField = document.getElementById('apiKey');

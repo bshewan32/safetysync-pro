@@ -497,16 +497,8 @@
                         <% } %>
                       <% } else { %>
                         <i class="fas fa-times-circle text-danger ims-status-icon"></i>
-                        <span class="ims-document-missing">
-                          <%= child.name %>
-                        </span>
-                      
-                        <!-- AI Generate button for missing child documents -->
-                        <button class="btn btn-sm btn-outline-success ms-1 ai-generate-btn" data-category="<%= categoryName %>"
-                          data-document="<%= child.name %>" style="font-size: 0.6rem;" title="AI Generate document">
-                          🤖 AI Generate
-                        </button>
-                        <% } %>
+                        <span class="ims-document-missing"><%= child.name %></span>
+                      <% } %>
                       
                       <button class="btn btn-sm btn-outline-secondary ms-auto manage-document-btn" 
                               data-category="<%= categoryName %>" 

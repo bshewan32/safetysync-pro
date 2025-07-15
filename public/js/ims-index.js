@@ -1,1115 +1,1431 @@
+// IMS Index JavaScript - Fixed Version
 // Archive toggle state
 let showArchivedDocuments = false;
 
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('IMS Index JavaScript loading...');
-  
+// REPLACE your current DOMContentLoaded section with this fixed version:
+
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("IMS Index JavaScript loading...");
+
   // Calculate and display statistics
   updateStatistics();
-  
-  // Search functionality
-  document.getElementById('imsSearch').addEventListener('input', function() {
-    filterIMSIndex();
-  });
-  
-  // Filter functionality
-  document.getElementById('imsFilter').addEventListener('change', function() {
-    filterIMSIndex();
-  });
-  
-  // Hide archived checkbox
-  document.getElementById('hideArchivedCheck').addEventListener('change', function() {
-    toggleArchivedDocuments();
-  });
-  
-  // Category management buttons
-  document.querySelectorAll('.manage-category-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const categoryName = this.getAttribute('data-category');
-      console.log('Opening category editor for:', categoryName);
-      openCategoryEditor(categoryName);
+
+  // Search functionality - these elements exist on page load
+  const searchInput = document.getElementById("imsSearch");
+  if (searchInput) {
+    searchInput.addEventListener("input", function () {
+      filterIMSIndex();
     });
-  });
-  
-  // Document management buttons
-  document.querySelectorAll('.manage-document-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const categoryName = this.getAttribute('data-category');
-      const documentName = this.getAttribute('data-document');
-      console.log('Opening document linker for:', documentName, 'in category:', categoryName);
-      openDocumentLinker(categoryName, documentName);
+  }
+
+  // Filter functionality - these elements exist on page load
+  const filterSelect = document.getElementById("imsFilter");
+  if (filterSelect) {
+    filterSelect.addEventListener("change", function () {
+      filterIMSIndex();
     });
-  });
-  
-  // Add new category button
-  document.getElementById('addCategoryBtn').addEventListener('click', function() {
-    const categoryName = document.getElementById('newCategoryName').value.trim();
-    const level = document.getElementById('newCategoryLevel').value;
-    
-    if (!categoryName) {
-      alert('Please enter a category name');
-      return;
-    }
-    
-    addNewCategory(categoryName, level);
-  });
-  
-  // Auto-link button
-  document.getElementById('autoLinkBtn').addEventListener('click', function() {
-    autoLinkDocuments();
-  });
-  
-  // Handle revision button clicks
-  document.addEventListener('click', function(e) {
-    if (e.target.closest('.revision-btn')) {
-      const btn = e.target.closest('.revision-btn');
-      const documentId = btn.getAttribute('data-document-id');
-      const documentName = btn.getAttribute('data-document-name');
-      
-      openRevisionModal(documentId, documentName);
-    }
-    
-    // Handle category revision button clicks
-    if (e.target.closest('.category-revision-btn')) {
-      const btn = e.target.closest('.category-revision-btn');
-      const documentId = btn.getAttribute('data-document-id');
-      const documentName = btn.getAttribute('data-document-name');
-      
-      openRevisionModal(documentId, documentName);
-    }
-    
-    // Handle category link button clicks
-    if (e.target.closest('.category-link-btn')) {
-      const btn = e.target.closest('.category-link-btn');
-      const categoryName = btn.getAttribute('data-category');
-      const documentName = btn.getAttribute('data-document-name');
-      
-      openCategoryDocumentLinker(categoryName, documentName);
-    }
-  });
-  
-  // Load mandatory records on page load
-  loadMandatoryRecords();
-  
-  // Auto-detect mandatory records button
-  document.getElementById('autoDetectMandatoryBtn').addEventListener('click', function() {
-    autoDetectMandatoryRecords();
-  });
-  
-  // Manage mandatory modal handlers
-  const manageMandatoryModal = document.getElementById('manageMandatoryModal');
+  }
+
+  // Hide archived checkbox - these elements exist on page load
+  const hideArchivedCheck = document.getElementById("hideArchivedCheck");
+  if (hideArchivedCheck) {
+    hideArchivedCheck.addEventListener("change", function () {
+      toggleArchivedDocuments();
+    });
+  }
+
+  // Add new category button - these elements exist on page load
+  const addCategoryBtn = document.getElementById("addCategoryBtn");
+  if (addCategoryBtn) {
+    addCategoryBtn.addEventListener("click", function () {
+      const categoryName = document
+        .getElementById("newCategoryName")
+        .value.trim();
+      const level = document.getElementById("newCategoryLevel").value;
+
+      if (!categoryName) {
+        alert("Please enter a category name");
+        return;
+      }
+
+      addNewCategory(categoryName, level);
+    });
+  }
+
+  // Auto-link button - these elements exist on page load
+  const autoLinkBtn = document.getElementById("autoLinkBtn");
+  if (autoLinkBtn) {
+    autoLinkBtn.addEventListener("click", function () {
+      autoLinkDocuments();
+    });
+  }
+
+  // Auto-detect mandatory records button - these elements exist on page load
+  const autoDetectBtn = document.getElementById("autoDetectMandatoryBtn");
+  if (autoDetectBtn) {
+    autoDetectBtn.addEventListener("click", function () {
+      autoDetectMandatoryRecords();
+    });
+  }
+
+  // Manage mandatory modal handlers - these elements exist on page load
+  const manageMandatoryModal = document.getElementById("manageMandatoryModal");
   if (manageMandatoryModal) {
-    manageMandatoryModal.addEventListener('show.bs.modal', function() {
+    manageMandatoryModal.addEventListener("show.bs.modal", function () {
       loadMandatoryRecordTypes();
     });
   }
-  
-  document.getElementById('mandatoryRecordSelect').addEventListener('change', function() {
-    loadMandatoryRecordSettings();
+
+  const mandatoryRecordSelect = document.getElementById(
+    "mandatoryRecordSelect"
+  );
+  if (mandatoryRecordSelect) {
+    mandatoryRecordSelect.addEventListener("change", function () {
+      loadMandatoryRecordSettings();
+    });
+  }
+
+  const updateMandatoryBtn = document.getElementById("updateMandatoryBtn");
+  if (updateMandatoryBtn) {
+    updateMandatoryBtn.addEventListener("click", function () {
+      updateMandatoryRecordSettings();
+    });
+  }
+
+  const runAutoDetectBtn = document.getElementById("runAutoDetectBtn");
+  if (runAutoDetectBtn) {
+    runAutoDetectBtn.addEventListener("click", function () {
+      autoDetectMandatoryRecords();
+    });
+  }
+
+  // *** FIX: Use EVENT DELEGATION for dynamically generated buttons ***
+  // This is the key fix - listen on document and check what was clicked
+  document.addEventListener("click", function (e) {
+    // Prevent event bubbling issues
+    e.stopPropagation();
+
+    // Category management buttons
+    if (e.target.closest(".manage-category-btn")) {
+      e.preventDefault();
+      const btn = e.target.closest(".manage-category-btn");
+      const categoryName = btn.getAttribute("data-category");
+      console.log("Opening category editor for:", categoryName);
+      openCategoryEditor(categoryName);
+      return;
+    }
+
+    // Document management buttons
+    if (e.target.closest(".manage-document-btn")) {
+      e.preventDefault();
+      const btn = e.target.closest(".manage-document-btn");
+      const categoryName = btn.getAttribute("data-category");
+      const documentName = btn.getAttribute("data-document");
+      console.log(
+        "Opening document linker for:",
+        documentName,
+        "in category:",
+        categoryName
+      );
+      openDocumentLinker(categoryName, documentName);
+      return;
+    }
+
+    // AI Generate buttons
+    if (e.target.closest(".ai-generate-btn")) {
+      e.preventDefault();
+      const btn = e.target.closest(".ai-generate-btn");
+      const categoryName = btn.getAttribute("data-category");
+      const documentName = btn.getAttribute("data-document");
+      console.log(
+        "AI Generate clicked for:",
+        documentName,
+        "in category:",
+        categoryName
+      );
+      openAIGenerationModal(categoryName, documentName);
+      return;
+    }
+
+    // Revision buttons
+    if (e.target.closest(".revision-btn")) {
+      e.preventDefault();
+      const btn = e.target.closest(".revision-btn");
+      const documentId = btn.getAttribute("data-document-id");
+      const documentName = btn.getAttribute("data-document-name");
+      console.log("Revision clicked for:", documentId, documentName);
+      openRevisionModal(documentId, documentName);
+      return;
+    }
+
+    // Category revision buttons
+    if (e.target.closest(".category-revision-btn")) {
+      e.preventDefault();
+      const btn = e.target.closest(".category-revision-btn");
+      const documentId = btn.getAttribute("data-document-id");
+      const documentName = btn.getAttribute("data-document-name");
+      console.log("Category revision clicked for:", documentId, documentName);
+      openRevisionModal(documentId, documentName);
+      return;
+    }
+
+    // Category link buttons
+    if (e.target.closest(".category-link-btn")) {
+      e.preventDefault();
+      const btn = e.target.closest(".category-link-btn");
+      const categoryName = btn.getAttribute("data-category");
+      const documentName = btn.getAttribute("data-document-name");
+      console.log("Category link clicked for:", categoryName, documentName);
+      openCategoryDocumentLinker(categoryName, documentName);
+      return;
+    }
   });
-  
-  document.getElementById('updateMandatoryBtn').addEventListener('click', function() {
-    updateMandatoryRecordSettings();
-  });
-  
-  document.getElementById('runAutoDetectBtn').addEventListener('click', function() {
-    autoDetectMandatoryRecords();
-  });
-  
-  // Initialize revision features
+
+  // Load mandatory records on page load
+  loadMandatoryRecords();
+
+  // Initialize revision features - delay to ensure DOM is ready
   setTimeout(() => {
-    addRevisionButtons();
+    if (typeof addRevisionButtons === "function") {
+      addRevisionButtons();
+    } else {
+      console.log("addRevisionButtons function not found - skipping");
+    }
   }, 1500);
-  
+
   // Update statistics on page load using stored values
   if (window.imsStats) {
-    document.getElementById('linkedCount').textContent = window.imsStats.linkedDocuments;
-    document.getElementById('missingCount').textContent = window.imsStats.missingDocuments;
-    const coverage = window.imsStats.totalDocuments > 0 ? 
-      Math.round((window.imsStats.linkedDocuments / window.imsStats.totalDocuments) * 100) : 0;
-    document.getElementById('coveragePercent').textContent = coverage + '%';
+    const linkedCountEl = document.getElementById("linkedCount");
+    const missingCountEl = document.getElementById("missingCount");
+    const coveragePercentEl = document.getElementById("coveragePercent");
+
+    if (linkedCountEl)
+      linkedCountEl.textContent = window.imsStats.linkedDocuments;
+    if (missingCountEl)
+      missingCountEl.textContent = window.imsStats.missingDocuments;
+
+    if (coveragePercentEl && window.imsStats.totalDocuments > 0) {
+      const coverage = Math.round(
+        (window.imsStats.linkedDocuments / window.imsStats.totalDocuments) * 100
+      );
+      coveragePercentEl.textContent = coverage + "%";
+    }
   }
-  
-  console.log('IMS Index JavaScript loaded successfully');
+
+  console.log("IMS Index JavaScript loaded successfully");
 });
 
+// ========================================
+// INITIALIZATION FUNCTIONS
+// ========================================
+
+function initializeSearch() {
+  const searchInput = document.getElementById("imsSearch");
+  if (searchInput) {
+    searchInput.addEventListener("input", debounce(filterIMSIndex, 300));
+  }
+}
+
+function initializeFilters() {
+  const filterSelect = document.getElementById("imsFilter");
+  const hideArchivedCheck = document.getElementById("hideArchivedCheck");
+
+  if (filterSelect) {
+    filterSelect.addEventListener("change", filterIMSIndex);
+  }
+
+  if (hideArchivedCheck) {
+    hideArchivedCheck.addEventListener("change", toggleArchivedDocuments);
+  }
+}
+
+function initializeEventHandlers() {
+  // Main event delegation for all button clicks
+  document.addEventListener("click", function (e) {
+    e.stopPropagation();
+
+    // AI Generate buttons
+    if (e.target.closest(".ai-generate-btn")) {
+      e.preventDefault();
+      const btn = e.target.closest(".ai-generate-btn");
+      const categoryName = btn.getAttribute("data-category");
+      const documentName = btn.getAttribute("data-document");
+      console.log("AI Generate clicked:", categoryName, documentName);
+      openAIGenerationModal(categoryName, documentName);
+      return;
+    }
+
+    // Category link buttons
+    if (e.target.closest(".category-link-btn")) {
+      e.preventDefault();
+      const btn = e.target.closest(".category-link-btn");
+      const categoryName = btn.getAttribute("data-category");
+      const documentName = btn.getAttribute("data-document-name");
+      console.log("Category link clicked:", categoryName, documentName);
+      openCategoryDocumentLinker(categoryName, documentName);
+      return;
+    }
+
+    // Category revision buttons
+    if (e.target.closest(".category-revision-btn")) {
+      e.preventDefault();
+      const btn = e.target.closest(".category-revision-btn");
+      const documentId = btn.getAttribute("data-document-id");
+      const documentName = btn.getAttribute("data-document-name");
+      console.log("Category revision clicked:", documentId, documentName);
+      openRevisionModal(documentId, documentName);
+      return;
+    }
+
+    // Manage category buttons
+    if (e.target.closest(".manage-category-btn")) {
+      e.preventDefault();
+      const btn = e.target.closest(".manage-category-btn");
+      const categoryName = btn.getAttribute("data-category");
+      console.log("Manage category clicked:", categoryName);
+      openCategoryEditor(categoryName);
+      return;
+    }
+
+    // Manage document buttons
+    if (e.target.closest(".manage-document-btn")) {
+      e.preventDefault();
+      const btn = e.target.closest(".manage-document-btn");
+      const categoryName = btn.getAttribute("data-category");
+      const documentName = btn.getAttribute("data-document");
+      console.log("Manage document clicked:", categoryName, documentName);
+      openDocumentLinker(categoryName, documentName);
+      return;
+    }
+
+    // Revision buttons
+    if (e.target.closest(".revision-btn")) {
+      e.preventDefault();
+      const btn = e.target.closest(".revision-btn");
+      const documentId = btn.getAttribute("data-document-id");
+      const documentName = btn.getAttribute("data-document-name");
+      console.log("Revision clicked:", documentId, documentName);
+      openRevisionModal(documentId, documentName);
+      return;
+    }
+  });
+
+  // Modal-specific event handlers
+  setupModalHandlers();
+}
+
+function setupModalHandlers() {
+  // Auto-link button
+  const autoLinkBtn = document.getElementById("autoLinkBtn");
+  if (autoLinkBtn) {
+    autoLinkBtn.addEventListener("click", autoLinkDocuments);
+  }
+
+  // Add category button
+  const addCategoryBtn = document.getElementById("addCategoryBtn");
+  if (addCategoryBtn) {
+    addCategoryBtn.addEventListener("click", handleAddCategory);
+  }
+
+  // Auto-detect mandatory records button
+  const autoDetectBtn = document.getElementById("autoDetectMandatoryBtn");
+  if (autoDetectBtn) {
+    autoDetectBtn.addEventListener("click", autoDetectMandatoryRecords);
+  }
+}
+
+// ========================================
+// UTILITY FUNCTIONS
+// ========================================
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
 function updateStatistics() {
-  const totalElements = document.querySelectorAll('.ims-document-item, .ims-category').length;
-  const linkedElements = document.querySelectorAll('.fa-check-circle').length;
-  const missingElements = document.querySelectorAll('.fa-times-circle').length;
-  const coverage = totalElements > 0 ? Math.round((linkedElements / totalElements) * 100) : 0;
-  
-  document.getElementById('linkedCount').textContent = linkedElements;
-  document.getElementById('missingCount').textContent = missingElements;
-  document.getElementById('coveragePercent').textContent = coverage + '%';
+  // Use server-provided stats if available
+  if (window.imsStats) {
+    const linkedCount = document.getElementById("linkedCount");
+    const missingCount = document.getElementById("missingCount");
+    const coveragePercent = document.getElementById("coveragePercent");
+
+    if (linkedCount) linkedCount.textContent = window.imsStats.linkedDocuments;
+    if (missingCount)
+      missingCount.textContent = window.imsStats.missingDocuments;
+
+    if (coveragePercent && window.imsStats.totalDocuments > 0) {
+      const coverage = Math.round(
+        (window.imsStats.linkedDocuments / window.imsStats.totalDocuments) * 100
+      );
+      coveragePercent.textContent = coverage + "%";
+    }
+  }
 }
 
 function filterIMSIndex() {
-  const searchTerm = document.getElementById('imsSearch').value.toLowerCase();
-  const filterType = document.getElementById('imsFilter').value;
-  const hideArchived = document.getElementById('hideArchivedCheck').checked;
-  
-  document.querySelectorAll('.ims-category').forEach(category => {
+  const searchTerm =
+    document.getElementById("imsSearch")?.value.toLowerCase() || "";
+  const filterType = document.getElementById("imsFilter")?.value || "all";
+  const hideArchived =
+    document.getElementById("hideArchivedCheck")?.checked || false;
+
+  document.querySelectorAll(".ims-category").forEach((category) => {
     const categoryText = category.textContent.toLowerCase();
-    const categoryType = category.getAttribute('data-type');
-    const hasLinked = category.querySelector('.fa-check-circle');
-    const hasMissing = category.querySelector('.fa-times-circle');
-    const hasArchived = category.querySelector('.ims-document-archived');
-    
+    const categoryType = category.getAttribute("data-type");
+    const hasLinked = category.querySelector(".fa-check-circle");
+    const hasMissing = category.querySelector(".fa-times-circle");
+    const hasArchived = category.querySelector(".ims-document-archived");
+
     let showCategory = true;
-    
+
+    // Search filter
     if (searchTerm && !categoryText.includes(searchTerm)) {
       showCategory = false;
     }
-    
-    if (filterType !== 'all') {
-      if (filterType === 'linked' && !hasLinked) showCategory = false;
-      if (filterType === 'missing' && !hasMissing) showCategory = false;
-      if (filterType === 'policies' && categoryType !== 'policy') showCategory = false;
-      if (filterType === 'procedures' && categoryType !== 'category') showCategory = false;
-      if (filterType === 'archived' && !hasArchived) showCategory = false;
+
+    // Type filter
+    if (filterType !== "all") {
+      if (filterType === "linked" && !hasLinked) showCategory = false;
+      if (filterType === "missing" && !hasMissing) showCategory = false;
+      if (filterType === "policies" && categoryType !== "policy")
+        showCategory = false;
+      if (filterType === "procedures" && categoryType !== "category")
+        showCategory = false;
+      if (filterType === "archived" && !hasArchived) showCategory = false;
     }
-    
-    // Handle hide archived
-    if (hideArchived && filterType !== 'archived') {
-      const archivedItems = category.querySelectorAll('.ims-document-archived');
-      archivedItems.forEach(item => {
-        item.style.display = 'none';
+
+    // Handle archived items
+    if (hideArchived && filterType !== "archived") {
+      const archivedItems = category.querySelectorAll(".ims-document-archived");
+      archivedItems.forEach((item) => {
+        item.style.display = "none";
       });
     } else {
-      const archivedItems = category.querySelectorAll('.ims-document-archived');
-      archivedItems.forEach(item => {
-        item.style.display = '';
+      const archivedItems = category.querySelectorAll(".ims-document-archived");
+      archivedItems.forEach((item) => {
+        item.style.display = "";
       });
     }
-    
-    category.style.display = showCategory ? 'block' : 'none';
+
+    category.style.display = showCategory ? "block" : "none";
   });
 }
 
 function toggleArchivedDocuments() {
-  const hideArchived = document.getElementById('hideArchivedCheck').checked;
-  const archivedItems = document.querySelectorAll('.ims-document-archived');
-  
-  archivedItems.forEach(item => {
-    item.style.display = hideArchived ? 'none' : '';
+  const hideArchived =
+    document.getElementById("hideArchivedCheck")?.checked || false;
+  const archivedItems = document.querySelectorAll(".ims-document-archived");
+
+  archivedItems.forEach((item) => {
+    item.style.display = hideArchived ? "none" : "";
   });
 }
 
-function addRevisionButtons() {
-  document.querySelectorAll('.ims-child-item').forEach(item => {
-    const documentName = item.getAttribute('data-document');
-    const categoryName = item.closest('.ims-category').getAttribute('data-category');
-    const documentLink = item.querySelector('.ims-document-link');
-    
-    if (documentLink && !item.querySelector('.revision-btn')) {
-      // Extract document ID from the link
-      const documentId = documentLink.href.split('/document/')[1];
-      
-      // Add revision button
-      const revisionBtn = document.createElement('button');
-      revisionBtn.className = 'btn btn-sm btn-outline-warning ms-1 revision-btn';
-      revisionBtn.style.fontSize = '0.6rem';
-      revisionBtn.innerHTML = '<i class="fas fa-edit"></i>';
-      revisionBtn.title = 'Upload new revision';
-      revisionBtn.setAttribute('data-document-id', documentId);
-      revisionBtn.setAttribute('data-document-name', documentName);
-      
-      // Insert before the existing manage button
-      const manageBtn = item.querySelector('.manage-document-btn');
-      if (manageBtn) {
-        manageBtn.parentNode.insertBefore(revisionBtn, manageBtn);
-      }
-    }
-  });
-}
+// ========================================
+// MODAL FUNCTIONS - SIMPLIFIED
+// ========================================
 
-function openRevisionModal(documentId, documentName) {
-  const modalHtml = `
-    <div class="modal fade" id="revisionModal" tabindex="-1" aria-hidden="true">
+// Add this function to your existing ims-index.js file
+// Replace the existing openAIGenerationModal function with this updated version
+
+function openAIGenerationModal(categoryName, documentName) {
+  console.log("Opening AI generation modal for:", documentName);
+
+  // Remove existing modal
+  const existingModal = document.getElementById("aiGenerateModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Create modal HTML with AI provider selection
+  const modalDiv = document.createElement("div");
+  modalDiv.innerHTML = `
+    <div class="modal fade" id="aiGenerateModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Upload New Revision: ${documentName}</h5>
+            <h5 class="modal-title">
+              <i class="fas fa-robot text-success"></i> 
+              AI Generate: ${documentName}
+            </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
-            <form id="quickRevisionForm" enctype="multipart/form-data">
+            <div class="alert alert-info">
+              <i class="fas fa-lightbulb"></i>
+              <strong>AI Document Generation</strong><br>
+              This will create a professional safety document tailored to your requirements.
+            </div>
+            
+            <!-- Error message area -->
+            <div id="ai-error-message" class="alert alert-danger" style="display: none;"></div>
+            
+            <form id="aiGenerateForm">
               <div class="mb-3">
-                <label for="quickRevisionFile" class="form-label">Select New Document</label>
-                <input type="file" class="form-control" id="quickRevisionFile" name="newDocument" required>
-                <div class="form-text">
-                  Replacing: <strong>${documentName}</strong>
-                </div>
+                <label class="form-label">AI Provider</label>
+                <select class="form-select" id="aiProvider" required>
+                  <option value="">Select AI Provider</option>
+                  <option value="openai">OpenAI (GPT)</option>
+                  <option value="deepseek">DeepSeek</option>
+                  <option value="gemini">Google Gemini</option>
+                  <option value="anthropic">Anthropic (Claude)</option>
+                </select>
               </div>
               
               <div class="mb-3">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="quickKeepOriginal" name="keepOriginal" value="true" checked>
-                  <label class="form-check-label" for="quickKeepOriginal">
-                    Keep backup copy of original document
-                  </label>
-                </div>
+                <label class="form-label">Document Type</label>
+                <select class="form-select" id="documentType" required>
+                  <option value="Risk Assessment">Risk Assessment</option>
+                  <option value="Safety Policy">Safety Policy</option>
+                  <option value="Training Manual">Training Manual</option>
+                  <option value="Incident Report">Incident Report</option>
+                  <option value="Emergency Procedure">Emergency Procedure</option>
+                  <option value="SWMS">Safe Work Method Statement</option>
+                  <option value="Work Procedure">Work Procedure</option>
+                </select>
               </div>
               
               <div class="mb-3">
-                <label for="quickRevisionNote" class="form-label">Revision Note</label>
-                <textarea class="form-control" id="quickRevisionNote" name="revisionNote" rows="3" 
-                          placeholder="Describe what changed in this revision..."></textarea>
+                <label class="form-label">Document Title</label>
+                <input type="text" class="form-control" id="documentTitle" value="${documentName}" required>
               </div>
               
               <div class="mb-3">
-                <label for="quickReplacedBy" class="form-label">Replaced By</label>
-                <input type="text" class="form-control" id="quickReplacedBy" name="replacedBy" 
-                       placeholder="Your name or ID">
+                <label class="form-label">Document Requirements</label>
+                <textarea class="form-control" id="aiPrompt" rows="4" 
+                          placeholder="Describe what you need in this document...
+
+For example:
+- Create a risk assessment for office workers focusing on ergonomics
+- Develop a safety policy for warehouse operations including forklift safety
+- Generate training materials for new employee orientation
+- Create incident reporting procedures for manufacturing environment" required></textarea>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Specific Details (Optional)</label>
+                <textarea class="form-control" id="specificDetails" rows="2" 
+                          placeholder="Any specific hazards, equipment, industry requirements, or company details to include..."></textarea>
               </div>
             </form>
             
-            <div class="mt-4">
-              <h6>Recent Revisions</h6>
-              <div id="quickRevisionHistory">
-                <div class="text-center text-muted">
-                  <i class="fas fa-spinner fa-spin"></i> Loading...
-                </div>
-              </div>
+            <div class="alert alert-success">
+              <i class="fas fa-info-circle"></i>
+              <strong>Note:</strong> Generated documents will be saved to your documents folder and can be linked to this category.
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary" onclick="submitQuickRevision('${documentId}')">
-              <i class="fas fa-upload"></i> Upload Revision
+            <button type="button" class="btn btn-success" id="generateDocumentBtn">
+              <i class="fas fa-robot"></i> Generate Document
             </button>
           </div>
         </div>
       </div>
     </div>
   `;
-  
-  // Remove existing modal if present
-  const existingModal = document.getElementById('revisionModal');
-  if (existingModal) {
-    existingModal.remove();
-  }
-  
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
-  
-  const modal = new bootstrap.Modal(document.getElementById('revisionModal'));
-  modal.show();
-  
-  // Load revision history
-  loadQuickRevisionHistory(documentId);
-}
 
-function loadQuickRevisionHistory(documentId) {
-  const historyDiv = document.getElementById('quickRevisionHistory');
-  
-  fetch(`/api/document-revisions/${documentId}`)
-    .then(response => response.json())
-    .then(data => {
-      if (data.success && data.revisions.length > 0) {
-        let historyHtml = '';
-        data.revisions.slice(-3).forEach(revision => { // Show last 3 revisions
-          const date = new Date(revision.timestamp).toLocaleString();
-          historyHtml += `
-            <div class="border rounded p-2 mb-1 bg-light">
-              <small class="text-muted">${date}</small>
-              <div><small><strong>${revision.originalFile}</strong> → <strong>${revision.newFile}</strong></small></div>
-              <div><small>By: ${revision.replacedBy}</small></div>
-              ${revision.note ? `<div><small><em>${revision.note}</em></small></div>` : ''}
-            </div>
-          `;
-        });
-        historyDiv.innerHTML = historyHtml;
-      } else {
-        historyDiv.innerHTML = '<div class="text-muted"><small>No revision history found</small></div>';
-      }
-    })
-    .catch(error => {
-      console.error('Error loading revision history:', error);
-      historyDiv.innerHTML = '<div class="text-danger"><small>Error loading revision history</small></div>';
+  // Add to DOM
+  document.body.appendChild(modalDiv.firstElementChild);
+
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById("aiGenerateModal"));
+  modal.show();
+
+  // Add event listener for generate button
+  document
+    .getElementById("generateDocumentBtn")
+    .addEventListener("click", function () {
+      generateAIDocumentNew(categoryName, documentName);
     });
 }
 
-function submitQuickRevision(documentId) {
-  const form = document.getElementById('quickRevisionForm');
-  const formData = new FormData(form);
-  
-  const submitButton = document.querySelector('#revisionModal .btn-primary');
-  submitButton.disabled = true;
-  submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-  
-  fetch(`/api/replace-document/${documentId}`, {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      alert('Document replaced successfully!');
-      
-      const modal = bootstrap.Modal.getInstance(document.getElementById('revisionModal'));
+// Updated AI document generation function
+async function generateAIDocumentNew(categoryName, documentName) {
+  const generateBtn = document.getElementById("generateDocumentBtn");
+  const originalText = generateBtn.innerHTML;
+  const errorDiv = document.getElementById("ai-error-message");
+
+  // Hide any previous errors
+  errorDiv.style.display = "none";
+
+  // Get form values
+  const aiProvider = document.getElementById("aiProvider").value;
+  const documentType = document.getElementById("documentType").value;
+  const documentTitle = document.getElementById("documentTitle").value;
+  const aiPrompt = document.getElementById("aiPrompt").value;
+  const specificDetails = document.getElementById("specificDetails").value;
+
+  // Validate inputs
+  if (!aiProvider) {
+    showAIError("Please select an AI provider");
+    return;
+  }
+
+  if (!documentType) {
+    showAIError("Please select a document type");
+    return;
+  }
+
+  if (!documentTitle.trim()) {
+    showAIError("Please enter a document title");
+    return;
+  }
+
+  if (!aiPrompt.trim()) {
+    showAIError("Please enter document requirements");
+    return;
+  }
+
+  // Show loading state
+  generateBtn.disabled = true;
+  generateBtn.innerHTML =
+    '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+  const requestData = {
+    documentType: documentType,
+    documentId: `${categoryName}-${documentName}`,
+    prompt: aiPrompt.trim(),
+    provider: aiProvider,
+    customInputs: {
+      documentTitle: documentTitle.trim(),
+      specificDetails: specificDetails.trim(),
+      category: categoryName,
+      documentName: documentName,
+    },
+  };
+
+  try {
+    console.log("Sending AI generation request:", requestData);
+
+    const response = await fetch("/api/generate-document", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestData),
+    });
+
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      // Success
+      alert(
+        `✅ Document generated successfully!\n\nFile: ${
+          result.filename || "Document saved"
+        }\nWords: ${result.wordCount || "N/A"}`
+      );
+
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("aiGenerateModal")
+      );
       modal.hide();
-      
-      // Reload the page to show updated document
+
+      // Reload page to show updated status
       setTimeout(() => {
         window.location.reload();
       }, 1000);
     } else {
-      alert('Error replacing document: ' + data.message);
+      // Handle API error
+      const errorMessage =
+        result.error || result.message || "Unknown error occurred";
+      showAIError(`Generation failed: ${errorMessage}`);
     }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    alert('Error replacing document');
-  })
-  .finally(() => {
-    submitButton.disabled = false;
-    submitButton.innerHTML = '<i class="fas fa-upload"></i> Upload Revision';
-  });
+  } catch (error) {
+    console.error("Generation error:", error);
+    showAIError(`Network error: ${error.message}`);
+  } finally {
+    // Reset button state
+    generateBtn.disabled = false;
+    generateBtn.innerHTML = originalText;
+  }
 }
 
-function openCategoryEditor(categoryName) {
-  console.log('Creating category editor modal for:', categoryName);
-  
-  const modalHtml = 
-    '<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-hidden="true">' +
-      '<div class="modal-dialog">' +
-        '<div class="modal-content">' +
-          '<div class="modal-header">' +
-            '<h5 class="modal-title">Edit Category: ' + categoryName + '</h5>' +
-            '<button type="button" class="btn-close" data-bs-dismiss="modal"></button>' +
-          '</div>' +
-          '<div class="modal-body">' +
-            '<form id="editCategoryForm">' +
-              '<div class="mb-3">' +
-                '<label class="form-label">Category Name</label>' +
-                '<input type="text" class="form-control" id="editCategoryName" value="' + categoryName + '">' +
-              '</div>' +
-              '<div class="mb-3">' +
-                '<label class="form-label">Level</label>' +
-                '<select class="form-select" id="editCategoryLevel">' +
-                  '<option value="1">Level 1 (Policy)</option>' +
-                  '<option value="2">Level 2 (Category)</option>' +
-                '</select>' +
-              '</div>' +
-              '<div class="mb-3">' +
-                '<label class="form-label">Type</label>' +
-                '<select class="form-select" id="editCategoryType">' +
-                  '<option value="policy">Policy</option>' +
-                  '<option value="category">Category</option>' +
-                  '<option value="procedure">Procedure</option>' +
-                '</select>' +
-              '</div>' +
-              '<div class="mb-3">' +
-                '<h6>Child Documents</h6>' +
-                '<div id="childDocumentsList"></div>' +
-                '<div class="input-group mt-2">' +
-                  '<input type="text" class="form-control" id="newChildDocumentName" placeholder="Add new child document...">' +
-                  '<button type="button" class="btn btn-outline-primary" id="addChildBtn">Add</button>' +
-                '</div>' +
-              '</div>' +
-            '</form>' +
-          '</div>' +
-          '<div class="modal-footer">' +
-            '<button type="button" class="btn btn-danger" id="deleteCategoryBtn">Delete Category</button>' +
-            '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>' +
-            '<button type="button" class="btn btn-primary" id="saveCategoryBtn">Save Changes</button>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  
-  const existingModal = document.getElementById('editCategoryModal');
-  if (existingModal) {
-    existingModal.remove();
+// Helper function to show errors in the modal
+function showAIError(message) {
+  const errorDiv = document.getElementById("ai-error-message");
+  if (errorDiv) {
+    errorDiv.textContent = message;
+    errorDiv.style.display = "block";
+    // Scroll to error message
+    errorDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  } else {
+    alert("Error: " + message);
   }
-  
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
-  
-  const modal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
-  modal.show();
-  
-  loadCategoryData(categoryName);
-  setupCategoryModalHandlers(categoryName, modal);
 }
 
 function openDocumentLinker(categoryName, documentName) {
-  console.log('Opening document linker for:', documentName);
-  
-  const modalHtml = 
-    '<div class="modal fade" id="linkDocumentModal" tabindex="-1" aria-hidden="true">' +
-      '<div class="modal-dialog modal-lg">' +
-        '<div class="modal-content">' +
-          '<div class="modal-header">' +
-            '<h5 class="modal-title">Link Document: ' + documentName + '</h5>' +
-            '<button type="button" class="btn-close" data-bs-dismiss="modal"></button>' +
-          '</div>' +
-          '<div class="modal-body">' +
-            '<div class="ims-archive-controls">' +
-              '<div class="form-check">' +
-                '<input class="form-check-input" type="checkbox" id="includeArchivedCheck" ' + 
-                (showArchivedDocuments ? 'checked' : '') + '>' +
-                '<label class="form-check-label" for="includeArchivedCheck">' +
-                  '<i class="fas fa-archive me-1"></i> Include archived documents' +
-                '</label>' +
-                '<small class="d-block text-muted">Documents in folders containing "archive" in the name</small>' +
-              '</div>' +
-            '</div>' +
-            '<div class="mb-3">' +
-              '<label class="form-label">Search for the actual document file:</label>' +
-              '<div class="input-group">' +
-                '<input type="text" class="form-control" id="linkDocumentSearch" placeholder="Type to search..." value="' + documentName + '">' +
-                '<button type="button" class="btn btn-outline-primary" id="searchForDocumentBtn">' +
-                  '<i class="fas fa-search"></i> Search' +
-                '</button>' +
-              '</div>' +
-            '</div>' +
-            '<div id="linkDocumentResults" class="mt-3">' +
-              '<div class="text-center text-muted">' +
-                '<i class="fas fa-search fa-2x mb-2"></i><br>' +
-                'Searching for documents...' +
-              '</div>' +
-            '</div>' +
-          '</div>' +
-          '<div class="modal-footer">' +
-            '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  
-  const existingModal = document.getElementById('linkDocumentModal');
+  console.log("Opening document linker for:", categoryName, documentName);
+
+  // Remove existing modal
+  const existingModal = document.getElementById("linkDocumentModal");
   if (existingModal) {
     existingModal.remove();
   }
-  
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
-  
-  const modal = new bootstrap.Modal(document.getElementById('linkDocumentModal'));
+
+  // Create modal
+  const modalDiv = document.createElement("div");
+  modalDiv.innerHTML = `
+    <div class="modal fade" id="linkDocumentModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-link"></i> Link Document: ${documentName}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              Search for the actual document file to link to "${documentName}" in category "${categoryName}".
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Search for documents:</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="linkDocumentSearch" 
+                       placeholder="Type document name..." value="${documentName}">
+                <button type="button" class="btn btn-outline-primary" id="searchDocumentBtn">
+                  <i class="fas fa-search"></i> Search
+                </button>
+              </div>
+            </div>
+            
+            <div id="linkDocumentResults">
+              <div class="text-center text-muted">
+                <i class="fas fa-search fa-2x mb-2"></i><br>
+                Click search to find documents
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modalDiv.firstElementChild);
+
+  const modal = new bootstrap.Modal(
+    document.getElementById("linkDocumentModal")
+  );
   modal.show();
-  
-  setupDocumentLinkHandlers(categoryName, documentName);
-  
-  // Add archive checkbox handler
-  document.getElementById('includeArchivedCheck').addEventListener('change', function() {
-    showArchivedDocuments = this.checked;
-    const searchTerm = document.getElementById('linkDocumentSearch').value.trim();
-    if (searchTerm) {
-      performDocumentSearch(searchTerm, categoryName, documentName);
-    }
-  });
-  
-  setTimeout(function() {
-    performDocumentSearch(documentName, categoryName, documentName);
-  }, 500);
+
+  // Add search functionality
+  document
+    .getElementById("searchDocumentBtn")
+    .addEventListener("click", function () {
+      const searchTerm = document
+        .getElementById("linkDocumentSearch")
+        .value.trim();
+      if (searchTerm) {
+        searchForDocuments(searchTerm, categoryName, documentName);
+      }
+    });
+}
+
+function openCategoryEditor(categoryName) {
+  console.log("Opening category editor for:", categoryName);
+
+  // Remove existing modal
+  const existingModal = document.getElementById("editCategoryModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Create modal
+  const modalDiv = document.createElement("div");
+  modalDiv.innerHTML = `
+    <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-edit"></i> Edit Category: ${categoryName}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="editCategoryForm">
+              <div class="mb-3">
+                <label class="form-label">Category Name</label>
+                <input type="text" class="form-control" id="editCategoryName" value="${categoryName}">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Level</label>
+                <select class="form-select" id="editCategoryLevel">
+                  <option value="1">Level 1 (Policy)</option>
+                  <option value="2" selected>Level 2 (Category)</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Type</label>
+                <select class="form-select" id="editCategoryType">
+                  <option value="policy">Policy</option>
+                  <option value="category" selected>Category</option>
+                  <option value="procedure">Procedure</option>
+                </select>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" id="deleteCategoryBtn">Delete</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="saveCategoryBtn">Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modalDiv.firstElementChild);
+
+  const modal = new bootstrap.Modal(
+    document.getElementById("editCategoryModal")
+  );
+  modal.show();
+
+  // Add event listeners
+  document
+    .getElementById("saveCategoryBtn")
+    .addEventListener("click", function () {
+      saveCategoryChanges(categoryName);
+    });
+
+  document
+    .getElementById("deleteCategoryBtn")
+    .addEventListener("click", function () {
+      if (confirm("Are you sure you want to delete this category?")) {
+        deleteCategory(categoryName);
+      }
+    });
 }
 
 function openCategoryDocumentLinker(categoryName, documentName) {
-  console.log('Opening category document linker for:', documentName, 'in category:', categoryName);
-  
-  const modalHtml = 
-    '<div class="modal fade" id="linkCategoryDocumentModal" tabindex="-1" aria-hidden="true">' +
-      '<div class="modal-dialog modal-lg">' +
-        '<div class="modal-content">' +
-          '<div class="modal-header">' +
-            '<h5 class="modal-title">Link Document to Category: ' + categoryName + '</h5>' +
-            '<button type="button" class="btn-close" data-bs-dismiss="modal"></button>' +
-          '</div>' +
-          '<div class="modal-body">' +
-            '<div class="alert alert-info">' +
-              '<i class="fas fa-info-circle"></i> ' +
-              'This will link a document directly to the category header, not to a child document.' +
-            '</div>' +
-            '<div class="ims-archive-controls">' +
-              '<div class="form-check">' +
-                '<input class="form-check-input" type="checkbox" id="includeCategoryArchivedCheck" ' + 
-                (showArchivedDocuments ? 'checked' : '') + '>' +
-                '<label class="form-check-label" for="includeCategoryArchivedCheck">' +
-                  '<i class="fas fa-archive me-1"></i> Include archived documents' +
-                '</label>' +
-                '<small class="d-block text-muted">Documents in folders containing "archive" in the name</small>' +
-              '</div>' +
-            '</div>' +
-            '<div class="mb-3">' +
-              '<label class="form-label">Search for the document to link to this category:</label>' +
-              '<div class="input-group">' +
-                '<input type="text" class="form-control" id="linkCategoryDocumentSearch" placeholder="Type to search..." value="' + documentName + '">' +
-                '<button type="button" class="btn btn-outline-primary" id="searchForCategoryDocumentBtn">' +
-                  '<i class="fas fa-search"></i> Search' +
-                '</button>' +
-              '</div>' +
-            '</div>' +
-            '<div id="linkCategoryDocumentResults" class="mt-3">' +
-              '<div class="text-center text-muted">' +
-                '<i class="fas fa-search fa-2x mb-2"></i><br>' +
-                'Searching for documents...' +
-              '</div>' +
-            '</div>' +
-          '</div>' +
-          '<div class="modal-footer">' +
-            '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  
-  const existingModal = document.getElementById('linkCategoryDocumentModal');
+  console.log(
+    "Opening category document linker for:",
+    categoryName,
+    documentName
+  );
+
+  // Remove existing modal
+  const existingModal = document.getElementById("linkCategoryDocumentModal");
   if (existingModal) {
     existingModal.remove();
   }
-  
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
-  
-  const modal = new bootstrap.Modal(document.getElementById('linkCategoryDocumentModal'));
+
+  // Create modal
+  const modalDiv = document.createElement("div");
+  modalDiv.innerHTML = `
+    <div class="modal fade" id="linkCategoryDocumentModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-link"></i> Link Document to Category: ${categoryName}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              Link a document directly to the category "${categoryName}".
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Search for documents:</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="linkCategoryDocumentSearch" 
+                       placeholder="Type document name..." value="${documentName}">
+                <button type="button" class="btn btn-outline-primary" id="searchCategoryDocumentBtn">
+                  <i class="fas fa-search"></i> Search
+                </button>
+              </div>
+            </div>
+            
+            <div id="linkCategoryDocumentResults">
+              <div class="text-center text-muted">
+                <i class="fas fa-search fa-2x mb-2"></i><br>
+                Click search to find documents
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modalDiv.firstElementChild);
+
+  const modal = new bootstrap.Modal(
+    document.getElementById("linkCategoryDocumentModal")
+  );
   modal.show();
-  
-  setupCategoryDocumentLinkHandlers(categoryName, documentName);
-  
-  // Add archive checkbox handler
-  document.getElementById('includeCategoryArchivedCheck').addEventListener('change', function() {
-    showArchivedDocuments = this.checked;
-    const searchTerm = document.getElementById('linkCategoryDocumentSearch').value.trim();
-    if (searchTerm) {
-      performCategoryDocumentSearch(searchTerm, categoryName, documentName);
-    }
-  });
-  
-  setTimeout(function() {
-    performCategoryDocumentSearch(documentName, categoryName, documentName);
-  }, 500);
-}
 
-function setupDocumentLinkHandlers(categoryName, documentName) {
-  document.getElementById('searchForDocumentBtn').addEventListener('click', function() {
-    const searchTerm = document.getElementById('linkDocumentSearch').value.trim();
-    if (searchTerm) {
-      performDocumentSearch(searchTerm, categoryName, documentName);
-    }
-  });
-  
-  document.getElementById('linkDocumentSearch').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      const searchTerm = this.value.trim();
+  // Add search functionality
+  document
+    .getElementById("searchCategoryDocumentBtn")
+    .addEventListener("click", function () {
+      const searchTerm = document
+        .getElementById("linkCategoryDocumentSearch")
+        .value.trim();
       if (searchTerm) {
-        performDocumentSearch(searchTerm, categoryName, documentName);
+        searchForCategoryDocuments(searchTerm, categoryName);
       }
-    }
-  });
-}
-
-function setupCategoryDocumentLinkHandlers(categoryName, documentName) {
-  document.getElementById('searchForCategoryDocumentBtn').addEventListener('click', function() {
-    const searchTerm = document.getElementById('linkCategoryDocumentSearch').value.trim();
-    if (searchTerm) {
-      performCategoryDocumentSearch(searchTerm, categoryName, documentName);
-    }
-  });
-  
-  document.getElementById('linkCategoryDocumentSearch').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      const searchTerm = this.value.trim();
-      if (searchTerm) {
-        performCategoryDocumentSearch(searchTerm, categoryName, documentName);
-      }
-    }
-  });
-}
-
-function performDocumentSearch(searchTerm, categoryName, documentName) {
-  console.log('Searching for:', searchTerm);
-  
-  const resultsDiv = document.getElementById('linkDocumentResults');
-  resultsDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
-  
-  const searchUrl = '/api/available-documents?search=' + encodeURIComponent(searchTerm) + 
-                   '&includeArchived=' + showArchivedDocuments;
-  
-  fetch(searchUrl)
-    .then(response => response.json())
-    .then(documents => {
-      console.log('Found', documents.length, 'documents for category');
-      
-      if (documents.length === 0) {
-        resultsDiv.innerHTML = 
-          '<div class="alert alert-info">' +
-            '<i class="fas fa-info-circle"></i> No documents found matching "' + searchTerm + '"' +
-            (!showArchivedDocuments ? '<br><small>Try enabling "Include Archived" to see archived documents</small>' : '') +
-          '</div>';
-        return;
-      }
-      
-      let resultsHtml = '<div class="list-group">';
-      
-      documents.slice(0, 10).forEach(function(doc) {
-        const archivedClass = doc.isArchived ? ' archived' : '';
-        const archivedBadge = doc.isArchived ? '<span class="ims-archived-badge">ARCHIVED</span>' : '';
-        
-        resultsHtml += 
-          '<div class="list-group-item list-group-item-action category-document-link-result' + archivedClass + '" ' +
-               'data-doc-id="' + doc.id + '" ' +
-               'data-doc-name="' + doc.name + '" ' +
-               'data-is-archived="' + doc.isArchived + '" ' +
-               'style="cursor: pointer;">' +
-            '<div class="d-flex w-100 justify-content-between">' +
-              '<h6 class="mb-1">' +
-                '<i class="fas fa-file-alt me-2"></i>' + doc.name + archivedBadge +
-              '</h6>' +
-              '<small class="text-success">Click to link</small>' +
-            '</div>' +
-            '<p class="mb-1"><small class="text-muted">' + (doc.folder || 'Root folder') + '</small></p>' +
-          '</div>';
-      });
-      
-      resultsHtml += '</div>';
-      resultsDiv.innerHTML = resultsHtml;
-      
-      document.querySelectorAll('.category-document-link-result').forEach(function(result) {
-        result.addEventListener('click', function() {
-          const docId = this.getAttribute('data-doc-id');
-          const docName = this.getAttribute('data-doc-name');
-          const isArchived = this.getAttribute('data-is-archived') === 'true';
-          
-          document.querySelectorAll('.category-document-link-result').forEach(function(r) {
-            r.classList.remove('active');
-          });
-          this.classList.add('active');
-          
-          let confirmMessage = 'Link "' + docName + '" to category "' + categoryName + '"?';
-          if (isArchived) {
-            confirmMessage += '\n\n⚠️ WARNING: This document is in an archived folder and may be outdated.';
-          }
-          
-          if (confirm(confirmMessage)) {
-            linkDocumentToCategory(categoryName, null, docId, docName, true); // true indicates category-level link
-          }
-        });
-      });
-    })
-    .catch(error => {
-      console.error('Category search error:', error);
-      resultsDiv.innerHTML = 
-        '<div class="alert alert-danger">' +
-          '<i class="fas fa-exclamation-triangle"></i> Error searching documents' +
-        '</div>';
     });
 }
 
-function linkDocumentToCategory(categoryName, documentName, docId, actualDocName, isCategoryLevel = false) {
-  console.log('Linking:', actualDocName, 'to', isCategoryLevel ? 'category' : 'document:', documentName || categoryName, 'in category:', categoryName);
-  
-  const endpoint = isCategoryLevel ? '/api/link-category-document' : '/api/link-ims-document';
-  const requestBody = isCategoryLevel ? {
-    categoryName: categoryName,
-    documentId: docId,
-    actualDocumentName: actualDocName
-  } : {
-    categoryName: categoryName,
-    documentName: documentName,
-    documentId: docId,
-    actualDocumentName: actualDocName
+function openRevisionModal(documentId, documentName) {
+  console.log("Opening revision modal for:", documentId, documentName);
+
+  // Remove existing modal
+  const existingModal = document.getElementById("revisionModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Create modal
+  const modalDiv = document.createElement("div");
+  modalDiv.innerHTML = `
+    <div class="modal fade" id="revisionModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-edit"></i> Upload Revision: ${documentName}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="revisionForm" enctype="multipart/form-data">
+              <div class="mb-3">
+                <label class="form-label">Select New Document</label>
+                <input type="file" class="form-control" id="revisionFile" name="newDocument" required>
+                <div class="form-text">Replacing: <strong>${documentName}</strong></div>
+              </div>
+              
+              <div class="mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="keepOriginal" checked>
+                  <label class="form-check-label" for="keepOriginal">
+                    Keep backup copy of original
+                  </label>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Revision Note</label>
+                <textarea class="form-control" id="revisionNote" rows="2" 
+                          placeholder="Describe what changed..."></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="uploadRevisionBtn">
+              <i class="fas fa-upload"></i> Upload
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modalDiv.firstElementChild);
+
+  const modal = new bootstrap.Modal(document.getElementById("revisionModal"));
+  modal.show();
+
+  // Add upload functionality
+  document
+    .getElementById("uploadRevisionBtn")
+    .addEventListener("click", function () {
+      uploadRevision(documentId);
+    });
+}
+
+// ========================================
+// API FUNCTIONS
+// ========================================
+
+async function generateAIDocument(categoryName, documentName) {
+  const generateBtn = document.getElementById("generateDocumentBtn");
+  const originalText = generateBtn.innerHTML;
+
+  generateBtn.disabled = true;
+  generateBtn.innerHTML =
+    '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+  const requestData = {
+    documentType: document.getElementById("documentType").value,
+    documentName: document.getElementById("documentTitle").value,
+    customInputs: {
+      specificDetails: document.getElementById("specificDetails").value,
+      category: categoryName,
+    },
   };
 
-  fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(requestBody)
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      const successMessage = isCategoryLevel ? 
-        'Successfully linked "' + actualDocName + '" to category "' + categoryName + '"!' :
-        'Successfully linked "' + actualDocName + '" to "' + documentName + '"!';
-      
-      alert(successMessage);
-      
-      const modalId = isCategoryLevel ? 'linkCategoryDocumentModal' : 'linkDocumentModal';
-      const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
-      if (modal) {
-        modal.hide();
-      }
-      
-      setTimeout(function() {
+  try {
+    const response = await fetch("/api/generate-document", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestData),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert(`✅ Document generated successfully!\n\nFile: ${result.filename}`);
+
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("aiGenerateModal")
+      );
+      modal.hide();
+
+      setTimeout(() => {
         window.location.reload();
       }, 1000);
     } else {
-      alert('Error linking document: ' + (data.message || 'Unknown error'));
+      alert("❌ Error: " + (result.message || "Unknown error"));
     }
-  })
-  .catch(error => {
-    console.error('Linking error:', error);
-    alert('Error linking document: ' + error.message);
-  });
+  } catch (error) {
+    console.error("Generation error:", error);
+    alert("❌ Network error: " + error.message);
+  } finally {
+    generateBtn.disabled = false;
+    generateBtn.innerHTML = originalText;
+  }
 }
 
-function loadCategoryData(categoryName) {
-  fetch('/api/ims-structure')
-    .then(response => response.json())
-    .then(data => {
-      const category = data[categoryName];
-      if (category) {
-        document.getElementById('editCategoryName').value = categoryName;
-        document.getElementById('editCategoryLevel').value = category.level || 2;
-        document.getElementById('editCategoryType').value = category.type || 'category';
-        
-        // Load child documents
-        const childList = document.getElementById('childDocumentsList');
-        childList.innerHTML = '';
-        
-        if (category.children && category.children.length > 0) {
-          category.children.forEach(child => {
-            const childElement = document.createElement('div');
-            childElement.className = 'child-item d-flex justify-content-between align-items-center mb-2';
-            childElement.innerHTML = `
-              <span>${child}</span>
-              <button type="button" class="btn btn-sm btn-outline-danger remove-child-btn" 
-                      data-child="${child}">
-                <i class="fas fa-times"></i>
-              </button>
-            `;
-            childList.appendChild(childElement);
-          });
-        }
-      }
+async function searchForDocuments(searchTerm, categoryName, documentName) {
+  const resultsDiv = document.getElementById("linkDocumentResults");
+  resultsDiv.innerHTML =
+    '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+
+  try {
+    const response = await fetch(
+      `/api/available-documents?search=${encodeURIComponent(searchTerm)}`
+    );
+    const documents = await response.json();
+
+    if (documents.length === 0) {
+      resultsDiv.innerHTML =
+        '<div class="alert alert-info">No documents found</div>';
+      return;
+    }
+
+    let html = '<div class="list-group">';
+    documents.slice(0, 10).forEach((doc) => {
+      html += `
+        <div class="list-group-item list-group-item-action" style="cursor: pointer;" 
+             onclick="linkDocument('${categoryName}', '${documentName}', '${
+        doc.id
+      }', '${doc.name}')">
+          <h6 class="mb-1">${doc.name}</h6>
+          <small class="text-muted">${doc.folder || "Root folder"}</small>
+        </div>
+      `;
+    });
+    html += "</div>";
+
+    resultsDiv.innerHTML = html;
+  } catch (error) {
+    resultsDiv.innerHTML = '<div class="alert alert-danger">Search error</div>';
+  }
+}
+
+async function searchForCategoryDocuments(searchTerm, categoryName) {
+  const resultsDiv = document.getElementById("linkCategoryDocumentResults");
+  resultsDiv.innerHTML =
+    '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+
+  try {
+    const response = await fetch(
+      `/api/available-documents?search=${encodeURIComponent(searchTerm)}`
+    );
+    const documents = await response.json();
+
+    if (documents.length === 0) {
+      resultsDiv.innerHTML =
+        '<div class="alert alert-info">No documents found</div>';
+      return;
+    }
+
+    let html = '<div class="list-group">';
+    documents.slice(0, 10).forEach((doc) => {
+      html += `
+        <div class="list-group-item list-group-item-action" style="cursor: pointer;" 
+             onclick="linkCategoryDocument('${categoryName}', '${doc.id}', '${
+        doc.name
+      }')">
+          <h6 class="mb-1">${doc.name}</h6>
+          <small class="text-muted">${doc.folder || "Root folder"}</small>
+        </div>
+      `;
+    });
+    html += "</div>";
+
+    resultsDiv.innerHTML = html;
+  } catch (error) {
+    resultsDiv.innerHTML = '<div class="alert alert-danger">Search error</div>';
+  }
+}
+
+// Link functions
+function linkDocument(categoryName, documentName, docId, actualDocName) {
+  if (confirm(`Link "${actualDocName}" to "${documentName}"?`)) {
+    fetch("/api/link-ims-document", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        categoryName,
+        documentName,
+        documentId: docId,
+        actualDocumentName: actualDocName,
+      }),
     })
-    .catch(error => {
-      console.error('Error loading category data:', error);
-      alert('Error loading category data');
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          alert("Document linked successfully!");
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("linkDocumentModal")
+          );
+          modal.hide();
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          alert("Error linking document: " + data.message);
+        }
+      });
+  }
+}
+
+function linkCategoryDocument(categoryName, docId, actualDocName) {
+  if (confirm(`Link "${actualDocName}" to category "${categoryName}"?`)) {
+    fetch("/api/link-category-document", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        categoryName,
+        documentId: docId,
+        actualDocumentName: actualDocName,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          alert("Category document linked successfully!");
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("linkCategoryDocumentModal")
+          );
+          modal.hide();
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          alert("Error linking category document: " + data.message);
+        }
+      });
+  }
+}
+
+// Category management functions
+function saveCategoryChanges(originalCategoryName) {
+  const newName = document.getElementById("editCategoryName").value.trim();
+  const level = document.getElementById("editCategoryLevel").value;
+  const type = document.getElementById("editCategoryType").value;
+
+  fetch("/api/update-ims-category", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "update",
+      categoryName: originalCategoryName,
+      newName: newName !== originalCategoryName ? newName : undefined,
+      level: parseInt(level),
+      type: type,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert("Category updated successfully!");
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById("editCategoryModal")
+        );
+        modal.hide();
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        alert("Error updating category: " + data.message);
+      }
     });
 }
 
-function setupCategoryModalHandlers(categoryName, modal) {
-  // Add child document handler
-  document.getElementById('addChildBtn').addEventListener('click', function() {
-    const newChildName = document.getElementById('newChildDocumentName').value.trim();
-    if (newChildName) {
-      // Add to UI immediately
-      addChildDocument(newChildName);
-      document.getElementById('newChildDocumentName').value = '';
-      
-      // Optional: Save immediately to backend
-      fetch('/api/manage-child-document', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          categoryName: categoryName,
-          action: 'add',
-          newDocumentName: newChildName
-        })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (!data.success) {
-          console.error('Failed to add child to backend:', data.message);
-          // Optionally remove from UI if backend fails
-        }
-      })
-      .catch(error => {
-        console.error('Error adding child to backend:', error);
-      });
-    }
-  });
-  
-  // Remove child document handlers (use event delegation to handle dynamically added elements)
-  document.getElementById('childDocumentsList').addEventListener('click', function(e) {
-    if (e.target.closest('.remove-child-btn')) {
-      const btn = e.target.closest('.remove-child-btn');
-      const childName = btn.getAttribute('data-child');
-      
-      // Remove from UI
-      removeChildDocument(childName);
-      
-      // Optional: Remove from backend immediately
-      fetch('/api/manage-child-document', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          categoryName: categoryName,
-          action: 'remove',
-          documentName: childName
-        })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (!data.success) {
-          console.error('Failed to remove child from backend:', data.message);
-        }
-      })
-      .catch(error => {
-        console.error('Error removing child from backend:', error);
-      });
-    }
-  });
-  
-  // Save category handler
-  document.getElementById('saveCategoryBtn').addEventListener('click', function() {
-    saveCategoryChanges(categoryName, modal);
-  });
-  
-  // Delete category handler
-  document.getElementById('deleteCategoryBtn').addEventListener('click', function() {
-    if (confirm('Are you sure you want to delete this category? This cannot be undone.')) {
-      deleteCategory(categoryName, modal);
-    }
-  });
+function deleteCategory(categoryName) {
+  fetch(`/api/delete-ims-category/${encodeURIComponent(categoryName)}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert("Category deleted successfully!");
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById("editCategoryModal")
+        );
+        modal.hide();
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        alert("Error deleting category: " + data.message);
+      }
+    });
 }
 
-function addChildDocument(childName) {
-  const childList = document.getElementById('childDocumentsList');
-  const childElement = document.createElement('div');
-  childElement.className = 'child-item d-flex justify-content-between align-items-center mb-2';
-  childElement.innerHTML = `
-    <span>${childName}</span>
-    <button type="button" class="btn btn-sm btn-outline-danger remove-child-btn" 
-            data-child="${childName}">
-      <i class="fas fa-times"></i>
-    </button>
-  `;
-  childList.appendChild(childElement);
+function uploadRevision(documentId) {
+  const form = document.getElementById("revisionForm");
+  const formData = new FormData(form);
+
+  const uploadBtn = document.getElementById("uploadRevisionBtn");
+  uploadBtn.disabled = true;
+  uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+  fetch(`/api/replace-document/${documentId}`, {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert("Document revision uploaded successfully!");
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById("revisionModal")
+        );
+        modal.hide();
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        alert("Error uploading revision: " + data.message);
+      }
+    })
+    .finally(() => {
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload';
+    });
 }
 
-function removeChildDocument(childName) {
-  const childElements = document.querySelectorAll('.remove-child-btn');
-  childElements.forEach(btn => {
-    if (btn.getAttribute('data-child') === childName) {
-      btn.closest('.child-item').remove();
-    }
-  });
-}
+// Other functions
+function handleAddCategory() {
+  const nameInput = document.getElementById("newCategoryName");
+  const levelSelect = document.getElementById("newCategoryLevel");
 
-function saveCategoryChanges(originalCategoryName, modal) {
-  const newCategoryName = document.getElementById('editCategoryName').value.trim();
-  const level = document.getElementById('editCategoryLevel').value;
-  const type = document.getElementById('editCategoryType').value;
-  
-  // *** CRITICAL FIX: Collect children properly ***
-  const children = [];
-  document.querySelectorAll('.child-item span').forEach(span => {
-    const childName = span.textContent.trim();
-    if (childName) {
-      children.push(childName);
-    }
-  });
-  
-  console.log('Saving category with children:', children); // Debug log
-  
-  if (!newCategoryName) {
-    alert('Please enter a category name');
+  if (!nameInput || !levelSelect) return;
+
+  const name = nameInput.value.trim();
+  const level = levelSelect.value;
+
+  if (!name) {
+    alert("Please enter a category name");
     return;
   }
-  
-  const categoryData = {
-    action: 'update',
-    categoryName: originalCategoryName,
-    newName: newCategoryName !== originalCategoryName ? newCategoryName : undefined,
-    level: parseInt(level),
-    type: type,
-    children: children  // *** CRITICAL: Include children in the request ***
-  };
-  
-  console.log('Sending category data:', categoryData); // Debug log
-  
-  fetch('/api/update-ims-category', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(categoryData)
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log('Server response:', data); // Debug log
-    
-    if (data.success) {
-      alert('Category updated successfully!');
-      modal.hide();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } else {
-      alert('Error updating category: ' + data.message);
-    }
-  })
-  .catch(error => {
-    console.error('Error updating category:', error);
-    alert('Error updating category');
-  });
-}
-function deleteCategory(categoryName, modal) {
-  fetch(`/api/delete-ims-category/${encodeURIComponent(categoryName)}`, {  // Use path parameter
-    method: 'DELETE',  // Correct method
-    headers: { 'Content-Type': 'application/json' }
-    // Remove body since we're using path parameter
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      alert('Category deleted successfully!');
-      modal.hide();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } else {
-      alert('Error deleting category: ' + data.message);
-    }
-  })
-  .catch(error => {
-    console.error('Error deleting category:', error);
-    alert('Error deleting category');
-  });
-}
 
-function addNewCategory(categoryName, level) {
-  const categoryData = {
-    action: 'create',  // Add this
-    categoryName: categoryName,  // Use categoryName not name
-    level: parseInt(level),
-    type: level === '1' ? 'policy' : 'category'
-  };
-  
-  fetch('/api/update-ims-category', {  // Changed endpoint
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(categoryData)
+  fetch("/api/update-ims-category", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "create",
+      categoryName: name,
+      level: parseInt(level),
+      type: level === "1" ? "policy" : "category",
+      children: [],
+    }),
   })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      alert('Category added successfully!');
-      document.getElementById('newCategoryName').value = '';
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } else {
-      alert('Error adding category: ' + data.message);
-    }
-  })
-  .catch(error => {
-    console.error('Error adding category:', error);
-    alert('Error adding category');
-  });
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert("Category added successfully!");
+        nameInput.value = "";
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        alert("Error adding category: " + data.message);
+      }
+    })
+    .catch((error) => {
+      console.error("Error adding category:", error);
+      alert("Error adding category");
+    });
 }
 
 function autoLinkDocuments() {
-  if (!confirm('This will automatically link documents based on name matching. Continue?')) {
+  if (
+    !confirm(
+      "This will automatically link documents based on name matching. Continue?"
+    )
+  ) {
     return;
   }
-  
-  const button = document.getElementById('autoLinkBtn');
+
+  const button = document.getElementById("autoLinkBtn");
+  const originalText = button.innerHTML;
+
   button.disabled = true;
   button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Auto-linking...';
-  
-  fetch('/api/auto-link-documents', {  // Corrected endpoint
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      checkRevisions: true
-    })
+
+  fetch("/api/auto-link-documents", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ checkRevisions: true }),
   })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      alert(`Auto-linking completed! Linked ${data.linked} documents.`);  // Changed from linkedCount
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } else {
-      alert('Error during auto-linking: ' + data.message);
-    }
-  })
-  .catch(error => {
-    console.error('Error auto-linking:', error);
-    alert('Error during auto-linking');
-  })
-  .finally(() => {
-    button.disabled = false;
-    button.innerHTML = 'Auto-Link Documents';
-  });
-}
-function loadMandatoryRecords() {
-  const listDiv = document.getElementById('mandatoryRecordsList');
-  listDiv.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
-  
-  fetch('/api/mandatory-records')
-    .then(response => response.json())
-    .then(data => {
+    .then((response) => response.json())
+    .then((data) => {
       if (data.success) {
-        displayMandatoryRecords(data.records);
-        updateMandatoryStatistics(data.records);
+        alert(`Auto-linking completed! Linked ${data.linked} documents.`);
+        setTimeout(() => window.location.reload(), 1000);
       } else {
-        listDiv.innerHTML = '<div class="alert alert-danger">Error loading mandatory records</div>';
+        alert("Error during auto-linking: " + data.message);
       }
     })
-    .catch(error => {
-      console.error('Error loading mandatory records:', error);
-      listDiv.innerHTML = '<div class="alert alert-danger">Error loading mandatory records</div>';
+    .catch((error) => {
+      console.error("Error auto-linking:", error);
+      alert("Error during auto-linking");
+    })
+    .finally(() => {
+      button.disabled = false;
+      button.innerHTML = originalText;
+    });
+}
+
+// ========================================
+// MANDATORY RECORDS FUNCTIONS
+// ========================================
+
+function loadMandatoryRecords() {
+  const listDiv = document.getElementById("mandatoryRecordsList");
+  if (!listDiv) return;
+
+  listDiv.innerHTML =
+    '<div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+
+  fetch("/api/mandatory-records")
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Mandatory records response:", data);
+
+      if (data.success && data.mandatoryRecords) {
+        displayMandatoryRecords(data.mandatoryRecords);
+        updateMandatoryStatistics(data.mandatoryRecords);
+      } else {
+        listDiv.innerHTML =
+          '<div class="alert alert-warning">No mandatory records found</div>';
+        updateMandatoryStatistics({});
+      }
+    })
+    .catch((error) => {
+      console.error("Error loading mandatory records:", error);
+      listDiv.innerHTML =
+        '<div class="alert alert-danger">Error loading mandatory records</div>';
+      updateMandatoryStatistics({});
     });
 }
 
 function displayMandatoryRecords(records) {
-  const listDiv = document.getElementById('mandatoryRecordsList');
-  
-  if (!records || records.length === 0) {
-    listDiv.innerHTML = '<div class="alert alert-info">No mandatory records configured</div>';
-    return;
-  }
-  
-  let html = '';
-  records.forEach(record => {
-    const isLinked = record.linkedDocuments && record.linkedDocuments.length > 0;
-    const hasAutoDetected = record.autoDetectedDocuments && record.autoDetectedDocuments.length > 0;
-    
-    // Status icon based on linked documents
-    const statusIcon = isLinked ? 
-      '<i class="fas fa-check-circle text-success"></i>' : 
-      '<i class="fas fa-exclamation-triangle text-warning"></i>';
-    
+  const listDiv = document.getElementById("mandatoryRecordsList");
+  if (!listDiv || !records) return;
+
+  let html = "";
+
+  Object.keys(records).forEach((recordType) => {
+    const record = records[recordType];
+    const allDocs = record.enrichedDocuments || [];
+
+    const linkedDocuments = allDocs.filter(
+      (doc) => doc.manuallyLinked === true
+    );
+    const autoDetectedDocuments = allDocs.filter(
+      (doc) => doc.autoDetected === true && doc.manuallyLinked !== true
+    );
+
+    const isLinked = linkedDocuments.length > 0;
+    const hasAutoDetected = autoDetectedDocuments.length > 0;
+
+    const statusIcon = isLinked
+      ? '<i class="fas fa-check-circle text-success"></i>'
+      : '<i class="fas fa-exclamation-triangle text-warning"></i>';
+
     html += `
-      <div class="ims-category mb-3" data-record-type="${record.type}">
+      <div class="ims-category mb-3" data-record-type="${recordType}">
         <div class="ims-category-level-2">
-          ${statusIcon}
-          <span class="mandatory-record-title">${record.type}</span>
-          <small class="text-muted ms-2">${record.description || ''}</small>
-          <button class="btn btn-sm btn-outline-info ms-2 link-mandatory-btn" 
-                  data-record-type="${record.type}"
-                  style="font-size: 0.7rem;">
-            <i class="fas fa-link"></i> Link Documents
-          </button>
-          ${hasAutoDetected ? `
-            <span class="badge bg-info ms-1">${record.autoDetectedDocuments.length} auto-detected</span>
-          ` : ''}
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              ${statusIcon}
+              <span class="mandatory-record-title">${recordType}</span>
+              <small class="text-muted ms-2">${record.description || ""}</small>
+              ${
+                hasAutoDetected
+                  ? `<span class="badge bg-info ms-1">${autoDetectedDocuments.length} detected</span>`
+                  : ""
+              }
+            </div>
+            <button class="btn btn-sm btn-outline-info link-mandatory-btn" 
+                    data-record-type="${recordType}"
+                    style="font-size: 0.7rem;">
+              <i class="fas fa-link"></i> Link
+            </button>
+          </div>
         </div>
         
-        <!-- Linked Documents Section -->
-        ${isLinked ? `
+        ${
+          isLinked
+            ? `
           <div class="mt-2 mb-3">
             <h6 class="text-success"><i class="fas fa-check-circle"></i> Linked Documents</h6>
             <ul class="ims-child-list">
-              ${record.linkedDocuments.map(doc => `
-                <li class="ims-child-item ims-document-item ${doc.isArchived ? 'ims-document-archived' : ''}" 
+              ${linkedDocuments
+                .map(
+                  (doc) => `
+                <li class="ims-child-item ims-document-item ${
+                  doc.isArchived ? "ims-document-archived" : ""
+                }" 
                     data-document="${doc.name}" 
                     data-is-archived="${doc.isArchived}">
-                  <i class="fas fa-check-circle text-success ims-status-icon"></i>
-                  <a href="/document/${doc.id}" class="ims-document-link">${doc.name}</a>
-                  ${doc.isArchived ? '<span class="ims-archived-badge">ARCHIVED</span>' : ''}
-                  <button class="btn btn-sm btn-outline-danger ms-auto unlink-mandatory-btn" 
-                          data-record-type="${record.type}" 
+                  <div class="flex-grow-1">
+                    <i class="fas fa-check-circle text-success ims-status-icon"></i>
+                    <a href="/document/${doc.id}" class="ims-document-link">${
+                    doc.name
+                  }</a>
+                    ${
+                      doc.isArchived
+                        ? '<span class="ims-archived-badge">ARCHIVED</span>'
+                        : ""
+                    }
+                  </div>
+                  <button class="btn btn-sm btn-outline-danger unlink-mandatory-btn" 
+                          data-record-type="${recordType}" 
                           data-document-id="${doc.id}"
                           style="font-size: 0.6rem;">
                     <i class="fas fa-unlink"></i>
                   </button>
                 </li>
-              `).join('')}
+              `
+                )
+                .join("")}
             </ul>
           </div>
-        ` : ''}
+        `
+            : ""
+        }
         
-        <!-- Auto-Detected Documents Section -->
-        ${hasAutoDetected ? `
+        ${
+          hasAutoDetected
+            ? `
           <div class="mt-2">
             <h6 class="text-info">
               <i class="fas fa-search"></i> Auto-Detected Documents 
@@ -1117,21 +1433,34 @@ function displayMandatoryRecords(records) {
             </h6>
             <div class="alert alert-light p-2">
               <small class="text-muted mb-2 d-block">
-                <strong>Keywords:</strong> ${record.autoDetectKeywords ? record.autoDetectKeywords.join(', ') : 'None'}
+                <strong>Keywords:</strong> ${
+                  record.autoDetectKeywords
+                    ? record.autoDetectKeywords.join(", ")
+                    : "None"
+                }
               </small>
               <div class="auto-detected-documents">
-                ${record.autoDetectedDocuments.slice(0, 10).map(doc => `
-                  <div class="list-group-item list-group-item-action auto-detected-item mb-1 ${doc.isArchived ? 'archived' : ''}" 
+                ${autoDetectedDocuments
+                  .slice(0, 5)
+                  .map(
+                    (doc) => `
+                  <div class="list-group-item list-group-item-action auto-detected-item mb-1 ${
+                    doc.isArchived ? "archived" : ""
+                  }" 
                        data-doc-id="${doc.id}" 
                        data-doc-name="${doc.name}" 
-                       data-record-type="${record.type}"
+                       data-record-type="${recordType}"
                        data-is-archived="${doc.isArchived}"
                        style="cursor: pointer; font-size: 0.9rem; padding: 0.5rem;">
                     <div class="d-flex justify-content-between align-items-center">
                       <div>
                         <i class="fas fa-file-alt text-info me-2"></i>
                         <strong>${doc.name}</strong>
-                        ${doc.isArchived ? '<span class="ims-archived-badge">ARCHIVED</span>' : ''}
+                        ${
+                          doc.isArchived
+                            ? '<span class="ims-archived-badge">ARCHIVED</span>'
+                            : ""
+                        }
                       </div>
                       <div>
                         <small class="text-success me-2">Click to link</small>
@@ -1139,271 +1468,147 @@ function displayMandatoryRecords(records) {
                       </div>
                     </div>
                     <div class="mt-1">
-                      <small class="text-muted">
-                        📁 ${doc.folder || 'Root folder'}
-                        ${doc.matchedKeywords ? ` • Matched: ${doc.matchedKeywords.join(', ')}` : ''}
-                      </small>
+                      <small class="text-muted">📁 ${
+                        doc.folder || "Root folder"
+                      }</small>
                     </div>
                   </div>
-                `).join('')}
-                ${record.autoDetectedDocuments.length > 10 ? `
+                `
+                  )
+                  .join("")}
+                ${
+                  autoDetectedDocuments.length > 5
+                    ? `
                   <div class="text-center mt-2">
-                    <small class="text-muted">... and ${record.autoDetectedDocuments.length - 10} more</small>
+                    <small class="text-muted">... and ${
+                      autoDetectedDocuments.length - 5
+                    } more</small>
                   </div>
-                ` : ''}
+                `
+                    : ""
+                }
               </div>
             </div>
           </div>
-        ` : ''}
+        `
+            : ""
+        }
       </div>
     `;
   });
-  
-  listDiv.innerHTML = html;
-  
-  // Add event listeners for mandatory record buttons
-  document.querySelectorAll('.link-mandatory-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const recordType = this.getAttribute('data-record-type');
+
+  listDiv.innerHTML =
+    html ||
+    '<div class="text-center text-muted py-4">No mandatory records configured</div>';
+
+  // Add event listeners
+  addMandatoryRecordEventListeners();
+}
+
+function addMandatoryRecordEventListeners() {
+  // Link mandatory record buttons
+  document.querySelectorAll(".link-mandatory-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const recordType = this.getAttribute("data-record-type");
       openMandatoryDocumentLinker(recordType);
     });
   });
-  
-  document.querySelectorAll('.unlink-mandatory-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const recordType = this.getAttribute('data-record-type');
-      const documentId = this.getAttribute('data-document-id');
+
+  // Unlink mandatory record buttons
+  document.querySelectorAll(".unlink-mandatory-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const recordType = this.getAttribute("data-record-type");
+      const documentId = this.getAttribute("data-document-id");
       unlinkMandatoryDocument(recordType, documentId);
     });
   });
-  
-  // Add event listeners for auto-detected documents
-  document.querySelectorAll('.auto-detected-item').forEach(item => {
-    item.addEventListener('click', function() {
-      const docId = this.getAttribute('data-doc-id');
-      const docName = this.getAttribute('data-doc-name');
-      const recordType = this.getAttribute('data-record-type');
-      const isArchived = this.getAttribute('data-is-archived') === 'true';
-      
-      // Highlight selection
-      document.querySelectorAll('.auto-detected-item').forEach(i => i.classList.remove('active'));
-      this.classList.add('active');
-      
+
+  // Auto-detected documents click handlers
+  document.querySelectorAll(".auto-detected-item").forEach((item) => {
+    item.addEventListener("click", function () {
+      const docId = this.getAttribute("data-doc-id");
+      const docName = this.getAttribute("data-doc-name");
+      const recordType = this.getAttribute("data-record-type");
+      const isArchived = this.getAttribute("data-is-archived") === "true";
+
+      document
+        .querySelectorAll(".auto-detected-item")
+        .forEach((i) => i.classList.remove("active"));
+      this.classList.add("active");
+
       let confirmMessage = `Link "${docName}" to mandatory record "${recordType}"?`;
       if (isArchived) {
-        confirmMessage += '\n\n⚠️ WARNING: This document is in an archived folder and may be outdated.';
+        confirmMessage +=
+          "\n\n⚠️ WARNING: This document is archived and may be outdated.";
       }
-      
+
       if (confirm(confirmMessage)) {
-        linkMandatoryDocument(recordType, docId, docName); // Pass docName as third parameter
+        linkMandatoryDocument(recordType, docId, docName);
       }
     });
   });
 }
 
 function updateMandatoryStatistics(records) {
-  // Add defensive programming to handle undefined/null records
-  if (!records || !Array.isArray(records)) {
-    console.error('Invalid records data received:', records);
-    // Set default values when records is undefined
-    document.getElementById('mandatoryTotal').textContent = '0';
-    document.getElementById('mandatoryCoverage').textContent = '0%';
-    return;
-  }
-  
-  const totalRecords = records.length;
-  const linkedRecords = records.filter(r => r.linkedDocuments && r.linkedDocuments.length > 0).length;
-  const coverage = totalRecords > 0 ? Math.round((linkedRecords / totalRecords) * 100) : 0;
-  
-  document.getElementById('mandatoryTotal').textContent = totalRecords;
-  document.getElementById('mandatoryCoverage').textContent = coverage + '%';
-}
+  const totalElement = document.getElementById("mandatoryTotal");
+  const coverageElement = document.getElementById("mandatoryCoverage");
 
-function loadMandatoryRecords() {
-  const listDiv = document.getElementById('mandatoryRecordsList');
-  listDiv.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
-  
-  fetch('/api/mandatory-records')
-    .then(response => response.json())
-    .then(data => {
-      console.log('Mandatory records API response:', data); // Add debugging
-      console.log('Response keys:', Object.keys(data)); // Show all properties
-      console.log('data.success:', data.success);
-      console.log('data.records:', data.records);
-      console.log('Type of data.records:', typeof data.records);
-      
-      if (data.success) {
-        // Handle the actual API response structure where mandatoryRecords is an object
-        if (data.mandatoryRecords && typeof data.mandatoryRecords === 'object') {
-          // Convert the object structure to array format expected by the display functions
-          const recordsArray = Object.keys(data.mandatoryRecords).map(recordType => {
-            const record = data.mandatoryRecords[recordType];
-            
-            // Debug: Log the enriched documents to see their structure
-            console.log(`${recordType} enrichedDocuments:`, record.enrichedDocuments);
-            
-            // Split enrichedDocuments into linked and auto-detected
-            const allDocs = record.enrichedDocuments || [];
-            
-            // Log each document's properties to understand the structure
-            allDocs.forEach((doc, index) => {
-              console.log(`Document ${index}:`, {
-                name: doc.name,
-                autoDetected: doc.autoDetected,
-                manuallyLinked: doc.manuallyLinked,
-                linkedAt: doc.linkedAt
-              });
-            });
-            
-            const linkedDocuments = allDocs.filter(doc => doc.manuallyLinked === true);
-            const autoDetectedDocuments = allDocs.filter(doc => doc.autoDetected === true && doc.manuallyLinked !== true);
-            
-            console.log(`${recordType} - Linked: ${linkedDocuments.length}, Auto-detected: ${autoDetectedDocuments.length}`);
-            
-            return {
-              type: recordType,
-              description: record.description || '',
-              priority: record.priority || 'medium',
-              lastUpdated: record.lastUpdated,
-              linkedDocuments: linkedDocuments, // Actually linked docs
-              autoDetectedDocuments: autoDetectedDocuments, // Just suggestions
-              autoDetectKeywords: record.autoDetectKeywords || []
-            };
-          });
-          
-          console.log('Converted records array:', recordsArray);
-          displayMandatoryRecords(recordsArray);
-          updateMandatoryStatistics(recordsArray);
-        } else if (data.records && Array.isArray(data.records)) {
-          // Fallback for array format (if API structure changes back)
-          displayMandatoryRecords(data.records);
-          updateMandatoryStatistics(data.records);
-        } else {
-          console.error('No valid mandatory records found. Full data object:', JSON.stringify(data, null, 2));
-          listDiv.innerHTML = '<div class="alert alert-warning">No mandatory records found or invalid data format<br><small>Check console for details</small></div>';
-          updateMandatoryStatistics([]);
-        }
-      } else {
-        console.error('API returned error:', data.message);
-        listDiv.innerHTML = '<div class="alert alert-danger">Error loading mandatory records: ' + (data.message || 'Unknown error') + '</div>';
-        updateMandatoryStatistics([]); // Pass empty array instead of undefined
-      }
-    })
-    .catch(error => {
-      console.error('Error loading mandatory records:', error);
-      listDiv.innerHTML = '<div class="alert alert-danger">Error loading mandatory records: Network error</div>';
-      updateMandatoryStatistics([]); // Pass empty array instead of undefined
-    });
-}
-function updateMandatoryRecordSettings() {
-  const recordType = document.getElementById('mandatoryRecordSelect').value;
-  const description = document.getElementById('mandatoryDescription').value.trim();
-  const keywords = document.getElementById('mandatoryKeywords').value
-    .split(',')
-    .map(k => k.trim())
-    .filter(k => k.length > 0);
-  
-  if (!recordType) {
-    alert('Please select a record type');
-    return;
-  }
-  
-  const settings = {
-    type: recordType,
-    description: description,
-    keywords: keywords
-  };
-  
-  fetch('/api/update-mandatory-record-settings', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(settings)
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      alert('Settings updated successfully!');
-    } else {
-      alert('Error updating settings: ' + data.message);
-    }
-  })
-  .catch(error => {
-    console.error('Error updating settings:', error);
-    alert('Error updating settings');
-  });
-}
+  if (!totalElement || !coverageElement || !records) return;
 
-function autoDetectMandatoryRecords() {
-  const button = document.getElementById('autoDetectMandatoryBtn');
-  button.disabled = true;
-  button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
-  
-  fetch('/api/auto-detect-mandatory-records', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      alert(`Auto-detection completed! Found ${data.detectedCount} mandatory records.`);
-      loadMandatoryRecords(); // Refresh the display
-    } else {
-      alert('Error during auto-detection: ' + data.message);
-    }
-  })
-  .catch(error => {
-    console.error('Error auto-detecting:', error);
-    alert('Error during auto-detection');
-  })
-  .finally(() => {
-    button.disabled = false;
-    button.innerHTML = '<i class="fas fa-search"></i> Auto-Detect Records';
-  });
+  const total = Object.keys(records).length;
+  const covered = Object.keys(records).filter((key) => {
+    const record = records[key];
+    return record.enrichedDocuments?.some((doc) => doc.manuallyLinked === true);
+  }).length;
+
+  const coverage = total > 0 ? Math.round((covered / total) * 100) : 0;
+
+  totalElement.textContent = total;
+  coverageElement.textContent = coverage + "%";
 }
 
 function openMandatoryDocumentLinker(recordType) {
-  const modalHtml = `
+  console.log("Opening mandatory document linker for:", recordType);
+
+  // Remove existing modal
+  const existingModal = document.getElementById("linkMandatoryModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Create modal
+  const modalDiv = document.createElement("div");
+  modalDiv.innerHTML = `
     <div class="modal fade" id="linkMandatoryModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Link Documents to ${recordType}</h5>
+            <h5 class="modal-title">
+              <i class="fas fa-clipboard-check"></i> Link Documents to ${recordType}
+            </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
             <div class="alert alert-info">
               <i class="fas fa-info-circle"></i>
-              Search for any document in your system to link to this mandatory record type.
-            </div>
-            
-            <div class="ims-archive-controls">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="includeMandatoryArchivedCheck" 
-                       ${showArchivedDocuments ? 'checked' : ''}>
-                <label class="form-check-label" for="includeMandatoryArchivedCheck">
-                  <i class="fas fa-archive me-1"></i> Include archived documents
-                </label>
-              </div>
+              Search for any document to link to this mandatory record type.
             </div>
             
             <div class="mb-3">
               <label class="form-label">Search for documents:</label>
               <div class="input-group">
                 <input type="text" class="form-control" id="linkMandatorySearch" 
-                       placeholder="Enter document name, folder, or keywords..." value="">
+                       placeholder="Enter document name or keywords...">
                 <button type="button" class="btn btn-outline-primary" id="searchMandatoryBtn">
                   <i class="fas fa-search"></i> Search
                 </button>
               </div>
-              <small class="text-muted">
-                Try searching for document names, folder names, or file types (e.g., "audit", "policy", ".pdf")
-              </small>
             </div>
             
-            <div id="linkMandatoryResults" class="mt-3">
+            <div id="linkMandatoryResults">
               <div class="text-center text-muted">
                 <i class="fas fa-search fa-2x mb-2"></i><br>
-                Enter a search term above to find documents
+                Enter a search term to find documents
               </div>
             </div>
           </div>
@@ -1414,391 +1619,603 @@ function openMandatoryDocumentLinker(recordType) {
       </div>
     </div>
   `;
-  
-  const existingModal = document.getElementById('linkMandatoryModal');
-  if (existingModal) {
-    existingModal.remove();
-  }
-  
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
-  
-  const modal = new bootstrap.Modal(document.getElementById('linkMandatoryModal'));
+
+  document.body.appendChild(modalDiv.firstElementChild);
+
+  const modal = new bootstrap.Modal(
+    document.getElementById("linkMandatoryModal")
+  );
   modal.show();
-  
-  setupMandatoryLinkHandlers(recordType);
-}
 
-function setupMandatoryLinkHandlers(recordType) {
-  document.getElementById('searchMandatoryBtn').addEventListener('click', function() {
-    const searchTerm = document.getElementById('linkMandatorySearch').value.trim();
-    if (searchTerm) {
-      performMandatoryDocumentSearch(searchTerm, recordType);
-    } else {
-      alert('Please enter a search term');
-    }
-  });
-  
-  document.getElementById('linkMandatorySearch').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      const searchTerm = this.value.trim();
+  // Add search functionality
+  document
+    .getElementById("searchMandatoryBtn")
+    .addEventListener("click", function () {
+      const searchTerm = document
+        .getElementById("linkMandatorySearch")
+        .value.trim();
       if (searchTerm) {
-        performMandatoryDocumentSearch(searchTerm, recordType);
+        searchMandatoryDocuments(searchTerm, recordType);
       } else {
-        alert('Please enter a search term');
+        alert("Please enter a search term");
       }
-    }
-  });
-  
-  document.getElementById('includeMandatoryArchivedCheck').addEventListener('change', function() {
-    showArchivedDocuments = this.checked;
-    const searchTerm = document.getElementById('linkMandatorySearch').value.trim();
-    if (searchTerm) {
-      performMandatoryDocumentSearch(searchTerm, recordType);
-    }
-  });
+    });
+
+  document
+    .getElementById("linkMandatorySearch")
+    .addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        const searchTerm = this.value.trim();
+        if (searchTerm) {
+          searchMandatoryDocuments(searchTerm, recordType);
+        }
+      }
+    });
 }
 
-function unlinkMandatoryDocument(recordType, documentId) {
-  if (!confirm('Are you sure you want to unlink this document?')) {
-    return;
-  }
-  
-  console.log('=== UNLINK MANDATORY DOCUMENT ===');
-  console.log('recordType:', recordType);
-  console.log('documentId:', documentId);
-  
-  fetch(`/api/mandatory-record/${encodeURIComponent(recordType)}/${documentId}`, {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' }
-  })
-  .then(response => {
-    console.log('Unlink response status:', response.status);
-    return response.json();
-  })
-  .then(data => {
-    console.log('Unlink response data:', data);
-    
-    if (data.success) {
-      alert('Document unlinked successfully!');
-      // Refresh the mandatory records display
-      loadMandatoryRecords();
-    } else {
-      alert('Error unlinking document: ' + (data.message || 'Unknown error'));
-    }
-  })
-  .catch(error => {
-    console.error('Error unlinking document:', error);
-    alert('Error unlinking document: ' + error.message);
-  });
-}
+async function searchMandatoryDocuments(searchTerm, recordType) {
+  const resultsDiv = document.getElementById("linkMandatoryResults");
+  resultsDiv.innerHTML =
+    '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
 
-function performMandatoryDocumentSearch(searchTerm, recordType) {
-  console.log('Manual search for:', searchTerm, 'in record type:', recordType);
-  
-  const resultsDiv = document.getElementById('linkMandatoryResults');
-  resultsDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
-  
-  const searchUrl = `/api/available-documents?search=${encodeURIComponent(searchTerm)}&includeArchived=${showArchivedDocuments}`;
-  
-  fetch(searchUrl)
-    .then(response => response.json())
-    .then(documents => {
-      console.log('Manual search found', documents.length, 'documents');
-      
-      if (documents.length === 0) {
-        resultsDiv.innerHTML = `
-          <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> No documents found matching "${searchTerm}"
-            ${!showArchivedDocuments ? '<br><small>Try enabling "Include Archived" to see archived documents</small>' : ''}
-          </div>
-        `;
-        return;
-      }
-      
-      let resultsHtml = '<div class="list-group">';
-      
-      // Show more results for manual search (up to 20)
-      documents.slice(0, 20).forEach(doc => {
-        const archivedClass = doc.isArchived ? ' archived' : '';
-        const archivedBadge = doc.isArchived ? '<span class="ims-archived-badge">ARCHIVED</span>' : '';
-        
-        resultsHtml += `
-          <div class="list-group-item list-group-item-action manual-link-result${archivedClass}" 
-               data-doc-id="${doc.id}" 
-               data-doc-name="${doc.name}" 
-               data-is-archived="${doc.isArchived}" 
-               style="cursor: pointer;">
-            <div class="d-flex w-100 justify-content-between">
-              <div>
-                <h6 class="mb-1">
-                  <i class="fas fa-file-alt me-2"></i>${doc.name}${archivedBadge}
-                </h6>
-                <p class="mb-1"><small class="text-muted">📁 ${doc.folder || 'Root folder'}</small></p>
-              </div>
-              <div class="text-end">
-                <small class="text-success">Click to link</small>
-                <i class="fas fa-plus-circle text-success"></i>
-              </div>
+  try {
+    const response = await fetch(
+      `/api/available-documents?search=${encodeURIComponent(searchTerm)}`
+    );
+    const documents = await response.json();
+
+    if (documents.length === 0) {
+      resultsDiv.innerHTML =
+        '<div class="alert alert-info">No documents found matching your search</div>';
+      return;
+    }
+
+    let html = '<div class="list-group">';
+    documents.slice(0, 15).forEach((doc) => {
+      const archivedBadge = doc.isArchived
+        ? '<span class="ims-archived-badge">ARCHIVED</span>'
+        : "";
+
+      html += `
+        <div class="list-group-item list-group-item-action mandatory-link-result ${
+          doc.isArchived ? "archived" : ""
+        }" 
+             data-doc-id="${doc.id}" 
+             data-doc-name="${doc.name}" 
+             data-is-archived="${doc.isArchived}" 
+             style="cursor: pointer;">
+          <div class="d-flex w-100 justify-content-between">
+            <div>
+              <h6 class="mb-1">
+                <i class="fas fa-file-alt me-2"></i>${doc.name}${archivedBadge}
+              </h6>
+              <p class="mb-1"><small class="text-muted">📁 ${
+                doc.folder || "Root folder"
+              }</small></p>
+            </div>
+            <div class="text-end">
+              <small class="text-success">Click to link</small>
+              <i class="fas fa-plus-circle text-success"></i>
             </div>
           </div>
-        `;
-      });
-      
-      if (documents.length > 20) {
-        resultsHtml += `
-          <div class="list-group-item">
-            <div class="text-center text-muted">
-              <small>... and ${documents.length - 20} more results. Try a more specific search term.</small>
-            </div>
-          </div>
-        `;
-      }
-      
-      resultsHtml += '</div>';
-      resultsDiv.innerHTML = resultsHtml;
-      
-      // Add click handlers for manual search results
-      document.querySelectorAll('.manual-link-result').forEach(result => {
-        result.addEventListener('click', function() {
-          const docId = this.getAttribute('data-doc-id');
-          const docName = this.getAttribute('data-doc-name');
-          const isArchived = this.getAttribute('data-is-archived') === 'true';
-          
-          document.querySelectorAll('.manual-link-result').forEach(r => {
-            r.classList.remove('active');
-          });
-          this.classList.add('active');
-          
-          let confirmMessage = `Link "${docName}" to mandatory record "${recordType}"?`;
-          if (isArchived) {
-            confirmMessage += '\n\n⚠️ WARNING: This document is in an archived folder and may be outdated.';
-          }
-          
-          if (confirm(confirmMessage)) {
-            linkMandatoryDocument(recordType, docId, docName);
-          }
-        });
-      });
-    })
-    .catch(error => {
-      console.error('Manual search error:', error);
-      resultsDiv.innerHTML = `
-        <div class="alert alert-danger">
-          <i class="fas fa-exclamation-triangle"></i> Error searching documents
         </div>
       `;
     });
+
+    if (documents.length > 15) {
+      html += `
+        <div class="list-group-item">
+          <div class="text-center text-muted">
+            <small>... and ${
+              documents.length - 15
+            } more results. Try a more specific search.</small>
+          </div>
+        </div>
+      `;
+    }
+
+    html += "</div>";
+    resultsDiv.innerHTML = html;
+
+    // Add click handlers
+    document.querySelectorAll(".mandatory-link-result").forEach((result) => {
+      result.addEventListener("click", function () {
+        const docId = this.getAttribute("data-doc-id");
+        const docName = this.getAttribute("data-doc-name");
+        const isArchived = this.getAttribute("data-is-archived") === "true";
+
+        document
+          .querySelectorAll(".mandatory-link-result")
+          .forEach((r) => r.classList.remove("active"));
+        this.classList.add("active");
+
+        let confirmMessage = `Link "${docName}" to mandatory record "${recordType}"?`;
+        if (isArchived) {
+          confirmMessage +=
+            "\n\n⚠️ WARNING: This document is archived and may be outdated.";
+        }
+
+        if (confirm(confirmMessage)) {
+          linkMandatoryDocument(recordType, docId, docName);
+        }
+      });
+    });
+  } catch (error) {
+    console.error("Search error:", error);
+    resultsDiv.innerHTML =
+      '<div class="alert alert-danger">Error searching documents</div>';
+  }
 }
 
 function linkMandatoryDocument(recordType, documentId, documentName) {
-  fetch('/api/link-mandatory-record', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  fetch("/api/link-mandatory-record", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       recordType: recordType,
       documentId: documentId,
-      actualDocumentName: documentName
-    })
+      actualDocumentName: documentName,
+    }),
   })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      alert(`Successfully linked "${documentName}" to "${recordType}"!`);
-      
-      const modal = bootstrap.Modal.getInstance(document.getElementById('linkMandatoryModal'));
-      if (modal) {
-        modal.hide();
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert(`Successfully linked "${documentName}" to "${recordType}"!`);
+
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById("linkMandatoryModal")
+        );
+        if (modal) {
+          modal.hide();
+        }
+
+        setTimeout(() => {
+          loadMandatoryRecords();
+        }, 1000);
+      } else {
+        alert("Error linking document: " + (data.message || "Unknown error"));
       }
-      
-      // Refresh mandatory records display
-      setTimeout(() => {
-        loadMandatoryRecords();
-      }, 1000);
-    } else {
-      alert('Error linking document: ' + (data.message || 'Unknown error'));
+    })
+    .catch((error) => {
+      console.error("Linking error:", error);
+      alert("Error linking document: " + error.message);
+    });
+}
+
+function unlinkMandatoryDocument(recordType, documentId) {
+  if (!confirm("Are you sure you want to unlink this document?")) {
+    return;
+  }
+
+  fetch(
+    `/api/mandatory-record/${encodeURIComponent(recordType)}/${documentId}`,
+    {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
     }
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert("Document unlinked successfully!");
+        loadMandatoryRecords();
+      } else {
+        alert("Error unlinking document: " + (data.message || "Unknown error"));
+      }
+    })
+    .catch((error) => {
+      console.error("Error unlinking document:", error);
+      alert("Error unlinking document: " + error.message);
+    });
+}
+
+function autoDetectMandatoryRecords() {
+  const button = document.getElementById("autoDetectMandatoryBtn");
+  const originalText = button.innerHTML;
+
+  button.disabled = true;
+  button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+
+  fetch("/api/auto-detect-mandatory-records", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
   })
-  .catch(error => {
-    console.error('Linking error:', error);
-    alert('Error linking document: ' + error.message);
-  });
-}
-
-
-
-function performCategoryDocumentSearch(searchTerm, categoryName, documentName) {
-  console.log('Searching for category document:', searchTerm);
-  
-  const resultsDiv = document.getElementById('linkCategoryDocumentResults');
-  resultsDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
-  
-  const searchUrl = '/api/available-documents?search=' + encodeURIComponent(searchTerm) + 
-                   '&includeArchived=' + showArchivedDocuments;
-  
-  fetch(searchUrl)
-    .then(response => response.json())
-    .then(documents => {
-      console.log('Found', documents.length, 'documents');
-      
-      if (documents.length === 0) {
-        resultsDiv.innerHTML = 
-          '<div class="alert alert-info">' +
-            '<i class="fas fa-info-circle"></i> No documents found matching "' + searchTerm + '"' +
-            (!showArchivedDocuments ? '<br><small>Try enabling "Include Archived" to see archived documents</small>' : '') +
-          '</div>';
-        return;
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert(
+          `Auto-detection completed! Found ${data.detectedCount} potential matches.`
+        );
+        loadMandatoryRecords();
+      } else {
+        alert("Error during auto-detection: " + data.message);
       }
-      
-      let resultsHtml = '<div class="list-group">';
-      
-      documents.slice(0, 10).forEach(function(doc) {
-        const archivedClass = doc.isArchived ? ' archived' : '';
-        const archivedBadge = doc.isArchived ? '<span class="ims-archived-badge">ARCHIVED</span>' : '';
-        
-        resultsHtml += 
-          '<div class="list-group-item list-group-item-action document-link-result' + archivedClass + '" ' +
-               'data-doc-id="' + doc.id + '" ' +
-               'data-doc-name="' + doc.name + '" ' +
-               'data-is-archived="' + doc.isArchived + '" ' +
-               'style="cursor: pointer;">' +
-            '<div class="d-flex w-100 justify-content-between">' +
-              '<h6 class="mb-1">' +
-                '<i class="fas fa-file-alt me-2"></i>' + doc.name + archivedBadge +
-              '</h6>' +
-              '<small class="text-success">Click to link</small>' +
-            '</div>' +
-            '<p class="mb-1"><small class="text-muted">' + (doc.folder || 'Root folder') + '</small></p>' +
-          '</div>';
-      });
-      
-      resultsHtml += '</div>';
-      resultsDiv.innerHTML = resultsHtml;
-      
-      document.querySelectorAll('.document-link-result').forEach(function(result) {
-        result.addEventListener('click', function() {
-          const docId = this.getAttribute('data-doc-id');
-          const docName = this.getAttribute('data-doc-name');
-          const isArchived = this.getAttribute('data-is-archived') === 'true';
-          
-          document.querySelectorAll('.document-link-result').forEach(function(r) {
-            r.classList.remove('active');
-          });
-          this.classList.add('active');
-          
-          let confirmMessage = 'Link "' + docName + '" to "' + documentName + '"?';
-          if (isArchived) {
-            confirmMessage += '\n\n⚠️ WARNING: This document is in an archived folder and may be outdated.';
-          }
-          
-          if (confirm(confirmMessage)) {
-            linkDocumentToCategory(categoryName, documentName, docId, docName);
-          }
-        });
-      });
     })
-    .catch(error => {
-      console.error('Search error:', error);
-      resultsDiv.innerHTML = 
-        '<div class="alert alert-danger">' +
-          '<i class="fas fa-exclamation-triangle"></i> Error searching documents' +
-        '</div>';
+    .catch((error) => {
+      console.error("Error auto-detecting:", error);
+      alert("Error during auto-detection");
+    })
+    .finally(() => {
+      button.disabled = false;
+      button.innerHTML = originalText;
     });
 }
+// Add this debugging code to your ims-index.js to test the modal functions
 
-function performMandatoryDocumentSearch(searchTerm, recordType) {
-  console.log('Manual search for:', searchTerm, 'in record type:', recordType);
-  
-  const resultsDiv = document.getElementById('linkMandatoryResults');
-  resultsDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
-  
-  const searchUrl = `/api/available-documents?search=${encodeURIComponent(searchTerm)}&includeArchived=${showArchivedDocuments}`;
-  
-  fetch(searchUrl)
-    .then(response => response.json())
-    .then(documents => {
-      console.log('Manual search found', documents.length, 'documents');
-      
-      if (documents.length === 0) {
-        resultsDiv.innerHTML = `
-          <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> No documents found matching "${searchTerm}"
-            ${!showArchivedDocuments ? '<br><small>Try enabling "Include Archived" to see archived documents</small>' : ''}
+// Test function to check if Bootstrap modals work
+function testBootstrapModal() {
+  console.log("Testing Bootstrap modal...");
+
+  // Create a simple test modal
+  const testModalHtml = `
+    <div class="modal fade" id="testModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Test Modal</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
-        `;
-        return;
-      }
-      
-      let resultsHtml = '<div class="list-group">';
-      
-      // Show more results for manual search (up to 20)
-      documents.slice(0, 20).forEach(doc => {
-        const archivedClass = doc.isArchived ? ' archived' : '';
-        const archivedBadge = doc.isArchived ? '<span class="ims-archived-badge">ARCHIVED</span>' : '';
-        
-        resultsHtml += `
-          <div class="list-group-item list-group-item-action manual-link-result${archivedClass}" 
-               data-doc-id="${doc.id}" 
-               data-doc-name="${doc.name}" 
-               data-is-archived="${doc.isArchived}" 
-               style="cursor: pointer;">
-            <div class="d-flex w-100 justify-content-between">
-              <div>
-                <h6 class="mb-1">
-                  <i class="fas fa-file-alt me-2"></i>${doc.name}${archivedBadge}
-                </h6>
-                <p class="mb-1"><small class="text-muted">📁 ${doc.folder || 'Root folder'}</small></p>
-              </div>
-              <div class="text-end">
-                <small class="text-success">Click to link</small>
-                <i class="fas fa-plus-circle text-success"></i>
-              </div>
-            </div>
+          <div class="modal-body">
+            <p>This is a test modal. If you can see this, Bootstrap modals are working!</p>
           </div>
-        `;
-      });
-      
-      if (documents.length > 20) {
-        resultsHtml += `
-          <div class="list-group-item">
-            <div class="text-center text-muted">
-              <small>... and ${documents.length - 20} more results. Try a more specific search term.</small>
-            </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
-        `;
-      }
-      
-      resultsHtml += '</div>';
-      resultsDiv.innerHTML = resultsHtml;
-      
-      // Add click handlers for manual search results
-      document.querySelectorAll('.manual-link-result').forEach(result => {
-        result.addEventListener('click', function() {
-          const docId = this.getAttribute('data-doc-id');
-          const docName = this.getAttribute('data-doc-name');
-          const isArchived = this.getAttribute('data-is-archived') === 'true';
-          
-          document.querySelectorAll('.manual-link-result').forEach(r => {
-            r.classList.remove('active');
-          });
-          this.classList.add('active');
-          
-          let confirmMessage = `Link "${docName}" to mandatory record "${recordType}"?`;
-          if (isArchived) {
-            confirmMessage += '\n\n⚠️ WARNING: This document is in an archived folder and may be outdated.';
-          }
-          
-          if (confirm(confirmMessage)) {
-            linkMandatoryDocument(recordType, docId, docName);
-          }
-        });
-      });
-    })
-    .catch(error => {
-      console.error('Manual search error:', error);
-      resultsDiv.innerHTML = `
-        <div class="alert alert-danger">
-          <i class="fas fa-exclamation-triangle"></i> Error searching documents
         </div>
-      `;
-    });
+      </div>
+    </div>
+  `;
+
+  // Remove existing test modal
+  const existingModal = document.getElementById("testModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Add test modal to page
+  document.body.insertAdjacentHTML("beforeend", testModalHtml);
+
+  // Try to show it
+  try {
+    const modal = new bootstrap.Modal(document.getElementById("testModal"));
+    modal.show();
+    console.log("✅ Bootstrap modal created and shown successfully");
+  } catch (error) {
+    console.error("❌ Bootstrap modal error:", error);
+  }
 }
+
+// Test function for checking available functions
+function checkAvailableFunctions() {
+  console.log("=== FUNCTION CHECK ===");
+  console.log(
+    "openCategoryEditor exists:",
+    typeof openCategoryEditor !== "undefined"
+  );
+  console.log(
+    "openDocumentLinker exists:",
+    typeof openDocumentLinker !== "undefined"
+  );
+  console.log(
+    "openRevisionModal exists:",
+    typeof openRevisionModal !== "undefined"
+  );
+  console.log(
+    "openAIGenerationModal exists:",
+    typeof openAIGenerationModal !== "undefined"
+  );
+  console.log("bootstrap exists:", typeof bootstrap !== "undefined");
+  console.log(
+    "Bootstrap Modal exists:",
+    typeof bootstrap?.Modal !== "undefined"
+  );
+}
+
+// Enhanced event listener with better debugging
+function setupEnhancedEventListeners() {
+  console.log("=== SETTING UP ENHANCED EVENT LISTENERS ===");
+
+  document.addEventListener("click", function (e) {
+    console.log("Click detected on:", e.target);
+
+    // Test for AI Generate buttons first
+    if (e.target.closest(".ai-generate-btn")) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("🤖 AI Generate button clicked!");
+
+      const btn = e.target.closest(".ai-generate-btn");
+      const categoryName = btn.getAttribute("data-category");
+      const documentName = btn.getAttribute("data-document");
+
+      console.log("AI Generate data:", { categoryName, documentName });
+
+      if (typeof openAIGenerationModal === "function") {
+        console.log("Calling openAIGenerationModal...");
+        openAIGenerationModal(categoryName, documentName);
+      } else {
+        console.error("❌ openAIGenerationModal function not found!");
+        alert(
+          "AI Generation function not available. Check console for details."
+        );
+      }
+      return;
+    }
+
+    // Manage category buttons
+    if (e.target.closest(".manage-category-btn")) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("⚙️ Manage category button clicked!");
+
+      const btn = e.target.closest(".manage-category-btn");
+      const categoryName = btn.getAttribute("data-category");
+      console.log("Category data:", { categoryName });
+
+      if (typeof openCategoryEditor === "function") {
+        console.log("Calling openCategoryEditor...");
+        try {
+          openCategoryEditor(categoryName);
+          console.log("✅ openCategoryEditor called successfully");
+        } catch (error) {
+          console.error("❌ Error in openCategoryEditor:", error);
+          alert("Error opening category editor: " + error.message);
+        }
+      } else {
+        console.error("❌ openCategoryEditor function not found!");
+        alert(
+          "Category editor function not available. Check console for details."
+        );
+      }
+      return;
+    }
+
+    // Manage document buttons
+    if (e.target.closest(".manage-document-btn")) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("📄 Manage document button clicked!");
+
+      const btn = e.target.closest(".manage-document-btn");
+      const categoryName = btn.getAttribute("data-category");
+      const documentName = btn.getAttribute("data-document");
+      console.log("Document data:", { categoryName, documentName });
+
+      if (typeof openDocumentLinker === "function") {
+        console.log("Calling openDocumentLinker...");
+        try {
+          openDocumentLinker(categoryName, documentName);
+          console.log("✅ openDocumentLinker called successfully");
+        } catch (error) {
+          console.error("❌ Error in openDocumentLinker:", error);
+          alert("Error opening document linker: " + error.message);
+        }
+      } else {
+        console.error("❌ openDocumentLinker function not found!");
+        alert(
+          "Document linker function not available. Check console for details."
+        );
+      }
+      return;
+    }
+
+    // Revision buttons
+    if (
+      e.target.closest(".revision-btn") ||
+      e.target.closest(".category-revision-btn")
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("📝 Revision button clicked!");
+
+      const btn =
+        e.target.closest(".revision-btn") ||
+        e.target.closest(".category-revision-btn");
+      const documentId = btn.getAttribute("data-document-id");
+      const documentName = btn.getAttribute("data-document-name");
+      console.log("Revision data:", { documentId, documentName });
+
+      if (typeof openRevisionModal === "function") {
+        console.log("Calling openRevisionModal...");
+        try {
+          openRevisionModal(documentId, documentName);
+          console.log("✅ openRevisionModal called successfully");
+        } catch (error) {
+          console.error("❌ Error in openRevisionModal:", error);
+          alert("Error opening revision modal: " + error.message);
+        }
+      } else {
+        console.error("❌ openRevisionModal function not found!");
+        alert(
+          "Revision modal function not available. Check console for details."
+        );
+      }
+      return;
+    }
+
+    // Category link buttons
+    if (e.target.closest(".category-link-btn")) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("🔗 Category link button clicked!");
+
+      const btn = e.target.closest(".category-link-btn");
+      const categoryName = btn.getAttribute("data-category");
+      const documentName = btn.getAttribute("data-document-name");
+      console.log("Category link data:", { categoryName, documentName });
+
+      if (typeof openCategoryDocumentLinker === "function") {
+        console.log("Calling openCategoryDocumentLinker...");
+        try {
+          openCategoryDocumentLinker(categoryName, documentName);
+          console.log("✅ openCategoryDocumentLinker called successfully");
+        } catch (error) {
+          console.error("❌ Error in openCategoryDocumentLinker:", error);
+          alert("Error opening category document linker: " + error.message);
+        }
+      } else {
+        console.error("❌ openCategoryDocumentLinker function not found!");
+        alert(
+          "Category document linker function not available. Check console for details."
+        );
+      }
+      return;
+    }
+  });
+
+  console.log("✅ Enhanced event listeners set up");
+}
+
+// Add to your DOMContentLoaded event:
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("=== DEBUGGING IMS INDEX ===");
+
+  // Run diagnostics
+  checkAvailableFunctions();
+
+  // Set up enhanced event listeners
+  setupEnhancedEventListeners();
+
+  // Test Bootstrap after a short delay
+  setTimeout(() => {
+    console.log("Testing Bootstrap modals...");
+    // Uncomment this line to test if Bootstrap modals work at all:
+    // testBootstrapModal();
+  }, 2000);
+
+  // ... rest of your existing DOMContentLoaded code
+});
+
+// Call this function from browser console to test Bootstrap
+window.testModal = testBootstrapModal;
+window.checkFunctions = checkAvailableFunctions;
+
+// Add this to the VERY END of your ims-index.js file
+// This makes all your modal functions globally accessible
+
+// Make functions available globally for event handlers
+window.openCategoryEditor = openCategoryEditor;
+window.openDocumentLinker = openDocumentLinker;
+window.openRevisionModal = openRevisionModal;
+window.openCategoryDocumentLinker = openCategoryDocumentLinker;
+window.openAIGenerationModal = openAIGenerationModal;
+window.generateAIDocumentNew = generateAIDocumentNew;
+window.showAIError = showAIError;
+
+// Emergency event delegation setup
+console.log("Setting up emergency event delegation...");
+
+document.addEventListener("click", function (e) {
+  console.log("Click detected on:", e.target.className);
+
+  // AI Generate buttons
+  if (e.target.closest(".ai-generate-btn")) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("🤖 AI Generate button clicked!");
+
+    const btn = e.target.closest(".ai-generate-btn");
+    const categoryName = btn.getAttribute("data-category");
+    const documentName = btn.getAttribute("data-document");
+
+    console.log("AI Data:", { categoryName, documentName });
+
+    if (typeof window.openAIGenerationModal === "function") {
+      window.openAIGenerationModal(categoryName, documentName);
+    } else {
+      alert("AI Generation function not found!");
+    }
+    return;
+  }
+
+  // Manage category buttons
+  if (e.target.closest(".manage-category-btn")) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("⚙️ Manage category button clicked!");
+
+    const btn = e.target.closest(".manage-category-btn");
+    const categoryName = btn.getAttribute("data-category");
+
+    console.log("Category Data:", { categoryName });
+
+    if (typeof window.openCategoryEditor === "function") {
+      window.openCategoryEditor(categoryName);
+    } else {
+      alert("Category editor function not found!");
+    }
+    return;
+  }
+
+  // Manage document buttons
+  if (e.target.closest(".manage-document-btn")) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("📄 Manage document button clicked!");
+
+    const btn = e.target.closest(".manage-document-btn");
+    const categoryName = btn.getAttribute("data-category");
+    const documentName = btn.getAttribute("data-document");
+
+    console.log("Document Data:", { categoryName, documentName });
+
+    if (typeof window.openDocumentLinker === "function") {
+      window.openDocumentLinker(categoryName, documentName);
+    } else {
+      alert("Document linker function not found!");
+    }
+    return;
+  }
+
+  // Revision buttons
+  if (
+    e.target.closest(".revision-btn") ||
+    e.target.closest(".category-revision-btn")
+  ) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("📝 Revision button clicked!");
+
+    const btn =
+      e.target.closest(".revision-btn") ||
+      e.target.closest(".category-revision-btn");
+    const documentId = btn.getAttribute("data-document-id");
+    const documentName = btn.getAttribute("data-document-name");
+
+    console.log("Revision Data:", { documentId, documentName });
+
+    if (typeof window.openRevisionModal === "function") {
+      window.openRevisionModal(documentId, documentName);
+    } else {
+      alert("Revision modal function not found!");
+    }
+    return;
+  }
+
+  // Category link buttons
+  if (e.target.closest(".category-link-btn")) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("🔗 Category link button clicked!");
+
+    const btn = e.target.closest(".category-link-btn");
+    const categoryName = btn.getAttribute("data-category");
+    const documentName = btn.getAttribute("data-document-name");
+
+    console.log("Category Link Data:", { categoryName, documentName });
+
+    if (typeof window.openCategoryDocumentLinker === "function") {
+      window.openCategoryDocumentLinker(categoryName, documentName);
+    } else {
+      alert("Category document linker function not found!");
+    }
+    return;
+  }
+});
+
+console.log("✅ Emergency event delegation setup complete");
+
+// Test if functions are now accessible
+console.log("Function check after making global:");
+console.log("openCategoryEditor:", typeof window.openCategoryEditor);
+console.log("openAIGenerationModal:", typeof window.openAIGenerationModal);
