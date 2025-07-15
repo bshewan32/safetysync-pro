@@ -1,0 +1,99 @@
+<!-- views/folder.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | IMS Document Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+  
+  <div class="container my-4">
+    <div class="row">
+      <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/folders">Folders</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><%= folderPath || 'Root' %></li>
+          </ol>
+        </nav>
+        
+        <h1>
+          <i class="fas fa-folder-open text-warning"></i> 
+          <%= folderPath ? folderPath : 'Root Folder' %>
+          <span class="badge bg-primary"><%= documents.length %> documents</span>
+        </h1>
+        
+        <div class="card shadow-sm mt-4">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Modified</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% documents.forEach(doc => { %>
+                    <tr>
+                      <td>
+                        <a href="/document/<%= doc.id %>" class="text-decoration-none">
+                          <% if (doc.extension === '.pdf') { %>
+                            <i class="far fa-file-pdf text-danger me-2"></i>
+                          <% } else if (['.doc', '.docx'].includes(doc.extension)) { %>
+                            <i class="far fa-file-word text-primary me-2"></i>
+                          <% } else if (['.xls', '.xlsx'].includes(doc.extension)) { %>
+                            <i class="far fa-file-excel text-success me-2"></i>
+                          <% } else if (['.ppt', '.pptx'].includes(doc.extension)) { %>
+                            <i class="far fa-file-powerpoint text-warning me-2"></i>
+                          <% } else { %>
+                            <i class="far fa-file text-secondary me-2"></i>
+                          <% } %>
+                          <%= doc.name %>
+                        </a>
+                      </td>
+                      <td><%= doc.extension.substring(1).toUpperCase() %></td>
+                      <td><%= doc.size %></td>
+                      <td><%= moment(doc.modified).format('YYYY-MM-DD HH:mm') %></td>
+                      <td>
+                        <div class="btn-group btn-group-sm">
+                          <a href="/document/<%= doc.id %>" class="btn btn-outline-primary">
+                            <i class="fas fa-info-circle"></i>
+                          </a>
+                          <a href="/open/<%= doc.id %>" class="btn btn-outline-success">
+                            <i class="fas fa-external-link-alt"></i>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+            
+            <% if (documents.length === 0) { %>
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No documents found in this folder.
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <%- include('partials/footer') %>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

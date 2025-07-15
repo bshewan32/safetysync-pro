@@ -1,0 +1,74 @@
+<!-- views/search.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | IMS Document Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+  
+  <div class="container my-4">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <form action="/search" method="GET" class="d-flex">
+              <input type="text" name="q" class="form-control" value="<%= query %>" placeholder="Search documents..." required>
+              <button type="submit" class="btn btn-primary ms-2"><i class="fas fa-search"></i> Search</button>
+            </form>
+          </div>
+        </div>
+        
+        <h3>
+          <i class="fas fa-search"></i> Search Results
+          <span class="badge bg-secondary"><%= resultsCount %> found</span>
+        </h3>
+        
+        <% if (results.length === 0 && query) { %>
+          <div class="alert alert-info mt-3">
+            <i class="fas fa-info-circle"></i> No documents found matching "<%= query %>".
+          </div>
+        <% } %>
+        
+        <% if (results.length > 0) { %>
+          <div class="list-group mt-3">
+            <% results.forEach(doc => { %>
+              <a href="/document/<%= doc.id %>" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1">
+                    <% if (doc.extension === '.pdf') { %>
+                      <i class="far fa-file-pdf text-danger me-2"></i>
+                    <% } else if (['.doc', '.docx'].includes(doc.extension)) { %>
+                      <i class="far fa-file-word text-primary me-2"></i>
+                    <% } else if (['.xls', '.xlsx'].includes(doc.extension)) { %>
+                      <i class="far fa-file-excel text-success me-2"></i>
+                    <% } else if (['.ppt', '.pptx'].includes(doc.extension)) { %>
+                      <i class="far fa-file-powerpoint text-warning me-2"></i>
+                    <% } else { %>
+                      <i class="far fa-file text-secondary me-2"></i>
+                    <% } %>
+                    <%= doc.name %>
+                  </h5>
+                  <small><%= moment(doc.modified).format('YYYY-MM-DD HH:mm') %></small>
+                </div>
+                <p class="mb-1"><%= doc.folder || 'Root' %></p>
+                <small><%= doc.size %> | <%= doc.extension.substring(1).toUpperCase() %></small>
+              </a>
+            <% }); %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  
+  <%- include('partials/footer') %>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

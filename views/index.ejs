@@ -1,0 +1,115 @@
+<!-- views/index.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+  
+  <div class="container my-4">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="jumbotron bg-light p-5 rounded shadow-sm">
+          <h1 class="display-4">IMS Document Management System</h1>
+          <p class="lead">Search, browse, and manage your Integrated Management System documents efficiently.</p>
+          <hr class="my-4">
+          <p>Current system status: <span class="badge bg-success">Active</span></p>
+          <p>Documents indexed: <span class="badge bg-primary"><%= docsCount %></span></p>
+          <p>Last index update: <span class="badge bg-info"><%= lastUpdated %></span></p>
+          
+          <div class="mt-4">
+            <form action="/search" method="GET" class="d-flex">
+              <input type="text" name="q" class="form-control form-control-lg" placeholder="Search documents..." required>
+              <button type="submit" class="btn btn-primary ms-2"><i class="fas fa-search"></i> Search</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Replace the card section in your views/index.ejs file with this updated version -->
+
+    <div class="row mt-5">
+      <div class="col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-folder-open fa-3x text-primary mb-3"></i>
+            <h3>Browse Documents</h3>
+            <p>View all documents in the system</p>
+            <a href="/documents" class="btn btn-outline-primary">Browse All</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-sitemap fa-3x text-success mb-3"></i>
+            <h3>IMS Index</h3>
+            <p>Visual hierarchy of IMS documents</p>
+            <a href="/ims-index" class="btn btn-outline-success">View Index</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-layer-group fa-3x text-info mb-3"></i>
+            <h3>Folder Structure</h3>
+            <p>Browse documents by folder</p>
+            <a href="/folders" class="btn btn-outline-info">View Folders</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-sync-alt fa-3x text-warning mb-3"></i>
+            <h3>Rebuild Index</h3>
+            <p>Update the document index</p>
+            <a href="/rebuild-index" class="btn btn-outline-warning">Rebuild</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+  <!-- Upload Modal -->
+  <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Upload Document</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action="/upload" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="document" class="form-label">Select Document</label>
+              <input type="file" class="form-control" id="document" name="document" required>
+            </div>
+            <div class="mb-3">
+              <label for="folder" class="form-label">Destination Folder (relative to document root)</label>
+              <input type="text" class="form-control" id="folder" name="folder" placeholder="Leave blank for root folder">
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <%- include('partials/footer') %>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>
+

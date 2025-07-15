@@ -1,0 +1,218 @@
+<!-- views/documents.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | IMS Document Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-layer-group me-2"></i>
+          IMS Document Manager
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="fas fa-home"></i> Home
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/documents">
+                <i class="fas fa-file-alt"></i> Documents
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/folders">
+                <i class="fas fa-folder-open"></i> Folders
+              </a>
+            </li>
+          </ul>
+          <form class="d-flex" action="/search" method="GET">
+            <input class="form-control me-2" type="search" name="q" placeholder="Search..." aria-label="Search">
+            <button class="btn btn-outline-light" type="submit">
+              <i class="fas fa-search"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </nav>
+  </header>
+  
+  <div class="container my-4">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h1><i class="fas fa-file-alt"></i> <%= title %></h1>
+          <div>
+            <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="fas fa-sort"></i> Sort
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#" data-sort="name">Name</a></li>
+              <li><a class="dropdown-item" href="#" data-sort="modified">Last Modified</a></li>
+              <li><a class="dropdown-item" href="#" data-sort="size">Size</a></li>
+              <li><a class="dropdown-item" href="#" data-sort="type">Type</a></li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover" id="documents-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Folder</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Modified</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (results.documents.length === 0) { %>
+                    <tr>
+                      <td colspan="6" class="text-center">No documents found</td>
+                    </tr>
+                  <% } else { %>
+                    <% results.documents.forEach(function(doc) { %>
+                      <tr>
+                        <td>
+                          <a href="/document/<%= doc.id %>" class="text-decoration-none">
+                            <% if (doc.extension === '.pdf') { %>
+                              <i class="far fa-file-pdf text-danger me-2"></i>
+                            <% } else if (['.doc', '.docx'].includes(doc.extension)) { %>
+                              <i class="far fa-file-word text-primary me-2"></i>
+                            <% } else if (['.xls', '.xlsx'].includes(doc.extension)) { %>
+                              <i class="far fa-file-excel text-success me-2"></i>
+                            <% } else if (['.ppt', '.pptx'].includes(doc.extension)) { %>
+                              <i class="far fa-file-powerpoint text-warning me-2"></i>
+                            <% } else { %>
+                              <i class="far fa-file text-secondary me-2"></i>
+                            <% } %>
+                            <%= doc.name %>
+                          </a>
+                        </td>
+                        <td><%= doc.folder || 'Root' %></td>
+                        <td><%= doc.extension.substring(1).toUpperCase() %></td>
+                        <td><%= doc.size %></td>
+                        <td><%= moment(doc.modified).format('YYYY-MM-DD HH:mm') %></td>
+                        <td>
+                          <div class="btn-group btn-group-sm">
+                            <a href="/document/<%= doc.id %>" class="btn btn-outline-primary">
+                              <i class="fas fa-info-circle"></i>
+                            </a>
+                            <a href="/open/<%= doc.id %>" class="btn btn-outline-success">
+                              <i class="fas fa-external-link-alt"></i>
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Pagination -->
+            <% if (results.totalPages > 1) { %>
+              <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                  <li class="page-item <%= results.currentPage === 1 ? 'disabled' : '' %>">
+                    <a class="page-link" href="/documents?page=<%= results.currentPage - 1 %>">Previous</a>
+                  </li>
+                  
+                  <% for (let i = 1; i <= results.totalPages; i++) { %>
+                    <li class="page-item <%= results.currentPage === i ? 'active' : '' %>">
+                      <a class="page-link" href="/documents?page=<%= i %>"><%= i %></a>
+                    </li>
+                  <% } %>
+                  
+                  <li class="page-item <%= results.currentPage === results.totalPages ? 'disabled' : '' %>">
+                    <a class="page-link" href="/documents?page=<%= results.currentPage + 1 %>">Next</a>
+                  </li>
+                </ul>
+              </nav>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="footer mt-auto py-3 bg-light">
+    <div class="container text-center">
+      <span class="text-muted">IMS Document Management System &copy; <%= new Date().getFullYear() %></span>
+    </div>
+  </footer>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Document sorting functionality
+    const sortLinks = document.querySelectorAll('[data-sort]');
+    const table = document.getElementById('documents-table');
+    
+    if (table && sortLinks.length > 0) {
+      sortLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const sortBy = this.getAttribute('data-sort');
+          sortTable(table, sortBy);
+        });
+      });
+    }
+    
+    function sortTable(table, sortBy) {
+      const tbody = table.querySelector('tbody');
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      
+      // Determine column index based on sort criterion
+      let columnIndex;
+      switch(sortBy) {
+        case 'name':
+          columnIndex = 0;
+          break;
+        case 'folder':
+          columnIndex = 1;
+          break;
+        case 'type':
+          columnIndex = 2;
+          break;
+        case 'size':
+          columnIndex = 3;
+          break;
+        case 'modified':
+          columnIndex = 4;
+          break;
+        default:
+          columnIndex = 0;
+      }
+      
+      // Sort rows
+      rows.sort((a, b) => {
+        const aValue = a.cells[columnIndex].textContent.trim();
+        const bValue = b.cells[columnIndex].textContent.trim();
+        
+        return aValue.localeCompare(bValue);
+      });
+      
+      // Reappend rows in sorted order
+      rows.forEach(row => tbody.appendChild(row));
+    }
+  });
+  </script>
+</body>
+</html>

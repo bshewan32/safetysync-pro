@@ -1,0 +1,40 @@
+<!-- views/error.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | IMS Document Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container my-5">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <div class="card shadow-sm">
+          <div class="card-body py-5">
+            <i class="fas fa-exclamation-triangle text-warning display-1 mb-4"></i>
+            <h1 class="mb-4"><%= title %></h1>
+            <p class="lead"><%= message %></p>
+            <div class="mt-4">
+              <a href="/" class="btn btn-primary">
+                <i class="fas fa-home"></i> Return to Home
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="footer mt-auto py-3 bg-light">
+    <div class="container text-center">
+      <span class="text-muted">IMS Document Management System &copy; <%= new Date().getFullYear() %></span>
+    </div>
+  </footer>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Project specific
+data/
+temp/
+uploads/
+logs/
+*.log
+
+# AI API Keys (security)
+ai-config.json
+.env.local
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+*.swp
+*~
+
+# Generated documents
+AI Generated/
+reports/
+exports/

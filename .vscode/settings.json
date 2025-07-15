@@ -1,0 +1,15 @@
+{
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.bracketPairColorization.enabled": true,
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "emmet.includeLanguages": {
+    "ejs": "html"
+  },
+  "files.associations": {
+    "*.ejs": "html"
+  },
+  "terminal.integrated.defaultProfile.windows": "Command Prompt"
+}

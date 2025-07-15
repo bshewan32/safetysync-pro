@@ -1,0 +1,235 @@
+{
+  "OHS Policy": {
+    "type": "policy",
+    "level": 1,
+    "documentId": "46",
+    "children": []
+  },
+  "Core Policies": {
+    "type": "category",
+    "level": 2,
+    "documentId": "44",
+    "children": [
+      "Environmental Policy",
+      "Vision, Mission and Values Policy",
+      "Company Vehicle Policy",
+      "Drug and Alcohol Policy",
+      "Plant & Equipment Policy",
+      "Fatigue Management Policy",
+      "Rehabilitation and Return to Work Policy",
+      "Fitness for Duty Policy",
+      "Discrimination, Harassment and Bullying Policy"
+    ],
+    "enrichedChildren": [
+      {
+        "name": "Drug and Alcohol Policy",
+        "document": {
+          "id": "43",
+          "name": "GMK - Drug & Alcohol Policy.pdf",
+          "path": "I:\\IMS\\Intergrated Management System\\Section 01B IMS Policies\\GMK - Drug & Alcohol Policy.pdf"
+        },
+        "found": true
+      },
+      {
+        "name": "Discrimination, Harassment and Bullying Policy",
+        "document": {
+          "id": "42",
+          "name": "GMK - Discrimination, Harassment & Bullying Policy.pdf",
+          "path": "I:\\IMS\\Intergrated Management System\\Section 01B IMS Policies\\GMK - Discrimination, Harassment & Bullying Policy.pdf",
+          "isArchived": false
+        },
+        "found": true
+      }
+    ]
+  },
+  "Incident and Injury Management": {
+    "type": "category",
+    "level": 2,
+    "documentId": "107",
+    "children": [
+      "SP24 HS&E Response",
+      "SP25 HS&E Incident Reporting",
+      "P28 Health surveillance",
+      "SP10 Hazardous Manual Handling",
+      "SP23 Managing PPE",
+      "SP41 Drug and Alcohol Impairment Testing",
+      "FORM Investigation"
+    ],
+    "enrichedChildren": [
+      {
+        "name": "SP24 HS&E Response",
+        "document": {
+          "id": "104",
+          "name": "SP24 Emergency Response.doc",
+          "path": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP24 Emergency Response.doc"
+        },
+        "found": true
+      }
+    ]
+  },
+  "Consultation and Communication": {
+    "type": "category",
+    "level": 2,
+    "documentId": null,
+    "children": [
+      "SP38 OHS Committee Meetings",
+      "SP32 Internal-external Consultation Meeting",
+      "SP05 Training Competency",
+      "SP33 Issue resolution"
+    ],
+    "enrichedChildren": [
+      {
+        "name": "SP32 Internal-external Consultation Meeting",
+        "document": {
+          "id": "111",
+          "name": "SP32 Internal-external Consultation Me.doc",
+          "path": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP32 Internal-external Consultation Me.doc"
+        },
+        "found": true
+      },
+      {
+        "name": "SP38 OHS Committee Meetings",
+        "document": {
+          "id": "115",
+          "name": "SP38 OHS Committee Meetings.doc",
+          "path": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP38 OHS Committee Meetings.doc"
+        },
+        "found": true
+      }
+    ]
+  },
+  "Risk Management": {
+    "type": "category",
+    "level": 2,
+    "documentId": null,
+    "children": [
+      "SP07 Purchasing",
+      "SP22 Risk Assessment Procedure",
+      "SP29 Preparing Procedure & Work method statements",
+      "SP31 Working at Height",
+      "SP36 Managing Haz Sub and DG",
+      "SP37 Managing Plant and Equipment"
+    ],
+    "enrichedChildren": []
+  },
+  "Work Instructions": {
+    "type": "category",
+    "level": 2,
+    "documentId": "646",
+    "children": [
+      "Air pollution -WI 028",
+      "Hand Tool Safety -WI 050",
+      "Asbestos Containing Material -WI 013",
+      "Calibration -Certification Documentation via Seaward -WI 048",
+      "Calibration of Meggers -WI 024",
+      "Checking of substation transformer -WI 033",
+      "Confirming Electrical Isolation -WI 020",
+      "Control Panel Manufacture -WI 038",
+      "Elevated Work Platforms -WI 023",
+      "Energisation of new or modified electrical circuits and equipment WI 047",
+      "Erosion -WI 026",
+      "Event Set Up -WI 040",
+      "Excavated Soil -WI 025",
+      "Fault Finding and Maintenance -WI 036",
+      "Hazardous Substances & Dangerous Goods -WI 015",
+      "Hot Works -WI 007",
+      "Installation General Light and Power -WI 034",
+      "Installation General Public Lighting WI 041",
+      "Installation Industrial Light and Power -WI 035",
+      "Installation Traffic Lights -WI 042",
+      "Job Set Up -WI 012",
+      "Lone and Isolated Workers -WI 006",
+      "Mobile Plant and Equipment -WI 008",
+      "Noise -WI 027",
+      "PCBs (Polychlorinated biphenyls) -WI 017",
+      "Portable Electrical Equipment -WI 005",
+      "PPE -WI 001",
+      "Rescue for EWP -WI 022A",
+      "Solar Installations WI 045",
+      "Spill Management -WI 049",
+      "Tag and Lock Out -WI 003",
+      "Test &Tag with Seaward Prime Test 300 -WI 046",
+      "Truck Mounted Boom Lift -WI 022",
+      "Visual Impact -WI 029",
+      "Waste Minimisation -WI 030",
+      "Work in hot environments -WI 009"
+    ],
+    "enrichedChildren": [
+      {
+        "name": "Calibration of Meggers -WI 024",
+        "document": {
+          "id": "615",
+          "name": "Calibration of Meggars - WI 024.docx",
+          "path": "I:\\IMS\\Intergrated Management System\\Section 04B Work Instructions\\Calibration of Meggars - WI 024.docx"
+        },
+        "found": true
+      },
+      {
+        "name": "Hazardous Substances & Dangerous Goods -WI 015",
+        "document": {
+          "id": "624",
+          "name": "Hazardous Sustances & Dangerous Goods - WI 015.docx",
+          "path": "I:\\IMS\\Intergrated Management System\\Section 04B Work Instructions\\Hazardous Sustances & Dangerous Goods - WI 015.docx"
+        },
+        "found": true
+      },
+      {
+        "name": "Excavated Soil -WI 025",
+        "document": {
+          "id": "661",
+          "name": "~$cavated Soil  - WI 025.docx",
+          "path": "I:\\IMS\\Intergrated Management System\\Section 04B Work Instructions\\~$cavated Soil  - WI 025.docx"
+        },
+        "found": true
+      }
+    ]
+  },
+  "Safe Work Method Statements": {
+    "type": "category",
+    "level": 2,
+    "documentId": null,
+    "children": [
+      "Cable Installation Using Mechanical Aid and Manual Installation -SWMS 018",
+      "Checking of the low voltage system -SWMS 039",
+      "Confined spaces -SWMS 011",
+      "Demolition -SWMS 037",
+      "Hot Works -SWMS 007",
+      "Isolation and Earthing of Plant and Equipment -SWMS 004",
+      "Live Low Voltage-SWMS 002",
+      "Loading from mezzanine floor -SWMS 032",
+      "Manual Handling -SWMS 010",
+      "Operating Truck mounted Crane Fassi 25A -SWMS 019",
+      "Removal of Light Poles -SWMS 031",
+      "Repairs to Switch boards containing Asbestos -SWMS 043",
+      "Trenching -SWMS 014",
+      "Working at Height -SWMS 016",
+      "Working within Close Proximity of a Rail Line -SWMS 044"
+    ],
+    "enrichedChildren": [
+      {
+        "name": "Loading from mezzanine floor -SWMS 032",
+        "document": {
+          "id": "587",
+          "name": "Loading from mezanine floor  - SWMS 032.docx",
+          "path": "I:\\IMS\\Intergrated Management System\\Section 04 SWMS\\Loading from mezanine floor  - SWMS 032.docx"
+        },
+        "found": true
+      }
+    ]
+  },
+  "FORMS": {
+    "type": "category",
+    "level": 2,
+    "documentId": null,
+    "children": [
+      "FORM 55 Site Audits",
+      "Incident Report Form",
+      "JSEA",
+      "Toolbox Minutes",
+      "Action Log",
+      "RTW Form",
+      "Take 5"
+    ],
+    "enrichedChildren": []
+  }
+}
