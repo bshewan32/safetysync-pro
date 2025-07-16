@@ -52,9 +52,202 @@ const upload = multer({ storage });
 let documentIndex = [];
 let searchIndex;
 
+// Path for storing learning data
+const LEARNING_DATA_PATH = path.join(__dirname, "learning-patterns.json");
+
 // ========================================
 // HELPER FUNCTIONS
 // ========================================
+// Load learning patterns
+function loadLearningPatterns() {
+  try {
+    if (fs.existsSync(LEARNING_DATA_PATH)) {
+      return fs.readJsonSync(LEARNING_DATA_PATH);
+    }
+  } catch (err) {
+    console.error("Error loading learning patterns:", err);
+  }
+
+  return {
+    documentPatterns: {}, // Document name -> actual document mappings
+    categoryPatterns: {}, // Category -> document type patterns
+    keywordWeights: {}, // Keyword effectiveness scores
+    manualCorrections: [], // History of manual corrections
+    lastUpdated: null,
+  };
+}
+
+// Save learning patterns
+function saveLearningPatterns(patterns) {
+  try {
+    patterns.lastUpdated = new Date().toISOString();
+    fs.writeJsonSync(LEARNING_DATA_PATH, patterns, { spaces: 2 });
+    return true;
+  } catch (err) {
+    console.error("Error saving learning patterns:", err);
+    return false;
+  }
+}
+
+// Learn from manual document linking
+function learnFromManualLink(
+  originalSearch,
+  actualDocument,
+  category,
+  recordType = null
+) {
+  const patterns = loadLearningPatterns();
+
+  // Extract learning signals
+  const searchTerms = originalSearch.toLowerCase().split(/[\s\-_]+/);
+  const actualName = actualDocument.name.toLowerCase();
+  const actualPath = actualDocument.path.toLowerCase();
+
+  console.log(
+    `Learning from correction: "${originalSearch}" -> "${actualDocument.name}"`
+  );
+
+  // 1. Document name patterns
+  if (!patterns.documentPatterns[originalSearch.toLowerCase()]) {
+    patterns.documentPatterns[originalSearch.toLowerCase()] = [];
+  }
+
+  patterns.documentPatterns[originalSearch.toLowerCase()].push({
+    documentId: actualDocument.id,
+    documentName: actualDocument.name,
+    path: actualDocument.path,
+    category: category,
+    recordType: recordType,
+    confidence: 1.0,
+    learnedAt: new Date().toISOString(),
+  });
+
+  // 2. Extract successful keywords from the actual document
+  const successfulKeywords = [];
+
+  // Find which search terms actually appear in the document name/path
+  searchTerms.forEach((term) => {
+    if (
+      term.length > 2 &&
+      (actualName.includes(term) || actualPath.includes(term))
+    ) {
+      successfulKeywords.push(term);
+    }
+  });
+
+  // 3. Update keyword weights
+  successfulKeywords.forEach((keyword) => {
+    if (!patterns.keywordWeights[keyword]) {
+      patterns.keywordWeights[keyword] = { score: 0, uses: 0 };
+    }
+    patterns.keywordWeights[keyword].score += 1;
+    patterns.keywordWeights[keyword].uses += 1;
+  });
+
+  // 4. Category patterns
+  if (category) {
+    if (!patterns.categoryPatterns[category]) {
+      patterns.categoryPatterns[category] = {};
+    }
+
+    const fileExtension = path.extname(actualDocument.name).toLowerCase();
+    const folderPattern = actualDocument.folder.toLowerCase();
+
+    if (!patterns.categoryPatterns[category][folderPattern]) {
+      patterns.categoryPatterns[category][folderPattern] = 0;
+    }
+    patterns.categoryPatterns[category][folderPattern] += 1;
+  }
+
+  // 5. Store manual correction for analysis
+  patterns.manualCorrections.push({
+    searchTerm: originalSearch,
+    foundDocument: actualDocument.name,
+    category: category,
+    recordType: recordType,
+    successfulKeywords: successfulKeywords,
+    timestamp: new Date().toISOString(),
+  });
+
+  // Keep only last 1000 corrections to prevent file bloat
+  if (patterns.manualCorrections.length > 1000) {
+    patterns.manualCorrections = patterns.manualCorrections.slice(-1000);
+  }
+
+  saveLearningPatterns(patterns);
+  console.log(
+    `Learned ${successfulKeywords.length} successful keywords:`,
+    successfulKeywords
+  );
+}
+
+// Enhanced document finding using learned patterns
+function findDocumentByNameWithLearning(docName, includeArchived = false) {
+  const patterns = loadLearningPatterns();
+
+  // 1. First try exact pattern match from learning
+  const exactMatch = patterns.documentPatterns[docName.toLowerCase()];
+  if (exactMatch && exactMatch.length > 0) {
+    // Get the most recent/confident match
+    const bestMatch = exactMatch.sort((a, b) => b.confidence - a.confidence)[0];
+    const foundDoc = documentIndex.find(
+      (doc) => doc.id === bestMatch.documentId
+    );
+
+    if (foundDoc && (includeArchived || !foundDoc.isArchived)) {
+      console.log(`Found document using learned pattern: ${foundDoc.name}`);
+      return foundDoc;
+    }
+  }
+
+  // 2. Enhanced keyword matching using learned weights
+  const searchTerms = docName.toLowerCase().split(/[\s\-_]+/);
+  const candidates = documentIndex.filter(
+    (doc) => !(!includeArchived && doc.isArchived)
+  );
+
+  const scoredCandidates = candidates.map((doc) => {
+    let score = 0;
+    const docText = (
+      doc.name +
+      " " +
+      doc.folder +
+      " " +
+      doc.relativePath
+    ).toLowerCase();
+
+    searchTerms.forEach((term) => {
+      if (term.length > 2 && docText.includes(term)) {
+        const weight = patterns.keywordWeights[term];
+        score += weight ? weight.score : 1; // Use learned weight or default
+      }
+    });
+
+    // Exact name match bonus
+    if (doc.name.toLowerCase() === docName.toLowerCase()) {
+      score += 100;
+    }
+
+    // Partial name match bonus
+    if (doc.name.toLowerCase().includes(docName.toLowerCase())) {
+      score += 50;
+    }
+
+    return { doc, score };
+  });
+
+  // Return best match if score is good enough
+  const bestCandidate = scoredCandidates.sort((a, b) => b.score - a.score)[0];
+  if (bestCandidate && bestCandidate.score > 0) {
+    console.log(
+      `Found document with learning-enhanced score ${bestCandidate.score}: ${bestCandidate.doc.name}`
+    );
+    return bestCandidate.doc;
+  }
+
+  // 3. Fallback to original method
+  return findDocumentByName(docName, includeArchived);
+}
 
 // Archive detection function
 function isArchivedDocument(filePath) {
@@ -3236,7 +3429,7 @@ function estimateTokens(text) {
   return Math.ceil(text.length / 4);
 }
 
-// Enhanced createWordDocument function with better formatting
+// Completely rewritten createWordDocument function that properly handles markdown
 function createWordDocument(content, metadata) {
   try {
     // Ensure content is a string
@@ -3244,21 +3437,30 @@ function createWordDocument(content, metadata) {
       content = String(content || "");
     }
 
-    // Clean up the content first - remove the document control headers/footers that are already formatted
+    console.log("Creating Word document with content length:", content.length);
+
+    // AGGRESSIVE cleanup - remove all the document control sections that are duplicated
     content = content.replace(
-      /DOCUMENT CONTROL[\s\S]*?================================================================================/,
+      /DOCUMENT CONTROL[\s\S]*?================================================================================\s*/g,
       ""
     );
     content = content.replace(
-      /================================================================================[\s\S]*?================================================================================/g,
+      /================================================================================[\s\S]*$/g,
+      ""
+    );
+    content = content.replace(
+      /Document Number:[\s\S]*?authorization\.\s*================================================================================\s*/g,
       ""
     );
 
-    // Convert content to paragraphs with better formatting
-    const lines = content.split("\n");
+    // Split content into lines for processing
+    const lines = content
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
     const paragraphs = [];
 
-    // Add a professional title page
+    // Add professional title
     paragraphs.push(
       new Paragraph({
         children: [
@@ -3266,154 +3468,48 @@ function createWordDocument(content, metadata) {
             text: metadata?.documentType || "Work Procedure",
             bold: true,
             size: 36,
-            color: "2F5597",
+            color: "1f4e79",
           }),
         ],
-        heading: HeadingLevel.TITLE,
-        spacing: { after: 300 },
         alignment: "center",
-      })
-    );
-
-    paragraphs.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: metadata?.companyInfo?.name || "Company Name",
-            bold: true,
-            size: 24,
-            color: "666666",
-          }),
-        ],
-        spacing: { after: 600 },
-        alignment: "center",
-      })
-    );
-
-    // Add document information table
-    paragraphs.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: "Document Information",
-            bold: true,
-            size: 20,
-          }),
-        ],
-        spacing: { before: 400, after: 200 },
-      })
-    );
-
-    paragraphs.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: `Document Number: ${metadata?.documentNumber || "DOC-001"}`,
-            size: 18,
-          }),
-        ],
-      })
-    );
-
-    paragraphs.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: `Generated: ${new Date().toLocaleDateString("en-AU")}`,
-            size: 18,
-          }),
-        ],
-      })
-    );
-
-    paragraphs.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: `Version: 1.0`,
-            size: 18,
-          }),
-        ],
         spacing: { after: 400 },
       })
     );
 
+    // Add company and document info
+    paragraphs.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `${metadata?.companyInfo?.name || "Company"} | Document: ${
+              metadata?.documentNumber || "DOC-001"
+            }`,
+            size: 24,
+            color: "666666",
+          }),
+        ],
+        alignment: "center",
+        spacing: { after: 600 },
+      })
+    );
+
+    // Process each line
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      const trimmedLine = line.trim();
 
-      // Skip empty lines at the start or lines that are just dashes
-      if (trimmedLine === "" || trimmedLine === "---" || trimmedLine === "--") {
-        paragraphs.push(
-          new Paragraph({
-            children: [new TextRun({ text: "", size: 22 })],
-            spacing: { after: 200 },
-          })
-        );
+      // Skip separators and empty content
+      if (
+        line === "---" ||
+        line === "--" ||
+        line.match(/^=+$/) ||
+        line.match(/^\|[\s\-\|]*\|$/)
+      ) {
         continue;
       }
 
-      // Handle markdown formatting
-      if (trimmedLine.startsWith("# **") && trimmedLine.endsWith("**")) {
-        // Main heading with bold markdown
-        const text = trimmedLine.replace(/^# \*\*/, "").replace(/\*\*$/, "");
-        paragraphs.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: text,
-                bold: true,
-                size: 32,
-                color: "2F5597",
-              }),
-            ],
-            heading: HeadingLevel.HEADING_1,
-            spacing: { before: 400, after: 300 },
-          })
-        );
-      } else if (
-        trimmedLine.startsWith("## **") &&
-        trimmedLine.endsWith("**")
-      ) {
-        // Sub heading with bold markdown
-        const text = trimmedLine.replace(/^## \*\*/, "").replace(/\*\*$/, "");
-        paragraphs.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: text,
-                bold: true,
-                size: 24,
-                color: "2F5597",
-              }),
-            ],
-            heading: HeadingLevel.HEADING_2,
-            spacing: { before: 300, after: 200 },
-          })
-        );
-      } else if (
-        trimmedLine.startsWith("### **") &&
-        trimmedLine.endsWith("**")
-      ) {
-        // Sub-sub heading with bold markdown
-        const text = trimmedLine.replace(/^### \*\*/, "").replace(/\*\*$/, "");
-        paragraphs.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: text,
-                bold: true,
-                size: 20,
-                color: "2F5597",
-              }),
-            ],
-            heading: HeadingLevel.HEADING_3,
-            spacing: { before: 200, after: 150 },
-          })
-        );
-      } else if (trimmedLine.startsWith("# ")) {
-        // Regular markdown heading
-        const text = trimmedLine.substring(2);
+      // Main headings - # **text** or # text
+      if (line.match(/^#\s+\*\*.*\*\*$/) || line.match(/^#\s+[^#]/)) {
+        let text = line.replace(/^#\s+/, "").replace(/\*\*/g, "");
         paragraphs.push(
           new Paragraph({
             children: [
@@ -3421,33 +3517,37 @@ function createWordDocument(content, metadata) {
                 text: text,
                 bold: true,
                 size: 28,
-                color: "2F5597",
+                color: "1f4e79",
               }),
             ],
-            heading: HeadingLevel.HEADING_1,
             spacing: { before: 400, after: 200 },
           })
         );
-      } else if (trimmedLine.startsWith("## ")) {
-        // Regular markdown sub heading
-        const text = trimmedLine.substring(3);
+        continue;
+      }
+
+      // Sub headings - ## **text** or ## text
+      if (line.match(/^##\s+\*\*.*\*\*$/) || line.match(/^##\s+[^#]/)) {
+        let text = line.replace(/^##\s+/, "").replace(/\*\*/g, "");
         paragraphs.push(
           new Paragraph({
             children: [
               new TextRun({
                 text: text,
                 bold: true,
-                size: 22,
-                color: "2F5597",
+                size: 24,
+                color: "1f4e79",
               }),
             ],
-            heading: HeadingLevel.HEADING_2,
             spacing: { before: 300, after: 150 },
           })
         );
-      } else if (trimmedLine.startsWith("### ")) {
-        // Regular markdown sub-sub heading
-        const text = trimmedLine.substring(4);
+        continue;
+      }
+
+      // Sub-sub headings - ### **text** or ### text
+      if (line.match(/^###\s+\*\*.*\*\*$/) || line.match(/^###\s+[^#]/)) {
+        let text = line.replace(/^###\s+/, "").replace(/\*\*/g, "");
         paragraphs.push(
           new Paragraph({
             children: [
@@ -3455,102 +3555,133 @@ function createWordDocument(content, metadata) {
                 text: text,
                 bold: true,
                 size: 20,
-                color: "2F5597",
+                color: "1f4e79",
               }),
             ],
-            heading: HeadingLevel.HEADING_3,
             spacing: { before: 200, after: 100 },
           })
         );
-      } else if (trimmedLine.startsWith("- ") || trimmedLine.startsWith("* ")) {
-        // Bullet points - handle bold text within bullets
-        let bulletText = trimmedLine.substring(2);
-        const textRuns = parseInlineFormatting(bulletText);
+        continue;
+      }
 
+      // Bullet points
+      if (line.match(/^[-\*]\s+/)) {
+        let text = line.replace(/^[-\*]\s+/, "");
+        // Parse inline formatting for bullet text
+        const runs = parseInlineText(text);
         paragraphs.push(
           new Paragraph({
-            children: textRuns,
+            children: runs,
             bullet: { level: 0 },
             spacing: { after: 100 },
           })
         );
-      } else if (trimmedLine.match(/^\d+\. /)) {
-        // Numbered lists
-        let listText = trimmedLine.replace(/^\d+\. /, "");
-        const textRuns = parseInlineFormatting(listText);
+        continue;
+      }
 
+      // Numbered lists
+      if (line.match(/^\d+\.\s+/)) {
+        let text = line.replace(/^\d+\.\s+/, "");
+        const runs = parseInlineText(text);
         paragraphs.push(
           new Paragraph({
-            children: textRuns,
+            children: runs,
             numbering: { reference: "default", level: 0 },
             spacing: { after: 100 },
           })
         );
-      } else if (trimmedLine.startsWith("|") && trimmedLine.endsWith("|")) {
-        // Table rows - convert to formatted text
-        const cells = trimmedLine
-          .split("|")
-          .filter((cell) => cell.trim() !== "");
-        const tableText = cells.join(" | ");
+        continue;
+      }
 
+      // Table rows (convert to formatted text)
+      if (line.startsWith("|") && line.endsWith("|") && line.includes("|")) {
+        const cells = line
+          .split("|")
+          .filter((cell) => cell.trim() !== "")
+          .map((cell) => cell.trim());
+        if (cells.length > 1) {
+          // Create a table-like appearance using tabs
+          const tableText = cells.join(" | ");
+          paragraphs.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: tableText,
+                  size: 18,
+                  font: "Courier New",
+                }),
+              ],
+              spacing: { after: 50 },
+            })
+          );
+          continue;
+        }
+      }
+
+      // Bold standalone lines **text**
+      if (line.match(/^\*\*.*\*\*$/)) {
+        let text = line.replace(/\*\*/g, "");
         paragraphs.push(
           new Paragraph({
             children: [
               new TextRun({
-                text: tableText,
-                size: 18,
-                font: "Courier New", // Monospace for table-like appearance
-              }),
-            ],
-            spacing: { after: 50 },
-          })
-        );
-      } else if (trimmedLine.includes("**") || trimmedLine.includes("*")) {
-        // Regular paragraph with inline formatting
-        const textRuns = parseInlineFormatting(trimmedLine);
-        paragraphs.push(
-          new Paragraph({
-            children: textRuns,
-            spacing: { after: 150 },
-          })
-        );
-      } else if (trimmedLine.length > 0) {
-        // Regular paragraph
-        paragraphs.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: trimmedLine,
+                text: text,
+                bold: true,
                 size: 20,
               }),
             ],
+            spacing: { after: 150 },
+          })
+        );
+        continue;
+      }
+
+      // Regular paragraphs with potential inline formatting
+      if (line.length > 0) {
+        const runs = parseInlineText(line);
+        paragraphs.push(
+          new Paragraph({
+            children: runs,
             spacing: { after: 150 },
           })
         );
       }
     }
 
-    // Create document with clean structure
+    // Create the document
     const doc = new Document({
       creator: "SafetySync Pro",
       title: metadata?.documentType || "Generated Document",
-      description: `Generated by SafetySync Pro AI on ${new Date().toLocaleDateString()}`,
+      description: `Generated on ${new Date().toLocaleDateString("en-AU")}`,
       sections: [
         {
-          properties: {},
+          properties: {
+            page: {
+              margin: {
+                top: 720, // 0.5 inch
+                right: 720,
+                bottom: 720,
+                left: 720,
+              },
+            },
+          },
           children: paragraphs,
         },
       ],
     });
+
+    console.log(
+      "Document created successfully with",
+      paragraphs.length,
+      "paragraphs"
+    );
 
     return {
       writeFile: async (filepath) => {
         try {
           const buffer = await Packer.toBuffer(doc);
           fs.writeFileSync(filepath, buffer);
-          console.log(
-            `Enhanced Word document successfully created at: ${filepath}`
-          );
+          console.log(`Professional Word document created at: ${filepath}`);
         } catch (writeError) {
           console.error("Error writing Word document:", writeError);
           throw writeError;
@@ -3558,9 +3689,14 @@ function createWordDocument(content, metadata) {
       },
     };
   } catch (error) {
-    console.error("Error creating enhanced Word document:", error);
+    console.error("Error in createWordDocument:", error);
 
-    // Fallback: create a simple document
+    // Ultra-simple fallback
+    const cleanContent = content
+      .replace(/\*\*/g, "")
+      .replace(/#+\s*/g, "")
+      .replace(/[-\*]\s+/g, "• ");
+
     const fallbackDoc = new Document({
       sections: [
         {
@@ -3570,19 +3706,16 @@ function createWordDocument(content, metadata) {
                 new TextRun({
                   text: metadata?.documentType || "Generated Document",
                   bold: true,
-                  size: 28,
+                  size: 24,
                 }),
               ],
-              spacing: { after: 400 },
+              spacing: { after: 300 },
             }),
             new Paragraph({
               children: [
                 new TextRun({
-                  text:
-                    typeof content === "string"
-                      ? content.replace(/\*\*/g, "").replace(/##/g, "")
-                      : String(content),
-                  size: 20,
+                  text: cleanContent,
+                  size: 18,
                 }),
               ],
             }),
@@ -3598,6 +3731,52 @@ function createWordDocument(content, metadata) {
       },
     };
   }
+}
+
+// Helper function to parse inline formatting within text
+function parseInlineText(text) {
+  const runs = [];
+  let position = 0;
+
+  // Handle **bold** text
+  const boldPattern = /\*\*(.*?)\*\*/g;
+  let match;
+
+  while ((match = boldPattern.exec(text)) !== null) {
+    // Add text before bold
+    if (match.index > position) {
+      const beforeText = text.substring(position, match.index);
+      if (beforeText.trim()) {
+        runs.push(new TextRun({ text: beforeText, size: 18 }));
+      }
+    }
+
+    // Add bold text
+    runs.push(
+      new TextRun({
+        text: match[1],
+        bold: true,
+        size: 18,
+      })
+    );
+
+    position = match.index + match[0].length;
+  }
+
+  // Add remaining text
+  if (position < text.length) {
+    const remainingText = text.substring(position);
+    if (remainingText.trim()) {
+      runs.push(new TextRun({ text: remainingText, size: 18 }));
+    }
+  }
+
+  // If no formatting was found, return the whole text
+  if (runs.length === 0) {
+    runs.push(new TextRun({ text: text, size: 18 }));
+  }
+
+  return runs;
 }
 
 // Helper function to parse inline formatting (bold, italic)
@@ -3751,7 +3930,7 @@ app.get("/ims-index", (req, res) => {
           (doc) => doc.id === category.documentId
         );
       } else {
-        category.document = findDocumentByName(categoryName);
+        category.document = findDocumentByNameWithLearning(categoryName);
       }
 
       // Handle child documents - PRESERVE EXISTING LINKS
@@ -3774,7 +3953,7 @@ app.get("/ims-index", (req, res) => {
             };
           } else {
             // No saved link, try to auto-find the document
-            const foundDoc = findDocumentByName(childName);
+            const foundDoc = findDocumentByNameWithLearning(childName);
             return {
               name: childName,
               document: foundDoc,
@@ -3870,6 +4049,165 @@ app.get("/api/available-documents", (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
+// API endpoint to record manual corrections
+app.post("/api/learn-from-correction", express.json(), (req, res) => {
+  try {
+    const { originalSearch, actualDocumentId, category, recordType } = req.body;
+
+    if (!originalSearch || !actualDocumentId) {
+      return res.json({
+        success: false,
+        message: "Missing required parameters",
+      });
+    }
+
+    const actualDocument = documentIndex.find(
+      (doc) => doc.id === actualDocumentId
+    );
+    if (!actualDocument) {
+      return res.json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    learnFromManualLink(originalSearch, actualDocument, category, recordType);
+
+    res.json({
+      success: true,
+      message: "Learning pattern recorded successfully",
+    });
+  } catch (error) {
+    console.error("Error recording learning pattern:", error);
+    res.json({
+      success: false,
+      message: "Error recording learning pattern",
+    });
+  }
+});
+
+// API endpoint to get learning statistics
+app.get("/api/learning-stats", (req, res) => {
+  try {
+    const patterns = loadLearningPatterns();
+
+    const stats = {
+      totalPatterns: Object.keys(patterns.documentPatterns).length,
+      totalCorrections: patterns.manualCorrections.length,
+      topKeywords: Object.entries(patterns.keywordWeights)
+        .sort(([, a], [, b]) => b.score - a.score)
+        .slice(0, 10)
+        .map(([keyword, data]) => ({
+          keyword,
+          score: data.score,
+          uses: data.uses,
+        })),
+      recentCorrections: patterns.manualCorrections.slice(-5),
+      lastUpdated: patterns.lastUpdated,
+    };
+
+    res.json(stats);
+  } catch (error) {
+    console.error("Error getting learning stats:", error);
+    res.json({ error: "Failed to get learning statistics" });
+  }
+});
+
+// Modified auto-link function to use learning
+app.post(
+  "/api/auto-link-documents-with-learning",
+  express.json(),
+  (req, res) => {
+    try {
+      const { checkRevisions } = req.body;
+      const imsIndex = loadIMSIndex();
+
+      let linkedCount = 0;
+      let learnedMatches = 0;
+
+      Object.keys(imsIndex).forEach((categoryName) => {
+        const category = imsIndex[categoryName];
+
+        // Auto-link category document with learning
+        if (!category.document && !category.documentId) {
+          const foundDoc = findDocumentByNameWithLearning(categoryName, false);
+          if (foundDoc && !foundDoc.isArchived) {
+            category.documentId = foundDoc.id;
+            linkedCount++;
+            learnedMatches++;
+          }
+        }
+
+        // Auto-link child documents with learning
+        if (category.children && category.children.length > 0) {
+          if (!category.enrichedChildren) {
+            category.enrichedChildren = [];
+          }
+
+          category.children.forEach((childName) => {
+            const existingChild = category.enrichedChildren.find(
+              (child) => child.name === childName
+            );
+
+            if (!existingChild || !existingChild.document) {
+              const foundDoc = findDocumentByNameWithLearning(childName, false);
+
+              if (foundDoc && !foundDoc.isArchived) {
+                const childData = {
+                  name: childName,
+                  document: {
+                    id: foundDoc.id,
+                    name: foundDoc.name,
+                    path: foundDoc.path,
+                    isArchived: foundDoc.isArchived || false,
+                  },
+                  found: true,
+                  autoLinked: true,
+                  linkedAt: new Date().toISOString(),
+                  usedLearning: true,
+                };
+
+                const childIndex = category.enrichedChildren.findIndex(
+                  (child) => child.name === childName
+                );
+
+                if (childIndex >= 0) {
+                  category.enrichedChildren[childIndex] = childData;
+                } else {
+                  category.enrichedChildren.push(childData);
+                }
+
+                linkedCount++;
+                learnedMatches++;
+              }
+            }
+          });
+        }
+      });
+
+      if (saveIMSIndex(imsIndex)) {
+        res.json({
+          success: true,
+          linked: linkedCount,
+          learnedMatches: learnedMatches,
+          message: `Successfully linked ${linkedCount} documents (${learnedMatches} using learned patterns)`,
+        });
+      } else {
+        res.json({
+          success: false,
+          message: "Error saving IMS structure",
+        });
+      }
+    } catch (error) {
+      console.error("Error in learning-enhanced auto-linking:", error);
+      res.json({
+        success: false,
+        message: "Error in auto-linking: " + error.message,
+      });
+    }
+  }
+);
 
 // Document linking API
 app.post("/api/link-ims-document", express.json(), (req, res) => {
@@ -3977,6 +4315,8 @@ app.post("/api/link-ims-document", express.json(), (req, res) => {
     if (saveIMSIndex(imsIndex)) {
       console.log("Successfully linked document");
 
+      learnFromManualLink(documentName, actualDocument, categoryName, "IMS");
+
       res.json({
         success: true,
         message: `Successfully linked "${actualDocumentName}" to "${documentName}"`,
@@ -4041,6 +4381,13 @@ app.post("/api/link-category-document", express.json(), (req, res) => {
     // Save the updated structure
     if (saveIMSIndex(imsIndex)) {
       console.log("Successfully linked document to category");
+
+      learnFromManualLink(
+        categoryName,
+        actualDocument,
+        categoryName,
+        "IMS_Category"
+      );
 
       res.json({
         success: true,
@@ -4528,7 +4875,7 @@ app.post("/api/auto-link-documents", express.json(), (req, res) => {
 
       // Auto-link category document if not already linked
       if (!category.document && !category.documentId) {
-        const foundDoc = findDocumentByName(categoryName, false); // Exclude archived
+        const foundDoc = findDocumentByNameWithLearning(categoryName, false); // Exclude archived
         if (foundDoc) {
           if (foundDoc.isArchived) {
             skippedArchived++;
@@ -4558,7 +4905,7 @@ app.post("/api/auto-link-documents", express.json(), (req, res) => {
           );
 
           if (!existingChild || !existingChild.document) {
-            const foundDoc = findDocumentByName(childName, false); // Exclude archived
+            const foundDoc = findDocumentByNameWithLearning(childName, false); // Exclude archived
 
             if (foundDoc) {
               if (foundDoc.isArchived) {
