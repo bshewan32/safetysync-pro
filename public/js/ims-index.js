@@ -22,11 +22,15 @@ function initializeStatistics() {
     const missingCountEl = document.getElementById("missingCount");
     const coveragePercentEl = document.getElementById("coveragePercent");
 
-    if (linkedCountEl) linkedCountEl.textContent = window.imsStats.linkedDocuments;
-    if (missingCountEl) missingCountEl.textContent = window.imsStats.missingDocuments;
+    if (linkedCountEl)
+      linkedCountEl.textContent = window.imsStats.linkedDocuments;
+    if (missingCountEl)
+      missingCountEl.textContent = window.imsStats.missingDocuments;
 
     if (coveragePercentEl && window.imsStats.totalDocuments > 0) {
-      const coverage = Math.round((window.imsStats.linkedDocuments / window.imsStats.totalDocuments) * 100);
+      const coverage = Math.round(
+        (window.imsStats.linkedDocuments / window.imsStats.totalDocuments) * 100
+      );
       coveragePercentEl.textContent = coverage + "%";
     }
   }
@@ -55,7 +59,7 @@ function initializeFilters() {
 function initializeEventHandlers() {
   // Single event delegation for all button clicks
   document.addEventListener("click", handleButtonClicks);
-  
+
   // Modal-specific handlers
   setupModalHandlers();
 }
@@ -80,9 +84,14 @@ function setupModalHandlers() {
   }
 
   // Mandatory modal handlers
-  const mandatoryRecordSelect = document.getElementById("mandatoryRecordSelect");
+  const mandatoryRecordSelect = document.getElementById(
+    "mandatoryRecordSelect"
+  );
   if (mandatoryRecordSelect) {
-    mandatoryRecordSelect.addEventListener("change", loadMandatoryRecordSettings);
+    mandatoryRecordSelect.addEventListener(
+      "change",
+      loadMandatoryRecordSettings
+    );
   }
 
   const updateMandatoryBtn = document.getElementById("updateMandatoryBtn");
@@ -159,7 +168,8 @@ function handleButtonClicks(e) {
 
     let confirmMessage = `Link "${docName}" to mandatory record "${recordType}"?`;
     if (isArchived) {
-      confirmMessage += "\n\n⚠️ WARNING: This document is archived and may be outdated.";
+      confirmMessage +=
+        "\n\n⚠️ WARNING: This document is archived and may be outdated.";
     }
 
     if (confirm(confirmMessage)) {
@@ -205,9 +215,11 @@ function debounce(func, wait) {
 }
 
 function filterIMSIndex() {
-  const searchTerm = document.getElementById("imsSearch")?.value.toLowerCase() || "";
+  const searchTerm =
+    document.getElementById("imsSearch")?.value.toLowerCase() || "";
   const filterType = document.getElementById("imsFilter")?.value || "all";
-  const hideArchived = document.getElementById("hideArchivedCheck")?.checked || false;
+  const hideArchived =
+    document.getElementById("hideArchivedCheck")?.checked || false;
 
   document.querySelectorAll(".ims-category").forEach((category) => {
     const categoryText = category.textContent.toLowerCase();
@@ -227,8 +239,10 @@ function filterIMSIndex() {
     if (filterType !== "all") {
       if (filterType === "linked" && !hasLinked) showCategory = false;
       if (filterType === "missing" && !hasMissing) showCategory = false;
-      if (filterType === "policies" && categoryType !== "policy") showCategory = false;
-      if (filterType === "procedures" && categoryType !== "category") showCategory = false;
+      if (filterType === "policies" && categoryType !== "policy")
+        showCategory = false;
+      if (filterType === "procedures" && categoryType !== "category")
+        showCategory = false;
       if (filterType === "archived" && !hasArchived) showCategory = false;
     }
 
@@ -239,7 +253,8 @@ function filterIMSIndex() {
 }
 
 function toggleArchivedDocuments() {
-  const hideArchived = document.getElementById("hideArchivedCheck")?.checked || false;
+  const hideArchived =
+    document.getElementById("hideArchivedCheck")?.checked || false;
   const archivedItems = document.querySelectorAll(".ims-document-archived");
 
   archivedItems.forEach((item) => {
@@ -324,13 +339,19 @@ function openAIGenerationModal(categoryName, documentName) {
   modal.show();
 
   // Add generate button handler
-  document.getElementById("generateDocumentBtn").addEventListener("click", function() {
-    generateAIDocument(categoryName, documentName);
-  });
+  document
+    .getElementById("generateDocumentBtn")
+    .addEventListener("click", function () {
+      generateAIDocument(categoryName, documentName);
+    });
 }
 
 function openCategoryDocumentLinker(categoryName, documentName) {
-  console.log("Opening category document linker for:", categoryName, documentName);
+  console.log(
+    "Opening category document linker for:",
+    categoryName,
+    documentName
+  );
 
   const modalHtml = `
     <div class="modal fade" id="linkCategoryDocumentModal" tabindex="-1" aria-hidden="true">
@@ -379,16 +400,22 @@ function openCategoryDocumentLinker(categoryName, documentName) {
   document.body.insertAdjacentHTML("beforeend", modalHtml);
 
   // Show modal
-  const modal = new bootstrap.Modal(document.getElementById("linkCategoryDocumentModal"));
+  const modal = new bootstrap.Modal(
+    document.getElementById("linkCategoryDocumentModal")
+  );
   modal.show();
 
   // Add search functionality
-  document.getElementById("searchCategoryDocumentBtn").addEventListener("click", function() {
-    const searchTerm = document.getElementById("linkCategoryDocumentSearch").value.trim();
-    if (searchTerm) {
-      searchForCategoryDocuments(searchTerm, categoryName);
-    }
-  });
+  document
+    .getElementById("searchCategoryDocumentBtn")
+    .addEventListener("click", function () {
+      const searchTerm = document
+        .getElementById("linkCategoryDocumentSearch")
+        .value.trim();
+      if (searchTerm) {
+        searchForCategoryDocuments(searchTerm, categoryName);
+      }
+    });
 }
 
 // ========================================
@@ -412,7 +439,8 @@ async function generateAIDocument(categoryName, documentName) {
   }
 
   generateBtn.disabled = true;
-  generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+  generateBtn.innerHTML =
+    '<i class="fas fa-spinner fa-spin"></i> Generating...';
 
   try {
     const response = await fetch("/api/generate-document", {
@@ -431,9 +459,15 @@ async function generateAIDocument(categoryName, documentName) {
     const result = await response.json();
 
     if (result.success) {
-      alert(`✅ Document generated successfully!\n\nFile: ${result.filename || "Document saved"}`);
+      alert(
+        `✅ Document generated successfully!\n\nFile: ${
+          result.filename || "Document saved"
+        }`
+      );
 
-      const modal = bootstrap.Modal.getInstance(document.getElementById("aiGenerateModal"));
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("aiGenerateModal")
+      );
       modal.hide();
 
       setTimeout(() => {
@@ -515,19 +549,25 @@ function openCategoryEditor(categoryName) {
   removeExistingModal("editCategoryModal");
   document.body.insertAdjacentHTML("beforeend", modalHtml);
 
-  const modal = new bootstrap.Modal(document.getElementById("editCategoryModal"));
+  const modal = new bootstrap.Modal(
+    document.getElementById("editCategoryModal")
+  );
   modal.show();
 
   // Add event listeners
-  document.getElementById("saveCategoryBtn").addEventListener("click", function() {
-    saveCategoryChanges(categoryName);
-  });
+  document
+    .getElementById("saveCategoryBtn")
+    .addEventListener("click", function () {
+      saveCategoryChanges(categoryName);
+    });
 
-  document.getElementById("deleteCategoryBtn").addEventListener("click", function() {
-    if (confirm("Are you sure you want to delete this category?")) {
-      deleteCategory(categoryName);
-    }
-  });
+  document
+    .getElementById("deleteCategoryBtn")
+    .addEventListener("click", function () {
+      if (confirm("Are you sure you want to delete this category?")) {
+        deleteCategory(categoryName);
+      }
+    });
 }
 
 function openDocumentLinker(categoryName, documentName) {
@@ -578,16 +618,22 @@ function openDocumentLinker(categoryName, documentName) {
   removeExistingModal("linkDocumentModal");
   document.body.insertAdjacentHTML("beforeend", modalHtml);
 
-  const modal = new bootstrap.Modal(document.getElementById("linkDocumentModal"));
+  const modal = new bootstrap.Modal(
+    document.getElementById("linkDocumentModal")
+  );
   modal.show();
 
   // Add search functionality
-  document.getElementById("searchDocumentBtn").addEventListener("click", function() {
-    const searchTerm = document.getElementById("linkDocumentSearch").value.trim();
-    if (searchTerm) {
-      searchForDocuments(searchTerm, categoryName, documentName);
-    }
-  });
+  document
+    .getElementById("searchDocumentBtn")
+    .addEventListener("click", function () {
+      const searchTerm = document
+        .getElementById("linkDocumentSearch")
+        .value.trim();
+      if (searchTerm) {
+        searchForDocuments(searchTerm, categoryName, documentName);
+      }
+    });
 }
 
 function openRevisionModal(documentId, documentName) {
@@ -645,9 +691,11 @@ function openRevisionModal(documentId, documentName) {
   modal.show();
 
   // Add upload functionality
-  document.getElementById("uploadRevisionBtn").addEventListener("click", function() {
-    uploadRevision(documentId);
-  });
+  document
+    .getElementById("uploadRevisionBtn")
+    .addEventListener("click", function () {
+      uploadRevision(documentId);
+    });
 }
 
 function openMandatoryDocumentLinker(recordType) {
@@ -698,25 +746,33 @@ function openMandatoryDocumentLinker(recordType) {
   removeExistingModal("linkMandatoryModal");
   document.body.insertAdjacentHTML("beforeend", modalHtml);
 
-  const modal = new bootstrap.Modal(document.getElementById("linkMandatoryModal"));
+  const modal = new bootstrap.Modal(
+    document.getElementById("linkMandatoryModal")
+  );
   modal.show();
 
   // Add search functionality
-  document.getElementById("searchMandatoryBtn").addEventListener("click", function() {
-    const searchTerm = document.getElementById("linkMandatorySearch").value.trim();
-    if (searchTerm) {
-      searchMandatoryDocuments(searchTerm, recordType);
-    }
-  });
-
-  document.getElementById("linkMandatorySearch").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
-      const searchTerm = this.value.trim();
+  document
+    .getElementById("searchMandatoryBtn")
+    .addEventListener("click", function () {
+      const searchTerm = document
+        .getElementById("linkMandatorySearch")
+        .value.trim();
       if (searchTerm) {
         searchMandatoryDocuments(searchTerm, recordType);
       }
-    }
-  });
+    });
+
+  document
+    .getElementById("linkMandatorySearch")
+    .addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        const searchTerm = this.value.trim();
+        if (searchTerm) {
+          searchMandatoryDocuments(searchTerm, recordType);
+        }
+      }
+    });
 }
 
 // ========================================
@@ -742,7 +798,8 @@ async function loadMandatoryRecords() {
   const listDiv = document.getElementById("mandatoryRecordsList");
   if (!listDiv) return;
 
-  listDiv.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+  listDiv.innerHTML =
+    '<div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
 
   try {
     const response = await fetch("/api/mandatory-records");
@@ -752,14 +809,17 @@ async function loadMandatoryRecords() {
       displayMandatoryRecords(data.mandatoryRecords);
       updateMandatoryStatistics(data.mandatoryRecords);
     } else {
-      listDiv.innerHTML = '<div class="alert alert-warning">No mandatory records found</div>';
+      listDiv.innerHTML =
+        '<div class="alert alert-warning">No mandatory records found</div>';
     }
   } catch (error) {
     console.error("Error loading mandatory records:", error);
-    listDiv.innerHTML = '<div class="alert alert-danger">Error loading mandatory records</div>';
+    listDiv.innerHTML =
+      '<div class="alert alert-danger">Error loading mandatory records</div>';
   }
 }
 
+// Enhanced displayMandatoryRecords function - REPLACE THE EXISTING ONE
 function displayMandatoryRecords(records) {
   const listDiv = document.getElementById("mandatoryRecordsList");
   if (!listDiv || !records) return;
@@ -768,31 +828,210 @@ function displayMandatoryRecords(records) {
 
   Object.keys(records).forEach((recordType) => {
     const record = records[recordType];
-    const linkedDocuments = record.enrichedDocuments?.filter(doc => doc.manuallyLinked) || [];
+    const allDocs = record.enrichedDocuments || [];
+
+    const linkedDocuments = allDocs.filter(
+      (doc) => doc.manuallyLinked === true
+    );
+    const autoDetectedDocuments = allDocs.filter(
+      (doc) => doc.autoDetected === true && doc.manuallyLinked !== true
+    );
+
     const isLinked = linkedDocuments.length > 0;
+    const hasAutoDetected = autoDetectedDocuments.length > 0;
+
+    const statusIcon = isLinked
+      ? '<i class="fas fa-check-circle text-success"></i>'
+      : '<i class="fas fa-exclamation-triangle text-warning"></i>';
 
     html += `
-      <div class="ims-category-level-2">
-        <div class="d-flex align-items-center">
-          <div class="flex-grow-1">
-            ${isLinked ? 
-              '<i class="fas fa-check-circle text-success ims-status-icon"></i>' : 
-              '<i class="fas fa-exclamation-triangle text-warning ims-status-icon"></i>'
-            }
-            <span class="mandatory-record-title">${recordType}</span>
-            <small class="text-muted ms-2">${record.description || ""}</small>
+      <div class="ims-category mb-3" data-record-type="${recordType}">
+        <div class="ims-category-level-2">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              ${statusIcon}
+              <span class="mandatory-record-title">${recordType}</span>
+              <small class="text-muted ms-2">${record.description || ""}</small>
+              ${
+                hasAutoDetected
+                  ? `<span class="badge bg-info ms-1">${autoDetectedDocuments.length} detected</span>`
+                  : ""
+              }
+            </div>
+            <button class="btn btn-sm btn-outline-info link-mandatory-btn" 
+                    data-record-type="${recordType}"
+                    style="font-size: 0.7rem;">
+              <i class="fas fa-link"></i> Link
+            </button>
           </div>
-          <button class="btn btn-sm btn-outline-info link-mandatory-btn" 
-                  data-record-type="${recordType}"
-                  style="font-size: 0.7rem;">
-            <i class="fas fa-link"></i> Link
-          </button>
         </div>
+        
+        ${
+          isLinked
+            ? `
+          <div class="mt-2 mb-3">
+            <h6 class="text-success"><i class="fas fa-check-circle"></i> Linked Documents</h6>
+            <ul class="ims-child-list">
+              ${linkedDocuments
+                .map(
+                  (doc) => `
+                <li class="ims-child-item ims-document-item ${
+                  doc.isArchived ? "ims-document-archived" : ""
+                }" 
+                    data-document="${doc.name}" 
+                    data-is-archived="${doc.isArchived}">
+                  <div class="flex-grow-1">
+                    <i class="fas fa-check-circle text-success ims-status-icon"></i>
+                    <a href="/document/${doc.id}" class="ims-document-link">${
+                    doc.name
+                  }</a>
+                    ${
+                      doc.isArchived
+                        ? '<span class="ims-archived-badge">ARCHIVED</span>'
+                        : ""
+                    }
+                  </div>
+                  <button class="btn btn-sm btn-outline-danger unlink-mandatory-btn" 
+                          data-record-type="${recordType}" 
+                          data-document-id="${doc.id}"
+                          style="font-size: 0.6rem;">
+                    <i class="fas fa-unlink"></i>
+                  </button>
+                </li>
+              `
+                )
+                .join("")}
+            </ul>
+          </div>
+        `
+            : ""
+        }
+        
+        ${
+          hasAutoDetected
+            ? `
+          <div class="mt-2">
+            <h6 class="text-info">
+              <i class="fas fa-search"></i> Auto-Detected Documents 
+              <small class="text-muted">(Click to link)</small>
+            </h6>
+            <div class="alert alert-light p-2">
+              <small class="text-muted mb-2 d-block">
+                <strong>Keywords:</strong> ${
+                  record.autoDetectKeywords
+                    ? record.autoDetectKeywords.join(", ")
+                    : "None"
+                }
+              </small>
+              <div class="auto-detected-documents">
+                ${autoDetectedDocuments
+                  .slice(0, 5)
+                  .map(
+                    (doc) => `
+                  <div class="list-group-item list-group-item-action auto-detected-item mb-1 ${
+                    doc.isArchived ? "archived" : ""
+                  }" 
+                       data-doc-id="${doc.id}" 
+                       data-doc-name="${doc.name}" 
+                       data-record-type="${recordType}"
+                       data-is-archived="${doc.isArchived}"
+                       style="cursor: pointer; font-size: 0.9rem; padding: 0.5rem;">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <i class="fas fa-file-alt text-info me-2"></i>
+                        <strong>${doc.name}</strong>
+                        ${
+                          doc.isArchived
+                            ? '<span class="ims-archived-badge">ARCHIVED</span>'
+                            : ""
+                        }
+                      </div>
+                      <div>
+                        <small class="text-success me-2">Click to link</small>
+                        <i class="fas fa-plus-circle text-success"></i>
+                      </div>
+                    </div>
+                    <div class="mt-1">
+                      <small class="text-muted">📁 ${
+                        doc.folder || "Root folder"
+                      }</small>
+                    </div>
+                  </div>
+                `
+                  )
+                  .join("")}
+                ${
+                  autoDetectedDocuments.length > 5
+                    ? `
+                  <div class="text-center mt-2">
+                    <small class="text-muted">... and ${
+                      autoDetectedDocuments.length - 5
+                    } more</small>
+                  </div>
+                `
+                    : ""
+                }
+              </div>
+            </div>
+          </div>
+        `
+            : ""
+        }
       </div>
     `;
   });
 
-  listDiv.innerHTML = html || '<div class="text-center text-muted py-4">No mandatory records configured</div>';
+  listDiv.innerHTML =
+    html ||
+    '<div class="text-center text-muted py-4">No mandatory records configured</div>';
+
+  // Add event listeners for auto-detected items
+  addMandatoryRecordEventListeners();
+}
+
+// Add this new function too
+function addMandatoryRecordEventListeners() {
+  // Link mandatory record buttons
+  document.querySelectorAll(".link-mandatory-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const recordType = this.getAttribute("data-record-type");
+      openMandatoryDocumentLinker(recordType);
+    });
+  });
+
+  // Unlink mandatory record buttons
+  document.querySelectorAll(".unlink-mandatory-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const recordType = this.getAttribute("data-record-type");
+      const documentId = this.getAttribute("data-document-id");
+      unlinkMandatoryDocument(recordType, documentId);
+    });
+  });
+
+  // Auto-detected documents click handlers
+  document.querySelectorAll(".auto-detected-item").forEach((item) => {
+    item.addEventListener("click", function () {
+      const docId = this.getAttribute("data-doc-id");
+      const docName = this.getAttribute("data-doc-name");
+      const recordType = this.getAttribute("data-record-type");
+      const isArchived = this.getAttribute("data-is-archived") === "true";
+
+      document
+        .querySelectorAll(".auto-detected-item")
+        .forEach((i) => i.classList.remove("active"));
+      this.classList.add("active");
+
+      let confirmMessage = `Link "${docName}" to mandatory record "${recordType}"?`;
+      if (isArchived) {
+        confirmMessage +=
+          "\n\n⚠️ WARNING: This document is archived and may be outdated.";
+      }
+
+      if (confirm(confirmMessage)) {
+        linkMandatoryDocument(recordType, docId, docName);
+      }
+    });
+  });
 }
 
 // ========================================
@@ -801,14 +1040,18 @@ function displayMandatoryRecords(records) {
 
 async function searchForDocuments(searchTerm, categoryName, documentName) {
   const resultsDiv = document.getElementById("linkDocumentResults");
-  resultsDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+  resultsDiv.innerHTML =
+    '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
 
   try {
-    const response = await fetch(`/api/available-documents?search=${encodeURIComponent(searchTerm)}`);
+    const response = await fetch(
+      `/api/available-documents?search=${encodeURIComponent(searchTerm)}`
+    );
     const documents = await response.json();
 
     if (documents.length === 0) {
-      resultsDiv.innerHTML = '<div class="alert alert-info">No documents found</div>';
+      resultsDiv.innerHTML =
+        '<div class="alert alert-info">No documents found</div>';
       return;
     }
 
@@ -816,7 +1059,9 @@ async function searchForDocuments(searchTerm, categoryName, documentName) {
     documents.slice(0, 10).forEach((doc) => {
       html += `
         <div class="list-group-item list-group-item-action" style="cursor: pointer;" 
-             onclick="linkDocument('${categoryName}', '${documentName}', '${doc.id}', '${doc.name}')">
+             onclick="linkDocument('${categoryName}', '${documentName}', '${
+        doc.id
+      }', '${doc.name}')">
           <h6 class="mb-1">${doc.name}</h6>
           <small class="text-muted">${doc.folder || "Root folder"}</small>
         </div>
@@ -832,14 +1077,18 @@ async function searchForDocuments(searchTerm, categoryName, documentName) {
 
 async function searchForCategoryDocuments(searchTerm, categoryName) {
   const resultsDiv = document.getElementById("linkCategoryDocumentResults");
-  resultsDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+  resultsDiv.innerHTML =
+    '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
 
   try {
-    const response = await fetch(`/api/available-documents?search=${encodeURIComponent(searchTerm)}`);
+    const response = await fetch(
+      `/api/available-documents?search=${encodeURIComponent(searchTerm)}`
+    );
     const documents = await response.json();
 
     if (documents.length === 0) {
-      resultsDiv.innerHTML = '<div class="alert alert-info">No documents found</div>';
+      resultsDiv.innerHTML =
+        '<div class="alert alert-info">No documents found</div>';
       return;
     }
 
@@ -847,7 +1096,9 @@ async function searchForCategoryDocuments(searchTerm, categoryName) {
     documents.slice(0, 10).forEach((doc) => {
       html += `
         <div class="list-group-item list-group-item-action" style="cursor: pointer;" 
-             onclick="linkCategoryDocument('${categoryName}', '${doc.id}', '${doc.name}')">
+             onclick="linkCategoryDocument('${categoryName}', '${doc.id}', '${
+        doc.name
+      }')">
           <h6 class="mb-1">${doc.name}</h6>
           <small class="text-muted">${doc.folder || "Root folder"}</small>
         </div>
@@ -863,23 +1114,31 @@ async function searchForCategoryDocuments(searchTerm, categoryName) {
 
 async function searchMandatoryDocuments(searchTerm, recordType) {
   const resultsDiv = document.getElementById("linkMandatoryResults");
-  resultsDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+  resultsDiv.innerHTML =
+    '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
 
   try {
-    const response = await fetch(`/api/available-documents?search=${encodeURIComponent(searchTerm)}`);
+    const response = await fetch(
+      `/api/available-documents?search=${encodeURIComponent(searchTerm)}`
+    );
     const documents = await response.json();
 
     if (documents.length === 0) {
-      resultsDiv.innerHTML = '<div class="alert alert-info">No documents found matching your search</div>';
+      resultsDiv.innerHTML =
+        '<div class="alert alert-info">No documents found matching your search</div>';
       return;
     }
 
     let html = '<div class="list-group">';
     documents.slice(0, 15).forEach((doc) => {
-      const archivedBadge = doc.isArchived ? '<span class="ims-archived-badge">ARCHIVED</span>' : "";
+      const archivedBadge = doc.isArchived
+        ? '<span class="ims-archived-badge">ARCHIVED</span>'
+        : "";
 
       html += `
-        <div class="list-group-item list-group-item-action mandatory-link-result ${doc.isArchived ? "archived" : ""}" 
+        <div class="list-group-item list-group-item-action mandatory-link-result ${
+          doc.isArchived ? "archived" : ""
+        }" 
              data-doc-id="${doc.id}" 
              data-doc-name="${doc.name}" 
              data-is-archived="${doc.isArchived}" 
@@ -889,7 +1148,9 @@ async function searchMandatoryDocuments(searchTerm, recordType) {
               <h6 class="mb-1">
                 <i class="fas fa-file-alt me-2"></i>${doc.name}${archivedBadge}
               </h6>
-              <p class="mb-1"><small class="text-muted">📁 ${doc.folder || "Root folder"}</small></p>
+              <p class="mb-1"><small class="text-muted">📁 ${
+                doc.folder || "Root folder"
+              }</small></p>
             </div>
             <div class="text-end">
               <small class="text-success">Click to link</small>
@@ -905,14 +1166,15 @@ async function searchMandatoryDocuments(searchTerm, recordType) {
 
     // Add click handlers
     document.querySelectorAll(".mandatory-link-result").forEach((result) => {
-      result.addEventListener("click", function() {
+      result.addEventListener("click", function () {
         const docId = this.getAttribute("data-doc-id");
         const docName = this.getAttribute("data-doc-name");
         const isArchived = this.getAttribute("data-is-archived") === "true";
 
         let confirmMessage = `Link "${docName}" to mandatory record "${recordType}"?`;
         if (isArchived) {
-          confirmMessage += "\n\n⚠️ WARNING: This document is archived and may be outdated.";
+          confirmMessage +=
+            "\n\n⚠️ WARNING: This document is archived and may be outdated.";
         }
 
         if (confirm(confirmMessage)) {
@@ -922,7 +1184,8 @@ async function searchMandatoryDocuments(searchTerm, recordType) {
     });
   } catch (error) {
     console.error("Search error:", error);
-    resultsDiv.innerHTML = '<div class="alert alert-danger">Error searching documents</div>';
+    resultsDiv.innerHTML =
+      '<div class="alert alert-danger">Error searching documents</div>';
   }
 }
 
@@ -943,7 +1206,9 @@ function linkDocument(categoryName, documentName, docId, actualDocName) {
       .then((data) => {
         if (data.success) {
           alert("Document linked successfully!");
-          const modal = bootstrap.Modal.getInstance(document.getElementById("linkDocumentModal"));
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("linkDocumentModal")
+          );
           modal.hide();
           setTimeout(() => window.location.reload(), 1000);
         } else {
@@ -968,7 +1233,9 @@ function linkCategoryDocument(categoryName, docId, actualDocName) {
       .then((data) => {
         if (data.success) {
           alert("Category document linked successfully!");
-          const modal = bootstrap.Modal.getInstance(document.getElementById("linkCategoryDocumentModal"));
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("linkCategoryDocumentModal")
+          );
           modal.hide();
           setTimeout(() => window.location.reload(), 1000);
         } else {
@@ -995,7 +1262,9 @@ async function linkMandatoryDocument(recordType, documentId, documentName) {
     if (data.success) {
       alert(`Successfully linked "${documentName}" to "${recordType}"!`);
 
-      const modal = bootstrap.Modal.getInstance(document.getElementById("linkMandatoryModal"));
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("linkMandatoryModal")
+      );
       if (modal) {
         modal.hide();
       }
@@ -1018,10 +1287,13 @@ async function unlinkMandatoryDocument(recordType, documentId) {
   }
 
   try {
-    const response = await fetch(`/api/mandatory-record/${encodeURIComponent(recordType)}/${documentId}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
+    const response = await fetch(
+      `/api/mandatory-record/${encodeURIComponent(recordType)}/${documentId}`,
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
 
     const data = await response.json();
 
@@ -1060,7 +1332,9 @@ async function saveCategoryChanges(originalCategoryName) {
 
     if (data.success) {
       alert("Category updated successfully!");
-      const modal = bootstrap.Modal.getInstance(document.getElementById("editCategoryModal"));
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("editCategoryModal")
+      );
       modal.hide();
       setTimeout(() => window.location.reload(), 1000);
     } else {
@@ -1074,16 +1348,21 @@ async function saveCategoryChanges(originalCategoryName) {
 
 async function deleteCategory(categoryName) {
   try {
-    const response = await fetch(`/api/delete-ims-category/${encodeURIComponent(categoryName)}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
+    const response = await fetch(
+      `/api/delete-ims-category/${encodeURIComponent(categoryName)}`,
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
 
     const data = await response.json();
 
     if (data.success) {
       alert("Category deleted successfully!");
-      const modal = bootstrap.Modal.getInstance(document.getElementById("editCategoryModal"));
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("editCategoryModal")
+      );
       modal.hide();
       setTimeout(() => window.location.reload(), 1000);
     } else {
@@ -1113,7 +1392,9 @@ async function uploadRevision(documentId) {
 
     if (data.success) {
       alert("Document revision uploaded successfully!");
-      const modal = bootstrap.Modal.getInstance(document.getElementById("revisionModal"));
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("revisionModal")
+      );
       modal.hide();
       setTimeout(() => window.location.reload(), 1000);
     } else {
@@ -1133,7 +1414,11 @@ async function uploadRevision(documentId) {
 // ========================================
 
 async function autoLinkDocuments() {
-  if (!confirm("This will automatically link documents based on name matching. Continue?")) {
+  if (
+    !confirm(
+      "This will automatically link documents based on name matching. Continue?"
+    )
+  ) {
     return;
   }
 
@@ -1224,7 +1509,9 @@ async function autoDetectMandatoryRecords() {
     const data = await response.json();
 
     if (data.success) {
-      alert(`Auto-detection completed! Found ${data.detectedCount} potential matches.`);
+      alert(
+        `Auto-detection completed! Found ${data.detectedCount} potential matches.`
+      );
       loadMandatoryRecords();
     } else {
       alert("Error during auto-detection: " + data.message);
@@ -1237,3 +1524,342 @@ async function autoDetectMandatoryRecords() {
     button.innerHTML = originalText;
   }
 }
+// Add these functions to your ims-index.js file
+
+// Load mandatory record types into the select dropdown
+function loadMandatoryRecordTypes() {
+  const recordSelect = document.getElementById("mandatoryRecordSelect");
+  if (!recordSelect) return;
+
+  // Default record types - you can load these from your API
+  const recordTypes = [
+    "Internal Audit Records",
+    "Management Review Records",
+    "NCR/Corrective Action Records",
+    "Training/Skills Register",
+    "Risk Management Records",
+    "Maintenance Contract Projects",
+    "Construction Projects",
+  ];
+
+  recordSelect.innerHTML = '<option value="">Select a record type...</option>';
+  recordTypes.forEach((type) => {
+    const option = document.createElement("option");
+    option.value = type;
+    option.textContent = type;
+    recordSelect.appendChild(option);
+  });
+}
+
+// Load settings for a specific mandatory record type
+function loadMandatoryRecordSettings() {
+  const recordSelect = document.getElementById("mandatoryRecordSelect");
+  const descriptionTextarea = document.getElementById("mandatoryDescription");
+  const keywordsTextarea = document.getElementById("mandatoryKeywords");
+
+  if (!recordSelect || !recordSelect.value) return;
+
+  const recordType = recordSelect.value;
+
+  // You can replace this with an actual API call to load saved settings
+  fetch(`/api/mandatory-record-settings/${encodeURIComponent(recordType)}`)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        if (descriptionTextarea) {
+          descriptionTextarea.value = data.settings.description || "";
+        }
+        if (keywordsTextarea) {
+          keywordsTextarea.value = data.settings.keywords
+            ? data.settings.keywords.join(", ")
+            : "";
+        }
+      }
+    })
+    .catch((error) => {
+      console.error("Error loading settings:", error);
+      // Provide some default values
+      if (descriptionTextarea) {
+        descriptionTextarea.value = `Configure settings for ${recordType}`;
+      }
+      if (keywordsTextarea) {
+        // Provide default keywords based on record type
+        const defaultKeywords = getDefaultKeywords(recordType);
+        keywordsTextarea.value = defaultKeywords.join(", ");
+      }
+    });
+}
+
+// Get default keywords for a record type
+function getDefaultKeywords(recordType) {
+  const keywordMap = {
+    "Internal Audit Records": [
+      "internal audit",
+      "audit schedule",
+      "audit report",
+      "audit plan",
+    ],
+    "Management Review Records": [
+      "management review",
+      "management meeting",
+      "review minutes",
+    ],
+    "NCR/Corrective Action Records": [
+      "ncr",
+      "non-conformance",
+      "corrective action",
+      "corrective action register",
+    ],
+    "Training/Skills Register": [
+      "training register",
+      "skills register",
+      "training matrix",
+      "competency",
+    ],
+    "Risk Management Records": [
+      "risk management",
+      "swot analysis",
+      "risk register",
+      "risk assessment",
+    ],
+    "Maintenance Contract Projects": [
+      "maintenance contract",
+      "maintenance project",
+      "preventive maintenance",
+    ],
+    "Construction Projects": [
+      "construction project",
+      "building project",
+      "construction contract",
+    ],
+  };
+
+  return keywordMap[recordType] || ["keyword1", "keyword2", "keyword3"];
+}
+// Add these functions to your ims-index.js file
+
+// Load mandatory record types into the select dropdown
+function loadMandatoryRecordTypes() {
+  const recordSelect = document.getElementById("mandatoryRecordSelect");
+  if (!recordSelect) return;
+
+  // Default record types - you can load these from your API
+  const recordTypes = [
+    "Internal Audit Records",
+    "Management Review Records",
+    "NCR/Corrective Action Records",
+    "Training/Skills Register",
+    "Risk Management Records",
+    "Maintenance Contract Projects",
+    "Construction Projects",
+  ];
+
+  recordSelect.innerHTML = '<option value="">Select a record type...</option>';
+  recordTypes.forEach((type) => {
+    const option = document.createElement("option");
+    option.value = type;
+    option.textContent = type;
+    recordSelect.appendChild(option);
+  });
+}
+
+// Load settings for a specific mandatory record type
+function loadMandatoryRecordSettings() {
+  const recordSelect = document.getElementById("mandatoryRecordSelect");
+  const descriptionTextarea = document.getElementById("mandatoryDescription");
+  const keywordsTextarea = document.getElementById("mandatoryKeywords");
+
+  if (!recordSelect || !recordSelect.value) return;
+
+  const recordType = recordSelect.value;
+
+  // You can replace this with an actual API call to load saved settings
+  fetch(`/api/mandatory-record-settings/${encodeURIComponent(recordType)}`)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        if (descriptionTextarea) {
+          descriptionTextarea.value = data.settings.description || "";
+        }
+        if (keywordsTextarea) {
+          keywordsTextarea.value = data.settings.keywords
+            ? data.settings.keywords.join(", ")
+            : "";
+        }
+      }
+    })
+    .catch((error) => {
+      console.error("Error loading settings:", error);
+      // Provide some default values
+      if (descriptionTextarea) {
+        descriptionTextarea.value = `Configure settings for ${recordType}`;
+      }
+      if (keywordsTextarea) {
+        // Provide default keywords based on record type
+        const defaultKeywords = getDefaultKeywords(recordType);
+        keywordsTextarea.value = defaultKeywords.join(", ");
+      }
+    });
+}
+
+// Get default keywords for a record type
+function getDefaultKeywords(recordType) {
+  const keywordMap = {
+    "Internal Audit Records": [
+      "internal audit",
+      "audit schedule",
+      "audit report",
+      "audit plan",
+    ],
+    "Management Review Records": [
+      "management review",
+      "management meeting",
+      "review minutes",
+    ],
+    "NCR/Corrective Action Records": [
+      "ncr",
+      "non-conformance",
+      "corrective action",
+      "corrective action register",
+    ],
+    "Training/Skills Register": [
+      "training register",
+      "skills register",
+      "training matrix",
+      "competency",
+    ],
+    "Risk Management Records": [
+      "risk management",
+      "swot analysis",
+      "risk register",
+      "risk assessment",
+    ],
+    "Maintenance Contract Projects": [
+      "maintenance contract",
+      "maintenance project",
+      "preventive maintenance",
+    ],
+    "Construction Projects": [
+      "construction project",
+      "building project",
+      "construction contract",
+    ],
+  };
+
+  return keywordMap[recordType] || ["keyword1", "keyword2", "keyword3"];
+}
+
+// Update mandatory record settings
+function updateMandatoryRecordSettings() {
+  const recordType = document.getElementById("mandatoryRecordSelect")?.value;
+  const description = document.getElementById("mandatoryDescription")?.value;
+  const keywords = document.getElementById("mandatoryKeywords")?.value;
+
+  if (!recordType) {
+    alert("Please select a record type");
+    return;
+  }
+  const keywordsArray = keywords
+    ? keywords
+        .split(",")
+        .map((k) => k.trim())
+        .filter((k) => k)
+    : [];
+
+  fetch("/api/update-mandatory-record", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      recordType: recordType,
+      description: description,
+      keywords: keywordsArray,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert("Settings updated successfully");
+        // Refresh the mandatory records display
+        loadMandatoryRecords();
+      } else {
+        alert("Error updating settings: " + (data.message || "Unknown error"));
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("Error updating settings");
+    });
+}
+
+// Update mandatory statistics
+function updateMandatoryStatistics(records) {
+  const totalElement = document.getElementById("mandatoryTotal");
+  const coverageElement = document.getElementById("mandatoryCoverage");
+
+  if (!totalElement || !coverageElement || !records) return;
+
+  const total = Object.keys(records).length;
+  const covered = Object.keys(records).filter((key) => {
+    const record = records[key];
+    return record.enrichedDocuments?.some((doc) => doc.manuallyLinked === true);
+  }).length;
+
+  const coverage = total > 0 ? Math.round((covered / total) * 100) : 0;
+
+  totalElement.textContent = total;
+  coverageElement.textContent = coverage + "%";
+}
+
+// Make functions globally available
+window.loadMandatoryRecordTypes = loadMandatoryRecordTypes;
+window.loadMandatoryRecordSettings = loadMandatoryRecordSettings;
+window.updateMandatoryRecordSettings = updateMandatoryRecordSettings;
+window.updateMandatoryStatistics = updateMandatoryStatistics;
+
+// Update mandatory record settings
+function updateMandatoryRecordSettings() {
+  const recordType = document.getElementById("mandatoryRecordSelect")?.value;
+  const description = document.getElementById("mandatoryDescription")?.value;
+  const keywords = document.getElementById("mandatoryKeywords")?.value;
+
+  if (!recordType) {
+    alert("Please select a record type");
+    return;
+  }
+
+  const keywordsArray = keywords
+    ? keywords
+        .split(",")
+        .map((k) => k.trim())
+        .filter((k) => k)
+    : [];
+
+  fetch("/api/update-mandatory-record", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      recordType: recordType,
+      description: description,
+      keywords: keywordsArray,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        alert("Settings updated successfully");
+        // Refresh the mandatory records display
+        loadMandatoryRecords();
+      } else {
+        alert("Error updating settings: " + (data.message || "Unknown error"));
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("Error updating settings");
+    });
+}
+
+// Make functions globally available
+window.loadMandatoryRecordTypes = loadMandatoryRecordTypes;
+window.loadMandatoryRecordSettings = loadMandatoryRecordSettings;
+window.updateMandatoryRecordSettings = updateMandatoryRecordSettings;

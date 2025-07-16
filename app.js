@@ -1378,6 +1378,35 @@ app.get("/documents", (req, res) => {
   }
 });
 
+// Add this to your app.js file
+app.get("/api/mandatory-record-settings/:recordType", (req, res) => {
+  try {
+    const recordType = req.params.recordType;
+    const mandatoryRecords = loadMandatoryRecords();
+
+    if (mandatoryRecords[recordType]) {
+      res.json({
+        success: true,
+        settings: {
+          description: mandatoryRecords[recordType].description,
+          keywords: mandatoryRecords[recordType].autoDetectKeywords || [],
+        },
+      });
+    } else {
+      res.json({
+        success: false,
+        message: "Record type not found",
+      });
+    }
+  } catch (error) {
+    console.error("Error loading mandatory record settings:", error);
+    res.json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
 app.get("/search", (req, res) => {
   try {
     const query = req.query.q || "";
@@ -2953,46 +2982,60 @@ app.post("/api/generate-document", express.json(), async (req, res) => {
     const { documentType, documentName, customInputs } = req.body;
     const { category } = customInputs || {};
 
-    console.log("Generating document:", documentType, documentName, "for category:", category);
+    console.log(
+      "Generating document:",
+      documentType,
+      documentName,
+      "for category:",
+      category
+    );
 
-    const result = await generateDocument(documentType, documentName, customInputs);
+    const result = await generateDocument(
+      documentType,
+      documentName,
+      customInputs
+    );
 
     if (result.success) {
       const timestamp = moment().format("YYYY-MM-DD_HH-mm-ss");
-      const cleanDocName = documentName.replace(/[<>:"/\\|?*]/g, '_'); // Clean filename
+      const cleanDocName = documentName.replace(/[<>:"/\\|?*]/g, "_"); // Clean filename
       const filename = `${cleanDocName}_AI_Generated_${timestamp}.docx`;
-      
+
       // Determine destination folder based on document type and category
       let destinationFolder = "AI Generated"; // Default fallback
-      
+
       if (category) {
         // Map categories to appropriate folders
         const categoryFolderMap = {
           "Work Instructions": "Section 04B Work Instructions",
-          "Safe Work Method Statements": "Section 04 SWMS", 
+          "Safe Work Method Statements": "Section 04 SWMS",
           "Core Policies": "Section 01B IMS Policies",
           "Incident and Injury Management": "Section 02 System Procedures",
           "Consultation and Communication": "Section 02 System Procedures",
-          "Risk Management": "Section 02 System Procedures"
+          "Risk Management": "Section 02 System Procedures",
         };
-        
+
         destinationFolder = categoryFolderMap[category] || "AI Generated";
       } else if (documentType) {
         // Map document types to folders if no category
         const typeFolderMap = {
-          "SWMS": "Section 04 SWMS",
+          SWMS: "Section 04 SWMS",
           "Safe Work Method Statement": "Section 04 SWMS",
           "Risk Assessment": "Section 02 System Procedures",
           "Safety Policy": "Section 01B IMS Policies",
           "Training Manual": "Section 03 Proforma Docs",
           "Emergency Procedure": "Section 02 System Procedures",
-          "Work Procedure": "Section 04B Work Instructions"
+          "Work Procedure": "Section 04B Work Instructions",
         };
-        
+
         destinationFolder = typeFolderMap[documentType] || "AI Generated";
       }
 
-      const fullDestinationPath = path.join(DOCUMENTS_ROOT, "Intergrated Management System", destinationFolder);
+      const fullDestinationPath = path.join(
+        DOCUMENTS_ROOT,
+        "Intergrated Management System",
+        destinationFolder
+      );
       const filepath = path.join(fullDestinationPath, filename);
 
       // Create destination folder if it doesn't exist
@@ -3015,7 +3058,7 @@ app.post("/api/generate-document", express.json(), async (req, res) => {
         filename: filename,
         destinationFolder: destinationFolder,
         metadata: result.metadata,
-        wordCount: result.content.split(' ').length
+        wordCount: result.content.split(" ").length,
       });
     } else {
       res.json(result);
