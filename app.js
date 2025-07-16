@@ -1167,60 +1167,860 @@ function saveAIConfig(config) {
   }
 }
 
+// Replace your current generateDocument function with this enhanced version
 async function generateDocument(documentType, documentName, customInputs) {
   const aiConfig = loadAIConfig();
 
   if (!aiConfig.apiKeys[aiConfig.selectedProvider]) {
     return {
       success: false,
-      message: "AI API key not configured",
+      message:
+        "AI provider not configured. Please set up API keys in settings.",
+    };
+  }
+  const documentTypeMap = {
+    policy: "Safety Policy",
+    procedure: "Work Procedure",
+    swms: "SWMS",
+    SWMS: "SWMS",
+    "Risk Assessment": "Risk Assessment",
+    "Emergency Procedure": "Emergency Procedure",
+    "Training Manual": "Training Manual",
+    "Work Procedure": "Work Procedure",
+    "Safety Policy": "Safety Policy",
+  };
+
+  const mappedDocumentType = documentTypeMap[documentType] || documentType;
+
+  // Enhanced prompts for each document type
+  const ENHANCED_PROMPTS = {
+    SWMS: `Create a comprehensive Safe Work Method Statement (SWMS) for "${documentName}" in accordance with Australian safety standards and ${
+      aiConfig.companyInfo.jurisdiction
+    } regulations.
+
+Company: ${aiConfig.companyInfo.name || "Your Company"}
+Industry: ${aiConfig.companyInfo.industry || "electrical"}
+Jurisdiction: ${aiConfig.companyInfo.jurisdiction || "Victoria"}
+Standards: ${aiConfig.companyInfo.standards?.join(", ") || "ISO 45001"}
+
+The SWMS must include these comprehensive sections:
+
+1. DOCUMENT CONTROL SECTION
+   - Document title, number, version, effective date
+   - Approval signatures and review dates
+   - Distribution list and controlled copy information
+
+2. ACTIVITY DESCRIPTION
+   - Detailed scope of work and objectives
+   - Work location and environmental conditions
+   - Personnel involved and their roles
+   - Equipment and materials required
+   - Estimated duration and schedule
+
+3. COMPREHENSIVE HAZARD IDENTIFICATION
+   - Physical hazards (electrical, mechanical, falls, etc.)
+   - Chemical hazards (substances, fumes, dust)
+   - Biological hazards (if applicable)
+   - Ergonomic hazards (manual handling, repetitive tasks)
+   - Psychosocial hazards (stress, fatigue, isolation)
+   - Environmental hazards (weather, terrain, wildlife)
+
+4. DETAILED RISK ASSESSMENT
+   - Risk matrix using likelihood × consequence = risk rating
+   - Initial risk assessment (before controls)
+   - Risk control measures following hierarchy of controls:
+     * Elimination (remove the hazard completely)
+     * Substitution (replace with something less hazardous)
+     * Engineering controls (isolation, ventilation, guarding)
+     * Administrative controls (procedures, training, signage)
+     * Personal protective equipment (PPE)
+   - Residual risk assessment (after controls)
+
+5. STEP-BY-STEP SAFE WORK PROCEDURES
+   - Pre-work safety briefing and planning
+   - Detailed sequential work steps with safety controls
+   - Quality checkpoints and hold points
+   - Handover procedures between shifts/teams
+   - Work completion and cleanup procedures
+
+6. EMERGENCY RESPONSE PROCEDURES
+   - Emergency contact numbers and escalation
+   - Evacuation procedures and assembly points
+   - First aid response and medical emergency procedures
+   - Fire emergency response
+   - Chemical spill response (if applicable)
+   - Equipment failure response
+   - Severe weather response
+
+7. REQUIRED PPE AND SAFETY EQUIPMENT
+   - Specific PPE for each work activity
+   - PPE inspection and maintenance requirements
+   - Safety equipment (harnesses, gas monitors, etc.)
+   - Emergency equipment (eyewash, first aid, spill kits)
+
+8. PERMITS AND AUTHORIZATIONS
+   - Work permits required (hot work, confined space, etc.)
+   - Electrical isolation and lockout/tagout procedures
+   - Environmental permits if required
+   - Authority approvals and notifications
+
+9. TRAINING AND COMPETENCY REQUIREMENTS
+   - Required qualifications and certifications
+   - Site-specific training requirements
+   - Competency assessment criteria
+   - Refresher training schedules
+
+10. MONITORING AND REVIEW
+    - Safety monitoring during work
+    - Environmental monitoring requirements
+    - Regular SWMS review and update procedures
+    - Lessons learned and improvement processes
+
+11. REFERENCES AND APPENDICES
+    - Relevant Australian Standards (AS/NZS series)
+    - ${aiConfig.companyInfo.jurisdiction} WorkSafe guidelines
+    - Company policies and procedures
+    - Material safety data sheets
+    - Site maps and drawings
+
+Create a professional, comprehensive document that meets Australian regulatory requirements and could be used immediately for regulatory inspection.
+
+Activity Details: ${
+      customInputs.prompt || "Standard safety procedures required"
+    }
+Specific Requirements: ${
+      customInputs.specificDetails || "Follow industry best practices"
+    }`,
+
+    "Risk Assessment": `Create a comprehensive Risk Assessment for "${documentName}" following AS/NZS ISO 31000 Risk Management principles and ${
+      aiConfig.companyInfo.jurisdiction
+    } regulatory requirements.
+
+Company: ${aiConfig.companyInfo.name || "Your Company"}
+Industry: ${aiConfig.companyInfo.industry || "electrical"}
+Jurisdiction: ${aiConfig.companyInfo.jurisdiction || "Victoria"}
+Standards: ${aiConfig.companyInfo.standards?.join(", ") || "ISO 45001"}
+
+The Risk Assessment must include:
+
+1. EXECUTIVE SUMMARY
+   - Purpose and scope of assessment
+   - Key findings and recommendations
+   - Overall risk profile summary
+
+2. ASSESSMENT METHODOLOGY
+   - Risk management framework used (AS/NZS ISO 31000)
+   - Risk criteria and acceptance levels
+   - Assessment team and qualifications
+   - Data sources and consultation process
+
+3. ACTIVITY/PROCESS DESCRIPTION
+   - Detailed description of activities assessed
+   - Location and environmental factors
+   - Personnel involved and their exposure
+   - Equipment, materials, and substances used
+   - Operational timeframes and frequencies
+
+4. COMPREHENSIVE HAZARD IDENTIFICATION
+   - Systematic hazard identification process
+   - Physical hazards (noise, vibration, radiation, etc.)
+   - Chemical hazards (toxic, corrosive, flammable substances)
+   - Biological hazards (bacteria, viruses, allergens)
+   - Ergonomic hazards (manual handling, awkward postures)
+   - Psychosocial hazards (stress, bullying, fatigue)
+   - Environmental hazards (weather extremes, natural disasters)
+
+5. RISK ANALYSIS AND EVALUATION
+   - Likelihood assessment criteria (1-5 scale)
+   - Consequence assessment criteria (1-5 scale)
+   - Risk matrix and rating system
+   - Initial risk ratings (before controls)
+   - Tolerability and acceptance criteria
+
+6. RISK CONTROL MEASURES
+   - Hierarchy of controls application:
+     * Elimination strategies
+     * Substitution options
+     * Engineering controls design
+     * Administrative controls implementation
+     * PPE selection and use
+   - Implementation timeline and responsibilities
+   - Resource requirements and costs
+
+7. RESIDUAL RISK ASSESSMENT
+   - Risk ratings after control implementation
+   - Comparison with acceptance criteria
+   - Additional controls if required
+   - Monitoring and review requirements
+
+8. EMERGENCY PREPAREDNESS
+   - Emergency scenarios identified
+   - Response procedures and resources
+   - Training and drill requirements
+   - Communication and notification protocols
+
+9. CONSULTATION AND COMMUNICATION
+   - Stakeholder consultation process
+   - Worker participation and feedback
+   - Communication of results and controls
+   - Training and awareness programs
+
+10. MONITORING AND REVIEW
+    - Performance indicators and metrics
+    - Regular review schedules
+    - Audit and inspection requirements
+    - Continuous improvement processes
+
+11. REGULATORY COMPLIANCE
+    - Applicable legislation and standards
+    - Compliance obligations and requirements
+    - Reporting and notification requirements
+    - Authority liaison and approvals
+
+Reference: AS/NZS ISO 31000:2018 Risk Management, AS/NZS 4801 OHS Management, WorkSafe ${
+      aiConfig.companyInfo.jurisdiction
+    } guidelines.
+
+Assessment Details: ${
+      customInputs.prompt || "Comprehensive risk assessment required"
+    }
+Specific Requirements: ${
+      customInputs.specificDetails || "Follow regulatory requirements"
+    }`,
+
+    "Safety Policy": `Create a comprehensive Safety Policy for ${
+      aiConfig.companyInfo.name || "Your Company"
+    } in accordance with ${
+      aiConfig.companyInfo.standards?.join(" and ") || "ISO 45001"
+    } and ${aiConfig.companyInfo.jurisdiction} regulatory requirements.
+
+Company: ${aiConfig.companyInfo.name || "Your Company"}
+Industry: ${aiConfig.companyInfo.industry || "electrical"}
+Jurisdiction: ${aiConfig.companyInfo.jurisdiction || "Victoria"}
+Standards: ${aiConfig.companyInfo.standards?.join(", ") || "ISO 45001"}
+
+The Safety Policy must include:
+
+1. POLICY STATEMENT AND COMMITMENT
+   - CEO/Senior Leadership commitment statement
+   - Safety vision and values
+   - Zero harm philosophy and targets
+   - Commitment to legal compliance and continuous improvement
+
+2. SCOPE AND APPLICATION
+   - All operations, facilities, and activities covered
+   - All personnel including employees, contractors, visitors
+   - Geographic scope and jurisdictional coverage
+   - Integration with other management systems
+
+3. LEGISLATIVE AND REGULATORY COMPLIANCE
+   - ${aiConfig.companyInfo.jurisdiction} Occupational Health and Safety Act
+   - ${aiConfig.companyInfo.jurisdiction} OHS Regulations
+   - Industry-specific regulations for ${aiConfig.companyInfo.industry}
+   - Australian Standards compliance (AS/NZS series)
+   - WorkSafe ${aiConfig.companyInfo.jurisdiction} codes of practice
+
+4. ROLES AND RESPONSIBILITIES
+   - Board of Directors and Executive responsibilities
+   - Senior Management safety accountabilities
+   - Line Management duties and authorities
+   - Supervisor responsibilities and expectations
+   - Worker rights, duties, and participation
+   - Safety committee roles and functions
+
+5. SAFETY MANAGEMENT SYSTEM FRAMEWORK
+   - Policy implementation and governance
+   - Planning and objective setting processes
+   - Operational controls and procedures
+   - Performance monitoring and measurement
+   - Internal audit and management review
+   - Continual improvement methodology
+
+6. HAZARD IDENTIFICATION AND RISK MANAGEMENT
+   - Systematic hazard identification processes
+   - Risk assessment methodologies and criteria
+   - Risk control hierarchy implementation
+   - Change management procedures
+   - Contractor and supplier risk management
+
+7. CONSULTATION AND COMMUNICATION
+   - Worker consultation mechanisms
+   - Safety committee structures and processes
+   - Communication channels and methods
+   - Safety suggestion and feedback systems
+   - External stakeholder engagement
+
+8. INCIDENT MANAGEMENT
+   - Incident reporting requirements and procedures
+   - Investigation methodologies and timelines
+   - Corrective and preventive action processes
+   - Lessons learned and knowledge sharing
+   - Regulatory notification requirements
+
+9. TRAINING AND COMPETENCY
+   - Safety induction and orientation programs
+   - Role-specific training requirements
+   - Competency assessment and verification
+   - Refresher and update training schedules
+   - Training records and documentation
+
+10. EMERGENCY PREPAREDNESS AND RESPONSE
+    - Emergency response organization
+    - Emergency procedures and protocols
+    - Training and drill requirements
+    - Equipment and resource management
+    - Business continuity planning
+
+11. PERFORMANCE MONITORING AND MEASUREMENT
+    - Key performance indicators (KPIs)
+    - Leading and lagging indicators
+    - Data collection and analysis systems
+    - Benchmarking and trend analysis
+    - Target setting and performance review
+
+12. CONTRACTOR AND VISITOR MANAGEMENT
+    - Contractor prequalification and selection
+    - Safety requirements and expectations
+    - Monitoring and performance management
+    - Visitor safety induction and controls
+    - Third-party liability and insurance
+
+13. IMPLEMENTATION AND RESOURCES
+    - Implementation timeline and milestones
+    - Resource allocation and budgeting
+    - Organizational structure and reporting
+    - Technology and system requirements
+    - Communication and change management
+
+14. POLICY REVIEW AND CONTINUOUS IMPROVEMENT
+    - Regular policy review schedules
+    - Performance evaluation and assessment
+    - Stakeholder feedback incorporation
+    - Update and revision procedures
+    - Version control and distribution
+
+Policy Requirements: ${
+      customInputs.prompt || "Comprehensive safety management policy"
+    }
+Specific Focus Areas: ${
+      customInputs.specificDetails ||
+      "Industry best practices and regulatory compliance"
+    }`,
+
+    "Emergency Procedure": `Create a comprehensive Emergency Response Procedure for "${documentName}" at ${
+      aiConfig.companyInfo.name || "Your Company"
+    } in accordance with AS 3745-2010 and ${
+      aiConfig.companyInfo.jurisdiction
+    } emergency management requirements.
+
+Company: ${aiConfig.companyInfo.name || "Your Company"}
+Industry: ${aiConfig.companyInfo.industry || "electrical"}
+Jurisdiction: ${aiConfig.companyInfo.jurisdiction || "Victoria"}
+
+The Emergency Procedure must include:
+
+1. PURPOSE AND SCOPE
+   - Emergency types covered by this procedure
+   - Facilities and locations included
+   - Personnel and stakeholders affected
+   - Integration with other emergency procedures
+
+2. EMERGENCY RESPONSE ORGANIZATION
+   - Emergency Control Organization (ECO) structure
+   - Chief Warden roles and responsibilities
+   - Area Warden duties and authorities
+   - First Aid Officer responsibilities
+   - Deputy roles and succession planning
+
+3. EMERGENCY CONTACT INFORMATION
+   - Emergency services (000 - Police, Fire, Ambulance)
+   - ${aiConfig.companyInfo.jurisdiction} emergency services
+   - Company emergency contacts and escalation
+   - Key personnel 24/7 contact details
+   - Utility companies and service providers
+
+4. ALERT AND NOTIFICATION PROCEDURES
+   - Emergency detection and assessment
+   - Alert systems and communication methods
+   - Notification protocols and escalation
+   - External authority notification requirements
+   - Media and stakeholder communication
+
+5. EVACUATION PROCEDURES
+   - Evacuation signals and announcements
+   - Primary and secondary evacuation routes
+   - Assembly areas and accountability procedures
+   - Special needs personnel assistance
+   - Visitor and contractor evacuation
+   - Equipment shutdown and securing procedures
+
+6. SPECIFIC EMERGENCY RESPONSE ACTIONS
+   - ${documentName} specific response procedures
+   - Immediate response priorities and actions
+   - Resource deployment and coordination
+   - Containment and mitigation strategies
+   - Recovery and restoration procedures
+
+7. FIRST AID AND MEDICAL RESPONSE
+   - First aid assessment and treatment
+   - Medical emergency response procedures
+   - Ambulance coordination and hospital liaison
+   - Serious injury and fatality protocols
+   - Medical facility locations and capabilities
+
+8. FIRE SAFETY AND RESPONSE
+   - Fire detection and alarm systems
+   - Fire suppression and extinguisher use
+   - Fire brigade coordination and liaison
+   - Smoke management and ventilation
+   - Hot work and ignition source controls
+
+9. CHEMICAL SPILL AND HAZMAT RESPONSE
+   - Spill assessment and containment
+   - Personal protection and evacuation zones
+   - Cleanup procedures and waste disposal
+   - Environmental protection measures
+   - Regulatory notification requirements
+
+10. UTILITIES AND INFRASTRUCTURE EMERGENCIES
+    - Electrical power failure response
+    - Gas leak detection and response
+    - Water supply disruption procedures
+    - Communication system failures
+    - Building structural emergencies
+
+11. SECURITY AND THREAT RESPONSE
+    - Bomb threat procedures
+    - Suspicious package protocols
+    - Workplace violence response
+    - Unauthorized access incidents
+    - Cyber security emergencies
+
+12. NATURAL DISASTER RESPONSE
+    - Severe weather warning procedures
+    - Earthquake response and shelter
+    - Flood emergency procedures
+    - Bush fire threat response
+    - Storm damage assessment and recovery
+
+13. POST-EMERGENCY PROCEDURES
+    - All-clear and re-entry authorization
+    - Damage assessment and documentation
+    - Incident investigation requirements
+    - Business continuity activation
+    - Lessons learned and procedure updates
+
+14. TRAINING AND DRILLS
+    - Emergency response training requirements
+    - Drill schedules and scenarios
+    - Training records and competency assessment
+    - External emergency service liaison training
+    - Community emergency preparedness
+
+15. EQUIPMENT AND RESOURCES
+    - Emergency equipment inventory and maintenance
+    - Communication equipment and backup systems
+    - First aid supplies and medical equipment
+    - Emergency lighting and power systems
+    - Personal protective equipment for responders
+
+Emergency Details: ${
+      customInputs.prompt || "Comprehensive emergency response required"
+    }
+Facility Information: ${
+      customInputs.specificDetails || "Standard facility emergency procedures"
+    }`,
+
+    "Training Manual": `Create a comprehensive Training Manual for "${documentName}" at ${
+      aiConfig.companyInfo.name || "Your Company"
+    } in accordance with Australian training standards and ${
+      aiConfig.companyInfo.jurisdiction
+    } requirements.
+
+Company: ${aiConfig.companyInfo.name || "Your Company"}
+Industry: ${aiConfig.companyInfo.industry || "electrical"}
+Jurisdiction: ${aiConfig.companyInfo.jurisdiction || "Victoria"}
+
+The Training Manual must include:
+
+1. TRAINING PROGRAM OVERVIEW
+   - Training objectives and learning outcomes
+   - Target audience and prerequisites
+   - Training duration and delivery methods
+   - Assessment and certification requirements
+
+2. REGULATORY AND COMPLIANCE REQUIREMENTS
+   - Applicable legislation and standards
+   - Industry-specific training requirements
+   - Competency standards and qualifications
+   - Continuing education and renewal requirements
+
+3. TRAINER QUALIFICATIONS AND REQUIREMENTS
+   - Minimum qualifications and experience
+   - Training delivery competencies
+   - Assessment and evaluation skills
+   - Ongoing professional development
+
+4. LEARNING CONTENT AND MODULES
+   Module 1: Theoretical Foundation
+   - Key concepts and principles
+   - Legislative and regulatory framework
+   - Industry standards and best practices
+   - Risk management principles
+
+   Module 2: Practical Application
+   - Hands-on skill development
+   - Real-world scenarios and case studies
+   - Problem-solving and decision making
+   - Tool and equipment familiarization
+
+   Module 3: Safety and Risk Management
+   - Hazard identification and risk assessment
+   - Safe work procedures and practices
+   - Emergency procedures and response
+   - Personal protective equipment use
+
+   Module 4: Quality and Performance
+   - Quality standards and requirements
+   - Performance monitoring and measurement
+   - Continuous improvement processes
+   - Documentation and record keeping
+
+5. TRAINING DELIVERY METHODOLOGY
+   - Face-to-face instruction methods
+   - Online and e-learning components
+   - Practical demonstration and practice
+   - Group activities and discussions
+   - Individual coaching and mentoring
+
+6. ASSESSMENT AND EVALUATION
+   - Assessment criteria and standards
+   - Written examination requirements
+   - Practical demonstration assessments
+   - Portfolio and project-based assessment
+   - Competency verification procedures
+
+7. TRAINING RESOURCES AND MATERIALS
+   - Required textbooks and references
+   - Training aids and visual materials
+   - Equipment and tools needed
+   - Software and technology requirements
+   - Safety equipment and PPE
+
+8. TRAINING FACILITIES AND ENVIRONMENT
+   - Classroom setup and requirements
+   - Practical training area specifications
+   - Safety considerations and controls
+   - Technology and equipment needs
+   - Accessibility and accommodation
+
+9. PARTICIPANT REQUIREMENTS
+   - Entry requirements and prerequisites
+   - Physical and medical requirements
+   - Language and literacy standards
+   - Safety induction and orientation
+   - Code of conduct and expectations
+
+10. CERTIFICATION AND RECOGNITION
+    - Certificate and qualification awarded
+    - Competency standards achieved
+    - Industry recognition and portability
+    - Renewal and continuing education
+    - Record keeping and verification
+
+11. TRAINING EVALUATION AND FEEDBACK
+    - Participant feedback collection
+    - Training effectiveness evaluation
+    - Trainer performance assessment
+    - Program improvement processes
+    - Stakeholder satisfaction measurement
+
+12. QUALITY ASSURANCE AND CONTINUOUS IMPROVEMENT
+    - Quality standards and benchmarks
+    - Regular program review and update
+    - Industry consultation and feedback
+    - Regulatory compliance monitoring
+    - Best practice research and implementation
+
+13. RECORD KEEPING AND DOCUMENTATION
+    - Participant records and transcripts
+    - Assessment results and certificates
+    - Training delivery documentation
+    - Quality assurance records
+    - Compliance and audit trails
+
+Training Specifications: ${
+      customInputs.prompt || "Comprehensive training program required"
+    }
+Target Audience Details: ${
+      customInputs.specificDetails || "Industry professionals and workers"
+    }`,
+
+    "Work Procedure": `Create a comprehensive Work Procedure for "${documentName}" at ${
+      aiConfig.companyInfo.name || "Your Company"
+    } in accordance with ${
+      aiConfig.companyInfo.standards?.join(" and ") || "ISO 45001"
+    } and ${aiConfig.companyInfo.jurisdiction} requirements.
+
+Company: ${aiConfig.companyInfo.name || "Your Company"}
+Industry: ${aiConfig.companyInfo.industry || "electrical"}
+Jurisdiction: ${aiConfig.companyInfo.jurisdiction || "Victoria"}
+
+The Work Procedure must include:
+
+1. PURPOSE AND SCOPE
+   - Objective and purpose of the procedure
+   - Activities and processes covered
+   - Locations and facilities included
+   - Personnel and roles involved
+
+2. DEFINITIONS AND TERMINOLOGY
+   - Technical terms and definitions
+   - Industry-specific terminology
+   - Acronyms and abbreviations
+   - Reference standards and codes
+
+3. ROLES AND RESPONSIBILITIES
+   - Management responsibilities and authorities
+   - Supervisor duties and accountabilities
+   - Worker roles and expectations
+   - Specialist roles and competencies
+   - Contractor and visitor responsibilities
+
+4. REGULATORY AND COMPLIANCE REQUIREMENTS
+   - Applicable legislation and regulations
+   - Industry standards and codes of practice
+   - Company policies and procedures
+   - Permit and authorization requirements
+   - Documentation and record keeping
+
+5. EQUIPMENT, TOOLS, AND MATERIALS
+   - Required equipment and specifications
+   - Tool inventory and maintenance
+   - Material specifications and handling
+   - Calibration and verification requirements
+   - Storage and security arrangements
+
+6. SAFETY REQUIREMENTS AND PRECAUTIONS
+   - Hazard identification and risk assessment
+   - Safety controls and protective measures
+   - Personal protective equipment requirements
+   - Environmental protection measures
+   - Emergency equipment and procedures
+
+7. PRE-WORK PREPARATION AND PLANNING
+   - Work planning and scheduling
+   - Resource allocation and availability
+   - Permit applications and approvals
+   - Safety briefings and communications
+   - Equipment inspection and setup
+
+8. DETAILED WORK PROCEDURES
+   Step 1: Initial Setup and Preparation
+   - Site establishment and security
+   - Equipment positioning and connection
+   - Safety zone establishment
+   - Communication system setup
+
+   Step 2: Work Execution Procedures
+   - Sequential work instructions
+   - Quality control checkpoints
+   - Safety monitoring requirements
+   - Progress reporting and documentation
+
+   Step 3: Quality Assurance and Testing
+   - Inspection and testing procedures
+   - Acceptance criteria and standards
+   - Non-conformance handling
+   - Documentation and certification
+
+   Step 4: Completion and Handover
+   - Work completion verification
+   - Cleanup and site restoration
+   - Documentation and record finalization
+   - Handover procedures and sign-off
+
+9. QUALITY CONTROL AND ASSURANCE
+   - Quality standards and specifications
+   - Inspection and testing requirements
+   - Non-conformance identification and correction
+   - Quality documentation and records
+   - Continuous improvement processes
+
+10. ENVIRONMENTAL CONSIDERATIONS
+    - Environmental impact assessment
+    - Pollution prevention measures
+    - Waste management and disposal
+    - Resource conservation practices
+    - Environmental monitoring requirements
+
+11. EMERGENCY PROCEDURES
+    - Emergency contact information
+    - Emergency response procedures
+    - Evacuation and assembly procedures
+    - First aid and medical response
+    - Incident reporting requirements
+
+12. TRAINING AND COMPETENCY
+    - Required qualifications and certifications
+    - Training program requirements
+    - Competency assessment criteria
+    - Refresher training schedules
+    - Training record maintenance
+
+13. DOCUMENTATION AND RECORD KEEPING
+    - Required documentation and forms
+    - Record keeping requirements
+    - Document control and distribution
+    - Archive and retention periods
+    - Access and confidentiality
+
+14. MONITORING AND REVIEW
+    - Performance monitoring indicators
+    - Regular procedure review schedules
+    - Stakeholder feedback collection
+    - Continuous improvement implementation
+    - Version control and updates
+
+15. REFERENCES AND APPENDICES
+    - Relevant standards and regulations
+    - Supporting procedures and guidelines
+    - Forms and checklists
+    - Diagrams and technical drawings
+    - Contact information and resources
+
+Procedure Details: ${
+      customInputs.prompt || "Comprehensive work procedure required"
+    }
+Specific Requirements: ${
+      customInputs.specificDetails ||
+      "Follow industry best practices and regulatory requirements"
+    }`,
+  };
+
+  // Get the appropriate prompt
+  const prompt = ENHANCED_PROMPTS[mappedDocumentType];
+  if (!prompt) {
+    console.log(
+      `No prompt found for document type: ${documentType} (mapped to: ${mappedDocumentType})`
+    );
+    console.log("Available prompts:", Object.keys(ENHANCED_PROMPTS));
+    return {
+      success: false,
+      message: `Document type "${documentType}" not supported. Available types: ${Object.keys(
+        ENHANCED_PROMPTS
+      ).join(", ")}`,
     };
   }
 
-  // Simple document generation placeholder
-  const content = `# ${documentName}
+  console.log(
+    "Generating enhanced document with AI provider:",
+    aiConfig.selectedProvider
+  );
+  console.log("Estimated tokens:", estimateTokens(prompt));
 
-## Document Type: ${documentType}
+  try {
+    const response = await callAIProvider(
+      AI_PROVIDERS[aiConfig.selectedProvider],
+      aiConfig.apiKeys[aiConfig.selectedProvider],
+      prompt
+    );
 
-This document was generated by SafetySync Pro AI Assistant.
+    // Add professional document header and footer
+    let processedContent = response.content;
 
-**Generated on:** ${new Date().toLocaleDateString()}
-**Company:** ${aiConfig.companyInfo.name || "Your Company"}
-**Industry:** ${aiConfig.companyInfo.industry}
+    // Add document control header if not present
+    if (
+      !processedContent.includes("Document Control") &&
+      !processedContent.includes("DOCUMENT CONTROL")
+    ) {
+      const documentHeader = `
+DOCUMENT CONTROL
+================
+Document Title: ${documentName}
+Document Type: ${documentType}
+Company: ${aiConfig.companyInfo.name || "Your Company"}
+Version: 1.0
+Effective Date: ${new Date().toLocaleDateString("en-AU")}
+Review Date: ${new Date(
+        Date.now() + 365 * 24 * 60 * 60 * 1000
+      ).toLocaleDateString("en-AU")}
+Approved By: [Name] _________________ Date: _________
+Position: [Title] _________________ Signature: _________
 
-## Content
+================================================================================
 
-${
-  documentType === "policy"
-    ? "This policy outlines the requirements and procedures for..."
-    : "This procedure describes the step-by-step process for..."
+`;
+      processedContent = documentHeader + processedContent;
+    }
+
+    // Add document footer
+    const documentNumber = generateDocumentNumber(documentType);
+    const documentFooter = `
+
+================================================================================
+Document Number: ${documentNumber}
+Revision: 1.0
+Date: ${new Date().toLocaleDateString("en-AU")}
+Page: [Page] of [Total Pages]
+
+CONFIDENTIAL - Property of ${aiConfig.companyInfo.name || "Your Company"}
+This document is controlled and may not be copied or distributed without authorization.
+================================================================================`;
+
+    processedContent += documentFooter;
+
+    return {
+      success: true,
+      content: processedContent,
+      metadata: {
+        provider: aiConfig.selectedProvider,
+        model: AI_PROVIDERS[aiConfig.selectedProvider].model,
+        tokensUsed:
+          response.tokensUsed || estimateTokens(prompt + processedContent),
+        estimatedCost:
+          (response.tokensUsed || estimateTokens(prompt + processedContent)) *
+          AI_PROVIDERS[aiConfig.selectedProvider].costPerToken,
+        generatedAt: new Date().toISOString(),
+        documentType: documentType,
+        companyInfo: aiConfig.companyInfo,
+        wordCount: processedContent.split(" ").length,
+        enhancedVersion: true,
+        documentNumber: documentNumber,
+      },
+    };
+  } catch (error) {
+    console.error("AI generation error:", error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
 }
 
-### Key Requirements
-- Compliance with relevant standards
-- Regular review and updates
-- Training and communication
-- Monitoring and measurement
-
-### Implementation
-1. Review existing practices
-2. Develop implementation plan
-3. Provide training
-4. Monitor compliance
-5. Regular review and improvement
-
----
-*This document is AI-generated and should be reviewed by qualified personnel before implementation.*`;
-
-  return {
-    success: true,
-    content: content,
-    metadata: {
-      documentType: documentType,
-      generatedBy: "AI",
-      timestamp: new Date().toISOString(),
-    },
+// Helper function to generate document numbers
+function generateDocumentNumber(documentType) {
+  const typeMap = {
+    SWMS: "SWMS",
+    "Risk Assessment": "RA",
+    "Safety Policy": "POL",
+    "Emergency Procedure": "EP",
+    "Training Manual": "TM",
+    "Work Procedure": "WP",
   };
+
+  const prefix = typeMap[documentType] || "DOC";
+  const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const random = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, "0");
+
+  return `${prefix}-${timestamp}-${random}`;
+}
+
+// Helper function to estimate tokens
+function estimateTokens(text) {
+  return Math.ceil(text.length / 4);
 }
 
 async function callAIProvider(provider, apiKey, prompt) {
@@ -1501,26 +2301,46 @@ app.post("/api/generate-report", express.json(), async (req, res) => {
 });
 
 // Helper function to generate HTML report
+// Replace the generateReportHTML function in your app.js with this enhanced version
+
 async function generateReportHTML(reportData, reportType) {
+  const { metadata, metrics, gaps, risks, actionPlan, recommendations } =
+    reportData;
+
+  // Different report templates based on type
+  switch (reportType) {
+    case "compliance-audit":
+      return generateComplianceAuditHTML(reportData);
+    case "regulatory-readiness":
+      return generateRegulatoryReadinessHTML(reportData);
+    case "management-dashboard":
+      return generateManagementDashboardHTML(reportData);
+    default:
+      return generateComplianceAuditHTML(reportData);
+  }
+}
+
+function generateComplianceAuditHTML(reportData) {
   const { metadata, metrics, gaps, risks, actionPlan, recommendations } =
     reportData;
 
   return `
     <div class="executive-report">
       <div class="report-header">
-        <h1>${metadata.companyName} - ${REPORT_TEMPLATES[reportType].name}</h1>
+        <h1>${metadata.companyName} - Compliance Audit Report</h1>
         <div class="report-meta">
-          <p><strong>Generated:</strong> ${new Date(
+          <p><strong>Audit Date:</strong> ${new Date(
             metadata.generatedDate
           ).toLocaleDateString()}</p>
           <p><strong>Industry:</strong> ${
             metadata.industry
           } | <strong>Jurisdiction:</strong> ${metadata.jurisdiction}</p>
+          <p><strong>Standards:</strong> ${metadata.standards.join(", ")}</p>
         </div>
       </div>
       
       <div class="executive-summary">
-        <h2>Executive Summary</h2>
+        <h2>🎯 Executive Summary</h2>
         <div class="score-card">
           <div class="metric-box ${metrics.overall.rating.toLowerCase()}">
             <h3>${metrics.overall.score}%</h3>
@@ -1530,120 +2350,56 @@ async function generateReportHTML(reportData, reportType) {
           <div class="metric-box">
             <h3>${gaps.critical.length}</h3>
             <p>Critical Gaps</p>
+            <span class="risk-level high">High Priority</span>
           </div>
           <div class="metric-box">
             <h3>${actionPlan.totalActions}</h3>
             <p>Action Items</p>
+            <span class="status">Ready to Address</span>
+          </div>
+          <div class="metric-box">
+            <h3>${metrics.documents.linked}/${metrics.documents.total}</h3>
+            <p>Documents Linked</p>
+            <span class="progress">${Math.round(
+              (metrics.documents.linked / metrics.documents.total) * 100
+            )}% Complete</span>
           </div>
         </div>
         
         <div class="key-findings">
-          <h3>Key Findings</h3>
+          <h3>🔍 Key Audit Findings</h3>
           <ul>
-            <li><strong>Document Compliance:</strong> ${
+            <li><strong>Document Coverage:</strong> ${
               metrics.documents.score
-            }% (${metrics.documents.linked}/${
-    metrics.documents.total
-  } documents)</li>
+            }% of required documents are present and current</li>
             <li><strong>Mandatory Records:</strong> ${
-              metrics.mandatory.score
-            }% (${metrics.mandatory.compliant}/${
+              metrics.mandatory.compliant
+            }/${
     metrics.mandatory.total
-  } records)</li>
-            <li><strong>Immediate Priorities:</strong> ${
+  } mandatory record types have appropriate documentation</li>
+            <li><strong>Critical Priorities:</strong> ${
               actionPlan.immediate.length
-            } critical actions required</li>
+            } items require immediate attention (1-2 weeks)</li>
+            <li><strong>Compliance Status:</strong> ${
+              metrics.overall.status
+            } - ${getComplianceRecommendation(metrics.overall.score)}</li>
           </ul>
         </div>
       </div>
       
-      <div class="gap-analysis">
-        <h2>Compliance Gap Analysis</h2>
-        ${
-          gaps.critical.length > 0
-            ? `
-          <div class="gap-section critical">
-            <h3>🚨 Critical Gaps (${gaps.critical.length})</h3>
-            <ul>
-              ${gaps.critical
-                .map((gap) => `<li>${gap.description}</li>`)
-                .join("")}
-            </ul>
-          </div>
-        `
-            : ""
-        }
-        
-        ${
-          gaps.high.length > 0
-            ? `
-          <div class="gap-section high">
-            <h3>⚠️ High Priority Gaps (${gaps.high.length})</h3>
-            <ul>
-              ${gaps.high
-                .slice(0, 10)
-                .map((gap) => `<li>${gap.description}</li>`)
-                .join("")}
-              ${
-                gaps.high.length > 10
-                  ? `<li><em>... and ${gaps.high.length - 10} more</em></li>`
-                  : ""
-              }
-            </ul>
-          </div>
-        `
-            : ""
-        }
+      <div class="detailed-analysis">
+        <h2>📊 Detailed Gap Analysis</h2>
+        ${generateGapAnalysisHTML(gaps)}
       </div>
       
       <div class="action-plan">
-        <h2>Recommended Action Plan</h2>
-        
-        <div class="action-section">
-          <h3>Immediate Actions (1-2 weeks)</h3>
-          <table class="action-table">
-            <thead>
-              <tr><th>Action</th><th>Timeline</th><th>Responsibility</th><th>AI Assist</th></tr>
-            </thead>
-            <tbody>
-              ${actionPlan.immediate
-                .map(
-                  (action) => `
-                <tr>
-                  <td>${action.description}</td>
-                  <td>${action.timeline}</td>
-                  <td>${action.responsibility}</td>
-                  <td>${action.aiAssisted ? "✅ Yes" : "❌ No"}</td>
-                </tr>
-              `
-                )
-                .join("")}
-            </tbody>
-          </table>
-        </div>
-        
-        <div class="action-section">
-          <h3>Short-term Actions (2-4 weeks)</h3>
-          <table class="action-table">
-            <thead>
-              <tr><th>Action</th><th>Timeline</th><th>Responsibility</th><th>AI Assist</th></tr>
-            </thead>
-            <tbody>
-              ${actionPlan.shortTerm
-                .map(
-                  (action) => `
-                <tr>
-                  <td>${action.description}</td>
-                  <td>${action.timeline}</td>
-                  <td>${action.responsibility}</td>
-                  <td>${action.aiAssisted ? "✅ Yes" : "❌ No"}</td>
-                </tr>
-              `
-                )
-                .join("")}
-            </tbody>
-          </table>
-        </div>
+        <h2>📋 Recommended Action Plan</h2>
+        ${generateActionPlanHTML(actionPlan)}
+      </div>
+      
+      <div class="risk-assessment">
+        <h2>⚠️ Risk Assessment</h2>
+        ${generateRiskAssessmentHTML(risks)}
       </div>
       
       ${
@@ -1659,88 +2415,1236 @@ async function generateReportHTML(reportData, reportType) {
           : ""
       }
       
+      <div class="appendix">
+        <h2>📎 Appendix</h2>
+        <h3>Methodology</h3>
+        <p>This audit was conducted using SafetySync Pro's automated compliance analysis system, cross-referencing your documentation against ${metadata.standards.join(
+          ", "
+        )} requirements.</p>
+        
+        <h3>Document Categories Analyzed</h3>
+        <ul>
+          <li>Safety Management System documentation</li>
+          <li>Mandatory regulatory records</li>
+          <li>Work procedures and safe work method statements</li>
+          <li>Training and competency records</li>
+          <li>Risk assessments and controls</li>
+        </ul>
+      </div>
+      
       <div class="report-footer">
-        <p><small>Generated by SafetySync Pro on ${new Date().toLocaleDateString()}</small></p>
+        <hr>
+        <p><small>Generated by SafetySync Pro on ${new Date().toLocaleDateString()} | Confidential Report for ${
+    metadata.companyName
+  }</small></p>
       </div>
     </div>
-    
+    ${getReportCSS()}
+  `;
+}
+
+function generateRegulatoryReadinessHTML(reportData) {
+  const { metadata, metrics, gaps, risks, actionPlan } = reportData;
+
+  return `
+    <div class="executive-report">
+      <div class="report-header">
+        <h1>${metadata.companyName} - Regulatory Readiness Assessment</h1>
+        <div class="report-meta">
+          <p><strong>Assessment Date:</strong> ${new Date(
+            metadata.generatedDate
+          ).toLocaleDateString()}</p>
+          <p><strong>Jurisdiction:</strong> ${
+            metadata.jurisdiction
+          } | <strong>Industry:</strong> ${metadata.industry}</p>
+          <p><strong>Next Audit:</strong> <span class="highlight">Preparation recommendations below</span></p>
+        </div>
+      </div>
+      
+      <div class="readiness-summary">
+        <h2>🎯 Regulatory Readiness Status</h2>
+        
+        <div class="readiness-score">
+          <div class="large-metric">
+            <h1>${getReadinessScore(metrics)}%</h1>
+            <p>Audit Readiness Score</p>
+            <span class="readiness-level ${getReadinessLevel(
+              metrics
+            )}">${getReadinessLabel(metrics)}</span>
+          </div>
+        </div>
+        
+        <div class="readiness-breakdown">
+          <div class="row">
+            <div class="col-md-3">
+              <div class="metric-card">
+                <h4>${metrics.mandatory.score}%</h4>
+                <p>Mandatory Records</p>
+                <small>${metrics.mandatory.compliant}/${
+    metrics.mandatory.total
+  } complete</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="metric-card">
+                <h4>${metrics.documents.score}%</h4>
+                <p>Documentation</p>
+                <small>${metrics.documents.linked} documents linked</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="metric-card">
+                <h4>${gaps.critical.length}</h4>
+                <p>Critical Gaps</p>
+                <small>Must address before audit</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="metric-card">
+                <h4>${calculateTimeToReady(gaps)}d</h4>
+                <p>Est. Time to Ready</p>
+                <small>Based on current gaps</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="audit-preparation">
+        <h2>📋 Audit Preparation Checklist</h2>
+        
+        <div class="preparation-timeline">
+          <h3>🚨 Before Next Audit (Critical - Complete First)</h3>
+          <ul class="checklist">
+            ${gaps.critical
+              .map(
+                (gap) => `
+              <li class="critical-item">
+                <i class="fas fa-exclamation-triangle text-danger"></i>
+                <strong>${gap.description}</strong>
+                <span class="timeline">Complete within 1-2 weeks</span>
+              </li>
+            `
+              )
+              .join("")}
+          </ul>
+          
+          <h3>⚠️ High Priority Items</h3>
+          <ul class="checklist">
+            ${gaps.high
+              .slice(0, 8)
+              .map(
+                (gap) => `
+              <li class="high-item">
+                <i class="fas fa-exclamation-circle text-warning"></i>
+                ${gap.description}
+                <span class="timeline">Complete within 2-4 weeks</span>
+              </li>
+            `
+              )
+              .join("")}
+          </ul>
+          
+          <h3>✅ Strengths to Highlight During Audit</h3>
+          <ul class="strengths">
+            <li><i class="fas fa-check-circle text-success"></i> ${
+              metrics.documents.linked
+            } comprehensive safety documents in place</li>
+            <li><i class="fas fa-check-circle text-success"></i> ${
+              metrics.mandatory.compliant
+            } mandatory record types properly maintained</li>
+            <li><i class="fas fa-check-circle text-success"></i> Systematic approach to compliance management demonstrated</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="regulator-focus">
+        <h2>🎯 Likely Auditor Focus Areas</h2>
+        <div class="focus-areas">
+          ${generateRegulatorFocusAreas(metadata.jurisdiction, gaps)}
+        </div>
+      </div>
+      
+      <div class="preparation-timeline">
+        <h2>📅 30-Day Preparation Timeline</h2>
+        ${generatePreparationTimeline(actionPlan)}
+      </div>
+      
+      <div class="report-footer">
+        <hr>
+        <p><small>Generated by SafetySync Pro on ${new Date().toLocaleDateString()} | Regulatory Readiness Assessment for ${
+    metadata.companyName
+  }</small></p>
+      </div>
+    </div>
+    ${getReportCSS()}
+  `;
+}
+
+function generateManagementDashboardHTML(reportData) {
+  const { metadata, metrics, gaps, risks } = reportData;
+
+  return `
+    <div class="executive-report">
+      <div class="report-header">
+        <h1>${metadata.companyName} - Management Dashboard</h1>
+        <div class="report-meta">
+          <p><strong>Report Date:</strong> ${new Date(
+            metadata.generatedDate
+          ).toLocaleDateString()}</p>
+          <p><strong>Executive Summary</strong> | ${
+            metadata.industry
+          } Industry | ${metadata.jurisdiction}</p>
+        </div>
+      </div>
+      
+      <div class="kpi-dashboard">
+        <h2>📊 Key Performance Indicators</h2>
+        
+        <div class="dashboard-metrics">
+          <div class="kpi-row">
+            <div class="kpi-card overall">
+              <div class="kpi-value">${metrics.overall.score}%</div>
+              <div class="kpi-label">Overall Compliance</div>
+              <div class="kpi-trend ${getTrendDirection(
+                metrics.overall.score
+              )}">
+                <i class="fas fa-arrow-${getTrendDirection(
+                  metrics.overall.score
+                )}"></i>
+                ${metrics.overall.rating}
+              </div>
+            </div>
+            
+            <div class="kpi-card documents">
+              <div class="kpi-value">${metrics.documents.linked}</div>
+              <div class="kpi-label">Documents Managed</div>
+              <div class="kpi-subtitle">${
+                metrics.documents.total
+              } total identified</div>
+            </div>
+            
+            <div class="kpi-card risks">
+              <div class="kpi-value">${risks.length}</div>
+              <div class="kpi-label">Active Risk Areas</div>
+              <div class="kpi-subtitle">${gaps.critical.length} critical</div>
+            </div>
+            
+            <div class="kpi-card efficiency">
+              <div class="kpi-value">${calculateEfficiencyScore(metrics)}%</div>
+              <div class="kpi-label">System Efficiency</div>
+              <div class="kpi-subtitle">Documentation completeness</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="executive-insights">
+        <h2>💡 Executive Insights</h2>
+        
+        <div class="insight-cards">
+          <div class="insight-card positive">
+            <h4><i class="fas fa-thumbs-up text-success"></i> Strengths</h4>
+            <ul>
+              <li>${
+                metrics.documents.score
+              }% of required documentation is current and accessible</li>
+              <li>Systematic approach to safety management is evident</li>
+              <li>Strong foundation for regulatory compliance established</li>
+            </ul>
+          </div>
+          
+          <div class="insight-card attention">
+            <h4><i class="fas fa-exclamation-triangle text-warning"></i> Requires Attention</h4>
+            <ul>
+              ${gaps.critical
+                .slice(0, 3)
+                .map((gap) => `<li>${gap.description}</li>`)
+                .join("")}
+              ${
+                gaps.critical.length > 3
+                  ? `<li>Plus ${
+                      gaps.critical.length - 3
+                    } additional critical items</li>`
+                  : ""
+              }
+            </ul>
+          </div>
+          
+          <div class="insight-card strategic">
+            <h4><i class="fas fa-rocket text-info"></i> Strategic Opportunities</h4>
+            <ul>
+              <li>Automation potential: ${calculateAutomationPotential(
+                gaps
+              )}% of gaps can be AI-generated</li>
+              <li>Cost savings: Estimated $${calculateCostSavings(
+                gaps
+              )} in consultant fees avoided</li>
+              <li>Time efficiency: ${calculateTimeSavings(
+                gaps
+              )} weeks faster than manual approach</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <div class="financial-impact">
+        <h2>💰 Financial Impact Analysis</h2>
+        
+        <div class="financial-summary">
+          <div class="cost-benefit">
+            <h4>Cost Avoidance</h4>
+            <div class="financial-metric">
+              <span class="amount">$${calculateCostAvoidance(
+                gaps,
+                risks
+              )}</span>
+              <span class="description">Potential penalties avoided</span>
+            </div>
+          </div>
+          
+          <div class="investment-required">
+            <h4>Investment Required</h4>
+            <div class="financial-metric">
+              <span class="amount">$${calculateInvestmentRequired(gaps)}</span>
+              <span class="description">To achieve full compliance</span>
+            </div>
+          </div>
+          
+          <div class="roi-analysis">
+            <h4>Return on Investment</h4>
+            <div class="financial-metric">
+              <span class="amount">${calculateROI(gaps, risks)}%</span>
+              <span class="description">Expected ROI within 12 months</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="action-priorities">
+        <h2>🎯 Top 5 Management Priorities</h2>
+        <div class="priority-list">
+          ${generateTopPriorities(gaps, risks)
+            .map(
+              (priority, index) => `
+            <div class="priority-item">
+              <div class="priority-number">${index + 1}</div>
+              <div class="priority-content">
+                <h4>${priority.title}</h4>
+                <p>${priority.description}</p>
+                <div class="priority-meta">
+                  <span class="timeline">Timeline: ${priority.timeline}</span>
+                  <span class="impact">Impact: ${priority.impact}</span>
+                </div>
+              </div>
+            </div>
+          `
+            )
+            .join("")}
+        </div>
+      </div>
+      
+      <div class="trend-analysis">
+        <h2>📈 Trend Analysis</h2>
+        <div class="trends">
+          <div class="trend-item">
+            <h4>Documentation Trends</h4>
+            <p>Current trajectory shows ${getTrendAnalysis(
+              metrics
+            )} compliance improvement over next quarter.</p>
+          </div>
+          <div class="trend-item">
+            <h4>Risk Profile</h4>
+            <p>Risk exposure is ${getRiskTrend(risks)} with ${
+    gaps.critical.length
+  } critical items requiring immediate attention.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="report-footer">
+        <hr>
+        <p><small>Generated by SafetySync Pro on ${new Date().toLocaleDateString()} | Management Dashboard for ${
+    metadata.companyName
+  }</small></p>
+      </div>
+    </div>
+    ${getDashboardCSS()}
+  `;
+}
+
+// Helper functions for report generation
+function getComplianceRecommendation(score) {
+  if (score >= 90) return "Excellent compliance posture maintained";
+  if (score >= 80) return "Strong compliance with minor gaps to address";
+  if (score >= 70)
+    return "Satisfactory compliance requiring focused improvement";
+  if (score >= 60) return "Compliance gaps requiring immediate attention";
+  return "Critical compliance deficiencies requiring urgent action";
+}
+
+function getReadinessScore(metrics) {
+  return Math.round((metrics.overall.score + metrics.mandatory.score) / 2);
+}
+
+function getReadinessLevel(metrics) {
+  const score = getReadinessScore(metrics);
+  if (score >= 85) return "ready";
+  if (score >= 70) return "nearly-ready";
+  return "needs-work";
+}
+
+function getReadinessLabel(metrics) {
+  const score = getReadinessScore(metrics);
+  if (score >= 85) return "Audit Ready";
+  if (score >= 70) return "Nearly Ready";
+  return "Needs Preparation";
+}
+
+function calculateTimeToReady(gaps) {
+  const criticalDays = gaps.critical.length * 7; // 1 week per critical
+  const highDays = gaps.high.length * 3; // 3 days per high
+  return Math.min(criticalDays + highDays, 90); // Cap at 90 days
+}
+
+function generateRegulatorFocusAreas(jurisdiction, gaps) {
+  const focusAreas = {
+    victoria: [
+      "WorkSafe Victoria compliance documentation",
+      "Electrical safety procedures and certifications",
+      "Training records and competency assessments",
+      "Incident reporting and investigation procedures",
+    ],
+  };
+
+  const areas = focusAreas[jurisdiction] || focusAreas.victoria;
+
+  return areas
+    .map(
+      (area) => `
+    <div class="focus-area">
+      <h4><i class="fas fa-crosshairs"></i> ${area}</h4>
+      <p>Ensure all documentation is current and accessible for auditor review.</p>
+    </div>
+  `
+    )
+    .join("");
+}
+
+function generatePreparationTimeline(actionPlan) {
+  return `
+    <div class="timeline">
+      <div class="timeline-item week1">
+        <h4>Week 1-2: Critical Items</h4>
+        <ul>
+          ${actionPlan.immediate
+            .slice(0, 3)
+            .map((action) => `<li>${action.description}</li>`)
+            .join("")}
+        </ul>
+      </div>
+      <div class="timeline-item week3">
+        <h4>Week 3-4: High Priority</h4>
+        <ul>
+          ${actionPlan.shortTerm
+            .slice(0, 3)
+            .map((action) => `<li>${action.description}</li>`)
+            .join("")}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+function calculateEfficiencyScore(metrics) {
+  return Math.round((metrics.documents.score + metrics.mandatory.score) / 2);
+}
+
+function getTrendDirection(score) {
+  if (score >= 80) return "up";
+  if (score >= 60) return "right";
+  return "down";
+}
+
+function calculateAutomationPotential(gaps) {
+  const automatable = [...gaps.critical, ...gaps.high, ...gaps.medium].filter(
+    (gap) => gap.aiGenerable
+  ).length;
+  const total = gaps.critical.length + gaps.high.length + gaps.medium.length;
+  return total > 0 ? Math.round((automatable / total) * 100) : 0;
+}
+
+function calculateCostSavings(gaps) {
+  const aiGenerable = [...gaps.critical, ...gaps.high].filter(
+    (gap) => gap.aiGenerable
+  ).length;
+  return (aiGenerable * 500).toLocaleString(); // $500 per document
+}
+
+function calculateTimeSavings(gaps) {
+  const totalGaps = gaps.critical.length + gaps.high.length;
+  return Math.round(totalGaps * 0.5); // 0.5 weeks per gap
+}
+
+function calculateCostAvoidance(gaps, risks) {
+  const criticalRisk = gaps.critical.length * 10000; // $10k per critical gap
+  const highRisk = gaps.high.length * 5000; // $5k per high gap
+  return (criticalRisk + highRisk).toLocaleString();
+}
+
+function calculateInvestmentRequired(gaps) {
+  const immediate = gaps.critical.length * 2000; // $2k per critical
+  const shortTerm = gaps.high.length * 1000; // $1k per high
+  return (immediate + shortTerm).toLocaleString();
+}
+
+function calculateROI(gaps, risks) {
+  const investment = gaps.critical.length * 2000 + gaps.high.length * 1000;
+  const savings = gaps.critical.length * 10000 + gaps.high.length * 5000;
+  return investment > 0
+    ? Math.round(((savings - investment) / investment) * 100)
+    : 0;
+}
+
+function generateTopPriorities(gaps, risks) {
+  const priorities = [];
+
+  if (gaps.critical.length > 0) {
+    priorities.push({
+      title: "Address Critical Compliance Gaps",
+      description: `${gaps.critical.length} critical gaps require immediate attention to avoid regulatory penalties`,
+      timeline: "1-2 weeks",
+      impact: "High",
+    });
+  }
+
+  if (gaps.high.length > 5) {
+    priorities.push({
+      title: "Systematic Documentation Review",
+      description:
+        "Implement systematic approach to address multiple documentation gaps",
+      timeline: "2-4 weeks",
+      impact: "Medium",
+    });
+  }
+
+  priorities.push({
+    title: "Establish Ongoing Monitoring",
+    description:
+      "Set up systems to maintain compliance and track document updates",
+    timeline: "4-6 weeks",
+    impact: "Medium",
+  });
+
+  priorities.push({
+    title: "Staff Training on New Procedures",
+    description:
+      "Ensure all personnel are trained on updated safety procedures",
+    timeline: "6-8 weeks",
+    impact: "Medium",
+  });
+
+  priorities.push({
+    title: "Prepare for Next Audit Cycle",
+    description:
+      "Establish audit readiness protocols and documentation standards",
+    timeline: "8-12 weeks",
+    impact: "Low",
+  });
+
+  return priorities.slice(0, 5);
+}
+
+function getTrendAnalysis(metrics) {
+  if (metrics.overall.score >= 80) return "steady";
+  if (metrics.overall.score >= 60) return "moderate";
+  return "significant";
+}
+
+function getRiskTrend(risks) {
+  if (risks.length <= 2) return "manageable";
+  if (risks.length <= 5) return "elevated";
+  return "high";
+}
+
+function generateGapAnalysisHTML(gaps) {
+  return `
+    <div class="gap-analysis-section">
+      ${
+        gaps.critical.length > 0
+          ? `
+        <div class="gap-category critical">
+          <h3>🚨 Critical Gaps (${gaps.critical.length})</h3>
+          <div class="gap-items">
+            ${gaps.critical
+              .map(
+                (gap) => `
+              <div class="gap-item">
+                <h4>${gap.description}</h4>
+                <div class="gap-meta">
+                  <span class="impact">Impact: ${gap.impact}</span>
+                  <span class="effort">Effort: ${gap.effort}</span>
+                  ${
+                    gap.aiGenerable
+                      ? '<span class="ai-badge">AI Generable</span>'
+                      : ""
+                  }
+                </div>
+              </div>
+            `
+              )
+              .join("")}
+          </div>
+        </div>
+      `
+          : ""
+      }
+      
+      ${
+        gaps.high.length > 0
+          ? `
+        <div class="gap-category high">
+          <h3>⚠️ High Priority Gaps (${gaps.high.length})</h3>
+          <div class="gap-items">
+            ${gaps.high
+              .slice(0, 8)
+              .map(
+                (gap) => `
+              <div class="gap-item">
+                <h4>${gap.description}</h4>
+                <div class="gap-meta">
+                  <span class="impact">Impact: ${gap.impact}</span>
+                  <span class="effort">Effort: ${gap.effort}</span>
+                  ${
+                    gap.aiGenerable
+                      ? '<span class="ai-badge">AI Generable</span>'
+                      : ""
+                  }
+                </div>
+              </div>
+            `
+              )
+              .join("")}
+            ${
+              gaps.high.length > 8
+                ? `<p class="more-items">... and ${
+                    gaps.high.length - 8
+                  } more high priority items</p>`
+                : ""
+            }
+          </div>
+        </div>
+      `
+          : ""
+      }
+    </div>
+  `;
+}
+
+function generateActionPlanHTML(actionPlan) {
+  return `
+    <div class="action-sections">
+      <div class="action-section immediate">
+        <h3>⚡ Immediate Actions (1-2 weeks)</h3>
+        <div class="action-table">
+          <table>
+            <thead>
+              <tr><th>Action</th><th>Timeline</th><th>Owner</th><th>AI Assist</th></tr>
+            </thead>
+            <tbody>
+              ${actionPlan.immediate
+                .map(
+                  (action) => `
+                <tr>
+                  <td>${action.description}</td>
+                  <td>${action.timeline}</td>
+                  <td>${action.responsibility}</td>
+                  <td>${action.aiAssisted ? "✅" : "❌"}</td>
+                </tr>
+              `
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="action-section short-term">
+        <h3>📅 Short-term Actions (2-4 weeks)</h3>
+        <div class="action-table">
+          <table>
+            <thead>
+              <tr><th>Action</th><th>Timeline</th><th>Owner</th><th>AI Assist</th></tr>
+            </thead>
+            <tbody>
+              ${actionPlan.shortTerm
+                .map(
+                  (action) => `
+                <tr>
+                  <td>${action.description}</td>
+                  <td>${action.timeline}</td>
+                  <td>${action.responsibility}</td>
+                  <td>${action.aiAssisted ? "✅" : "❌"}</td>
+                </tr>
+              `
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function generateRiskAssessmentHTML(risks) {
+  return `
+    <div class="risk-assessment">
+      ${risks
+        .map(
+          (risk) => `
+        <div class="risk-item ${risk.level.toLowerCase()}">
+          <h4><i class="fas fa-exclamation-triangle"></i> ${
+            risk.description
+          }</h4>
+          <div class="risk-details">
+            <span class="likelihood">Likelihood: ${risk.likelihood}</span>
+            <span class="consequence">Consequence: ${risk.consequence}</span>
+            <span class="level">Level: ${risk.level}</span>
+          </div>
+          <p class="mitigation"><strong>Mitigation:</strong> ${
+            risk.mitigation
+          }</p>
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function getReportCSS() {
+  return `
     <style>
-      .executive-report { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; }
+      .executive-report { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; line-height: 1.6; }
       .report-header { border-bottom: 3px solid #667eea; padding-bottom: 20px; margin-bottom: 30px; }
-      .score-card { display: flex; gap: 20px; margin: 20px 0; }
-      .metric-box { background: #f8f9ff; padding: 20px; border-radius: 8px; text-align: center; flex: 1; }
-      .metric-box.excellent { background: #d4edda; }
-      .metric-box.good { background: #d1ecf1; }
-      .metric-box.satisfactory { background: #fff3cd; }
+      .report-header h1 { color: #2c3e50; margin-bottom: 10px; }
+      .score-card { display: flex; gap: 20px; margin: 20px 0; flex-wrap: wrap; }
+      .metric-box { background: #f8f9ff; padding: 20px; border-radius: 8px; text-align: center; flex: 1; min-width: 200px; }
+      .metric-box.excellent { background: #d4edda; border-left: 4px solid #28a745; }
+      .metric-box.good { background: #d1ecf1; border-left: 4px solid #17a2b8; }
+      .metric-box.satisfactory { background: #fff3cd; border-left: 4px solid #ffc107; }
+      .metric-box.critical { background: #f8d7da; border-left: 4px solid #dc3545; }
       .metric-box h3 { font-size: 2rem; margin: 0; color: #667eea; }
-      .gap-section.critical { background: #f8d7da; padding: 15px; border-radius: 8px; margin: 10px 0; }
-      .gap-section.high { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 10px 0; }
-      .action-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+      .gap-category.critical { background: #f8d7da; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #dc3545; }
+      .gap-category.high { background: #fff3cd; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffc107; }
+      .gap-item { margin: 15px 0; padding: 15px; background: white; border-radius: 6px; }
+      .gap-meta { margin-top: 10px; }
+      .gap-meta span { display: inline-block; margin-right: 15px; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; }
+      .impact { background: #e9ecef; }
+      .effort { background: #f8f9fa; }
+      .ai-badge { background: #d4edda; color: #155724; }
+      .action-table table { width: 100%; border-collapse: collapse; margin: 15px 0; }
       .action-table th, .action-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
       .action-table th { background: #667eea; color: white; }
-      .ai-recommendations { background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0; }
-      @media print { .executive-report { max-width: none; } }
+      .risk-item { margin: 15px 0; padding: 15px; border-radius: 6px; }
+      .risk-item.critical { background: #f8d7da; border-left: 4px solid #dc3545; }
+      .risk-item.high { background: #fff3cd; border-left: 4px solid #ffc107; }
+      .risk-details span { margin-right: 15px; font-weight: bold; }
+      .readiness-score { text-align: center; margin: 30px 0; }
+      .large-metric h1 { font-size: 4rem; margin: 0; color: #667eea; }
+      .readiness-level.ready { color: #28a745; background: #d4edda; padding: 8px 16px; border-radius: 20px; }
+      .readiness-level.nearly-ready { color: #ffc107; background: #fff3cd; padding: 8px 16px; border-radius: 20px; }
+      .readiness-level.needs-work { color: #dc3545; background: #f8d7da; padding: 8px 16px; border-radius: 20px; }
+      .checklist li { margin: 8px 0; padding: 8px; border-left: 3px solid #ddd; }
+      .critical-item { border-left-color: #dc3545 !important; background: #f8d7da; }
+      .high-item { border-left-color: #ffc107 !important; background: #fff3cd; }
+      .strengths li { border-left-color: #28a745 !important; background: #d4edda; }
+      .timeline { font-size: 0.8em; color: #6c757d; margin-left: 10px; }
+      .focus-area { margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 6px; }
+      @media print { 
+        .executive-report { max-width: none; } 
+        .score-card { display: block; }
+        .metric-box { display: inline-block; width: 23%; margin: 1%; }
+      }
     </style>
   `;
 }
 
-// Add to your app.js
-const { Document, Packer, Paragraph, TextRun, HeadingLevel } = require("docx");
+function getDashboardCSS() {
+  return `
+    <style>
+      .executive-report { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; line-height: 1.6; }
+      .kpi-row { display: flex; gap: 20px; margin: 20px 0; flex-wrap: wrap; }
+      .kpi-card { background: white; border: 2px solid #e9ecef; border-radius: 12px; padding: 25px; text-align: center; flex: 1; min-width: 200px; position: relative; }
+      .kpi-card.overall { border-color: #667eea; background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%); }
+      .kpi-value { font-size: 2.5rem; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+      .kpi-label { font-size: 1.1rem; color: #6c757d; margin-bottom: 5px; }
+      .kpi-subtitle { font-size: 0.9rem; color: #adb5bd; }
+      .kpi-trend { position: absolute; top: 15px; right: 15px; }
+      .insight-cards { display: flex; gap: 20px; flex-wrap: wrap; }
+      .insight-card { flex: 1; min-width: 300px; padding: 20px; border-radius: 8px; }
+      .insight-card.positive { background: #d4edda; border-left: 4px solid #28a745; }
+      .insight-card.attention { background: #fff3cd; border-left: 4px solid #ffc107; }
+      .insight-card.strategic { background: #d1ecf1; border-left: 4px solid #17a2b8; }
+      .financial-summary { display: flex; gap: 30px; justify-content: space-around; margin: 20px 0; }
+      .financial-metric .amount { display: block; font-size: 2rem; font-weight: bold; color: #28a745; }
+      .priority-list { margin: 20px 0; }
+      .priority-item { display: flex; align-items: flex-start; margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; }
+      .priority-number { width: 40px; height: 40px; background: #667eea; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 20px; }
+      .priority-content h4 { margin: 0 0 10px 0; color: #2c3e50; }
+      .priority-meta { margin-top: 10px; }
+      .priority-meta span { margin-right: 20px; padding: 4px 8px; background: white; border-radius: 4px; font-size: 0.9em; }
+      .trends { display: flex; gap: 30px; }
+      .trend-item { flex: 1; padding: 20px; background: #f8f9fa; border-radius: 8px; }
+    </style>
+  `;
+}
 
+const {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+} = require("docx");
+
+function generateDocumentNumber(documentType) {
+  const typeMap = {
+    SWMS: "SWMS",
+    "Risk Assessment": "RA",
+    "Safety Policy": "POL",
+    "Emergency Procedure": "EP",
+    "Training Manual": "TM",
+    "Work Procedure": "WP",
+  };
+
+  const prefix = typeMap[documentType] || "DOC";
+  const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const random = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, "0");
+
+  return `${prefix}-${timestamp}-${random}`;
+}
+
+function estimateTokens(text) {
+  return Math.ceil(text.length / 4);
+}
+
+// Enhanced createWordDocument function with better formatting
 function createWordDocument(content, metadata) {
-  const doc = new Document({
-    sections: [
-      {
-        properties: {},
+  try {
+    // Ensure content is a string
+    if (typeof content !== "string") {
+      content = String(content || "");
+    }
+
+    // Clean up the content first - remove the document control headers/footers that are already formatted
+    content = content.replace(
+      /DOCUMENT CONTROL[\s\S]*?================================================================================/,
+      ""
+    );
+    content = content.replace(
+      /================================================================================[\s\S]*?================================================================================/g,
+      ""
+    );
+
+    // Convert content to paragraphs with better formatting
+    const lines = content.split("\n");
+    const paragraphs = [];
+
+    // Add a professional title page
+    paragraphs.push(
+      new Paragraph({
         children: [
-          new Paragraph({
-            text: metadata.documentType,
-            heading: HeadingLevel.TITLE,
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `Generated by SafetySync Pro`,
-                italics: true,
-              }),
-            ],
-          }),
-          new Paragraph({
-            text: "", // Empty line
-          }),
-          ...content.split("\n\n").map(
-            (paragraph) =>
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: paragraph.replace(/\*\*(.*?)\*\*/g, "$1"), // Remove markdown bold
-                  }),
-                ],
-              })
-          ),
-          new Paragraph({
-            text: "", // Empty line
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `Document generated on ${new Date().toLocaleDateString()}`,
-                size: 16,
-                color: "666666",
-              }),
-            ],
+          new TextRun({
+            text: metadata?.documentType || "Work Procedure",
+            bold: true,
+            size: 36,
+            color: "2F5597",
           }),
         ],
-      },
-    ],
-  });
+        heading: HeadingLevel.TITLE,
+        spacing: { after: 300 },
+        alignment: "center",
+      })
+    );
 
-  return {
-    writeFile: async (filepath) => {
-      const buffer = await Packer.toBuffer(doc);
-      fs.writeFileSync(filepath, buffer);
-    },
-  };
+    paragraphs.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: metadata?.companyInfo?.name || "Company Name",
+            bold: true,
+            size: 24,
+            color: "666666",
+          }),
+        ],
+        spacing: { after: 600 },
+        alignment: "center",
+      })
+    );
+
+    // Add document information table
+    paragraphs.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: "Document Information",
+            bold: true,
+            size: 20,
+          }),
+        ],
+        spacing: { before: 400, after: 200 },
+      })
+    );
+
+    paragraphs.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `Document Number: ${metadata?.documentNumber || "DOC-001"}`,
+            size: 18,
+          }),
+        ],
+      })
+    );
+
+    paragraphs.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `Generated: ${new Date().toLocaleDateString("en-AU")}`,
+            size: 18,
+          }),
+        ],
+      })
+    );
+
+    paragraphs.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `Version: 1.0`,
+            size: 18,
+          }),
+        ],
+        spacing: { after: 400 },
+      })
+    );
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmedLine = line.trim();
+
+      // Skip empty lines at the start or lines that are just dashes
+      if (trimmedLine === "" || trimmedLine === "---" || trimmedLine === "--") {
+        paragraphs.push(
+          new Paragraph({
+            children: [new TextRun({ text: "", size: 22 })],
+            spacing: { after: 200 },
+          })
+        );
+        continue;
+      }
+
+      // Handle markdown formatting
+      if (trimmedLine.startsWith("# **") && trimmedLine.endsWith("**")) {
+        // Main heading with bold markdown
+        const text = trimmedLine.replace(/^# \*\*/, "").replace(/\*\*$/, "");
+        paragraphs.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: text,
+                bold: true,
+                size: 32,
+                color: "2F5597",
+              }),
+            ],
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 400, after: 300 },
+          })
+        );
+      } else if (
+        trimmedLine.startsWith("## **") &&
+        trimmedLine.endsWith("**")
+      ) {
+        // Sub heading with bold markdown
+        const text = trimmedLine.replace(/^## \*\*/, "").replace(/\*\*$/, "");
+        paragraphs.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: text,
+                bold: true,
+                size: 24,
+                color: "2F5597",
+              }),
+            ],
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 300, after: 200 },
+          })
+        );
+      } else if (
+        trimmedLine.startsWith("### **") &&
+        trimmedLine.endsWith("**")
+      ) {
+        // Sub-sub heading with bold markdown
+        const text = trimmedLine.replace(/^### \*\*/, "").replace(/\*\*$/, "");
+        paragraphs.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: text,
+                bold: true,
+                size: 20,
+                color: "2F5597",
+              }),
+            ],
+            heading: HeadingLevel.HEADING_3,
+            spacing: { before: 200, after: 150 },
+          })
+        );
+      } else if (trimmedLine.startsWith("# ")) {
+        // Regular markdown heading
+        const text = trimmedLine.substring(2);
+        paragraphs.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: text,
+                bold: true,
+                size: 28,
+                color: "2F5597",
+              }),
+            ],
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 400, after: 200 },
+          })
+        );
+      } else if (trimmedLine.startsWith("## ")) {
+        // Regular markdown sub heading
+        const text = trimmedLine.substring(3);
+        paragraphs.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: text,
+                bold: true,
+                size: 22,
+                color: "2F5597",
+              }),
+            ],
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 300, after: 150 },
+          })
+        );
+      } else if (trimmedLine.startsWith("### ")) {
+        // Regular markdown sub-sub heading
+        const text = trimmedLine.substring(4);
+        paragraphs.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: text,
+                bold: true,
+                size: 20,
+                color: "2F5597",
+              }),
+            ],
+            heading: HeadingLevel.HEADING_3,
+            spacing: { before: 200, after: 100 },
+          })
+        );
+      } else if (trimmedLine.startsWith("- ") || trimmedLine.startsWith("* ")) {
+        // Bullet points - handle bold text within bullets
+        let bulletText = trimmedLine.substring(2);
+        const textRuns = parseInlineFormatting(bulletText);
+
+        paragraphs.push(
+          new Paragraph({
+            children: textRuns,
+            bullet: { level: 0 },
+            spacing: { after: 100 },
+          })
+        );
+      } else if (trimmedLine.match(/^\d+\. /)) {
+        // Numbered lists
+        let listText = trimmedLine.replace(/^\d+\. /, "");
+        const textRuns = parseInlineFormatting(listText);
+
+        paragraphs.push(
+          new Paragraph({
+            children: textRuns,
+            numbering: { reference: "default", level: 0 },
+            spacing: { after: 100 },
+          })
+        );
+      } else if (trimmedLine.startsWith("|") && trimmedLine.endsWith("|")) {
+        // Table rows - convert to formatted text
+        const cells = trimmedLine
+          .split("|")
+          .filter((cell) => cell.trim() !== "");
+        const tableText = cells.join(" | ");
+
+        paragraphs.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: tableText,
+                size: 18,
+                font: "Courier New", // Monospace for table-like appearance
+              }),
+            ],
+            spacing: { after: 50 },
+          })
+        );
+      } else if (trimmedLine.includes("**") || trimmedLine.includes("*")) {
+        // Regular paragraph with inline formatting
+        const textRuns = parseInlineFormatting(trimmedLine);
+        paragraphs.push(
+          new Paragraph({
+            children: textRuns,
+            spacing: { after: 150 },
+          })
+        );
+      } else if (trimmedLine.length > 0) {
+        // Regular paragraph
+        paragraphs.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: trimmedLine,
+                size: 20,
+              }),
+            ],
+            spacing: { after: 150 },
+          })
+        );
+      }
+    }
+
+    // Create document with clean structure
+    const doc = new Document({
+      creator: "SafetySync Pro",
+      title: metadata?.documentType || "Generated Document",
+      description: `Generated by SafetySync Pro AI on ${new Date().toLocaleDateString()}`,
+      sections: [
+        {
+          properties: {},
+          children: paragraphs,
+        },
+      ],
+    });
+
+    return {
+      writeFile: async (filepath) => {
+        try {
+          const buffer = await Packer.toBuffer(doc);
+          fs.writeFileSync(filepath, buffer);
+          console.log(
+            `Enhanced Word document successfully created at: ${filepath}`
+          );
+        } catch (writeError) {
+          console.error("Error writing Word document:", writeError);
+          throw writeError;
+        }
+      },
+    };
+  } catch (error) {
+    console.error("Error creating enhanced Word document:", error);
+
+    // Fallback: create a simple document
+    const fallbackDoc = new Document({
+      sections: [
+        {
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: metadata?.documentType || "Generated Document",
+                  bold: true,
+                  size: 28,
+                }),
+              ],
+              spacing: { after: 400 },
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text:
+                    typeof content === "string"
+                      ? content.replace(/\*\*/g, "").replace(/##/g, "")
+                      : String(content),
+                  size: 20,
+                }),
+              ],
+            }),
+          ],
+        },
+      ],
+    });
+
+    return {
+      writeFile: async (filepath) => {
+        const buffer = await Packer.toBuffer(fallbackDoc);
+        fs.writeFileSync(filepath, buffer);
+      },
+    };
+  }
+}
+
+// Helper function to parse inline formatting (bold, italic)
+function parseInlineFormatting(text) {
+  const textRuns = [];
+  let currentPos = 0;
+
+  // Handle **bold** text
+  const boldRegex = /\*\*(.*?)\*\*/g;
+  let match;
+  let lastIndex = 0;
+
+  while ((match = boldRegex.exec(text)) !== null) {
+    // Add text before the bold
+    if (match.index > lastIndex) {
+      const beforeText = text.substring(lastIndex, match.index);
+      if (beforeText) {
+        textRuns.push(new TextRun({ text: beforeText, size: 20 }));
+      }
+    }
+
+    // Add bold text
+    textRuns.push(
+      new TextRun({
+        text: match[1],
+        bold: true,
+        size: 20,
+      })
+    );
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    const remainingText = text.substring(lastIndex);
+    if (remainingText) {
+      textRuns.push(new TextRun({ text: remainingText, size: 20 }));
+    }
+  }
+
+  // If no formatting found, return the whole text
+  if (textRuns.length === 0) {
+    textRuns.push(new TextRun({ text: text, size: 20 }));
+  }
+
+  return textRuns;
 }
 
 app.get("/open/:id", (req, res) => {

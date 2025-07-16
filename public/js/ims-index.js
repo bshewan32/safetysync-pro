@@ -820,6 +820,7 @@ async function loadMandatoryRecords() {
 }
 
 // Enhanced displayMandatoryRecords function - REPLACE THE EXISTING ONE
+// Fix 1: Enhanced displayMandatoryRecords function - REPLACE existing in ims-index.js
 function displayMandatoryRecords(records) {
   const listDiv = document.getElementById("mandatoryRecordsList");
   if (!listDiv || !records) return;
@@ -861,7 +862,7 @@ function displayMandatoryRecords(records) {
             <button class="btn btn-sm btn-outline-info link-mandatory-btn" 
                     data-record-type="${recordType}"
                     style="font-size: 0.7rem;">
-              <i class="fas fa-link"></i> Link
+              <i class="fas fa-link"></i> Link Document
             </button>
           </div>
         </div>
@@ -913,7 +914,7 @@ function displayMandatoryRecords(records) {
           <div class="mt-2">
             <h6 class="text-info">
               <i class="fas fa-search"></i> Auto-Detected Documents 
-              <small class="text-muted">(Click to link)</small>
+              <small class="text-muted">(${autoDetectedDocuments.length} found - <button class="btn btn-sm btn-link p-0 show-all-detected" data-record-type="${recordType}">Show All</button>)</small>
             </h6>
             <div class="alert alert-light p-2">
               <small class="text-muted mb-2 d-block">
@@ -923,9 +924,9 @@ function displayMandatoryRecords(records) {
                     : "None"
                 }
               </small>
-              <div class="auto-detected-documents">
+              <div class="auto-detected-documents" id="detected-${recordType.replace(/[^a-zA-Z0-9]/g, '')}">
                 ${autoDetectedDocuments
-                  .slice(0, 5)
+                  .slice(0, 3)
                   .map(
                     (doc) => `
                   <div class="list-group-item list-group-item-action auto-detected-item mb-1 ${
@@ -961,12 +962,13 @@ function displayMandatoryRecords(records) {
                   )
                   .join("")}
                 ${
-                  autoDetectedDocuments.length > 5
+                  autoDetectedDocuments.length > 3
                     ? `
                   <div class="text-center mt-2">
-                    <small class="text-muted">... and ${
-                      autoDetectedDocuments.length - 5
-                    } more</small>
+                    <button class="btn btn-sm btn-outline-info expand-detected-btn" 
+                            data-record-type="${recordType}">
+                      Show ${autoDetectedDocuments.length - 3} More Documents
+                    </button>
                   </div>
                 `
                     : ""
@@ -985,8 +987,223 @@ function displayMandatoryRecords(records) {
     html ||
     '<div class="text-center text-muted py-4">No mandatory records configured</div>';
 
-  // Add event listeners for auto-detected items
+  // Store all records for expansion
+  window.allMandatoryRecords = records;
+  
+  // Add event listeners
   addMandatoryRecordEventListeners();
+}
+
+// Fix 2: Enhanced event listeners for expansion and linking
+function addMandatoryRecordEventListeners() {
+  // Link mandatory record buttons (manual linking)
+  document.querySelectorAll(".link-mandatory-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const recordType = this.getAttribute("data-record-type");
+      openMandatoryDocumentLinker(recordType);
+    });
+  });
+
+  // Unlink mandatory record buttons
+  document.querySelectorAll(".unlink-mandatory-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const recordType = this.getAttribute("data-record-type");
+      const documentId = this.getAttribute("data-document-id");
+      unlinkMandatoryDocument(recordType, documentId);
+    });
+  });
+
+  // Show all detected documents
+  document.querySelectorAll(".show-all-detected, .expand-detected-btn").forEach((btn) => {
+    btn.addEventListener("click", function() {
+      const recordType = this.getAttribute("data-record-type");
+      showAllDetectedDocuments(recordType);
+    });
+  });
+
+  // Auto-detected documents click handlers
+  document.querySelectorAll(".auto-detected-item").forEach((item) => {
+    item.addEventListener("click", function () {
+      const docId = this.getAttribute("data-doc-id");
+      const docName = this.getAttribute("data-doc-name");
+      const recordType = this.getAttribute("data-record-type");
+      const isArchived = this.getAttribute("data-is-archived") === "true";
+
+      document
+        .querySelectorAll(".auto-detected-item")
+        .forEach((i) => i.classList.remove("active"));
+      this.classList.add("active");
+
+      let confirmMessage = `Link "${docName}" to mandatory record "${recordType}"?`;
+      if (isArchived) {
+        confirmMessage +=
+          "\n\n⚠️ WARNING: This document is archived and may be outdated.";
+      }
+
+      if (confirm(confirmMessage)) {
+        linkMandatoryDocument(recordType, docId, docName);
+      }
+    });
+  });
+}
+
+// Fix 3: Function to show all detected documents in a modal
+function showAllDetectedDocuments(recordType) {
+  const records = window.allMandatoryRecords;
+  if (!records || !records[recordType]) return;
+  
+  const record = records[recordType];
+  const autoDetectedDocuments = record.enrichedDocuments?.filter(
+    (doc) => doc.autoDetected === true && doc.manuallyLinked !== true
+  ) || [];
+
+  const modalHtml = `
+    <div class="modal fade" id="allDetectedModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-search"></i> All Detected Documents: ${recordType}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info">
+              <strong>Keywords:</strong> ${record.autoDetectKeywords?.join(", ") || "None"}<br>
+              <strong>Found:</strong> ${autoDetectedDocuments.length} documents
+            </div>
+            
+            <div class="row">
+              ${autoDetectedDocuments.map((doc, index) => `
+                <div class="col-md-6 mb-3">
+                  <div class="card h-100 auto-detected-card" 
+                       data-doc-id="${doc.id}" 
+                       data-doc-name="${doc.name}" 
+                       data-record-type="${recordType}"
+                       data-is-archived="${doc.isArchived}"
+                       style="cursor: pointer;">
+                    <div class="card-body">
+                      <h6 class="card-title">
+                        <i class="fas fa-file-alt text-info me-2"></i>
+                        ${doc.name}
+                        ${doc.isArchived ? '<span class="ims-archived-badge">ARCHIVED</span>' : ''}
+                      </h6>
+                      <p class="card-text">
+                        <small class="text-muted">📁 ${doc.folder || "Root folder"}</small>
+                      </p>
+                      <div class="text-center">
+                        <button class="btn btn-sm btn-success link-this-doc">
+                          <i class="fas fa-plus-circle"></i> Link This Document
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Remove existing modal
+  const existingModal = document.getElementById("allDetectedModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Add new modal
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById("allDetectedModal"));
+  modal.show();
+
+  // Add click handlers for linking
+  document.querySelectorAll(".auto-detected-card").forEach((card) => {
+    card.addEventListener("click", function() {
+      const docId = this.getAttribute("data-doc-id");
+      const docName = this.getAttribute("data-doc-name");
+      const recordType = this.getAttribute("data-record-type");
+      const isArchived = this.getAttribute("data-is-archived") === "true";
+
+      let confirmMessage = `Link "${docName}" to mandatory record "${recordType}"?`;
+      if (isArchived) {
+        confirmMessage += "\n\n⚠️ WARNING: This document is archived and may be outdated.";
+      }
+
+      if (confirm(confirmMessage)) {
+        linkMandatoryDocument(recordType, docId, docName);
+        modal.hide();
+      }
+    });
+  });
+}
+
+// Fix 4: Improved linking function with proper persistence
+async function linkMandatoryDocument(recordType, documentId, documentName) {
+  try {
+    console.log("=== LINKING MANDATORY DOCUMENT ===");
+    console.log("Record Type:", recordType);
+    console.log("Document ID:", documentId);
+    console.log("Document Name:", documentName);
+
+    const response = await fetch("/api/link-mandatory-record", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        recordType: recordType,
+        documentId: documentId,
+        actualDocumentName: documentName,
+      }),
+    });
+
+    const data = await response.json();
+    console.log("API Response:", data);
+
+    if (data.success) {
+      // Show success message
+      const alertDiv = document.createElement('div');
+      alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+      alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+      alertDiv.innerHTML = `
+        <i class="fas fa-check-circle"></i>
+        Successfully linked "${documentName}" to "${recordType}"!
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      document.body.appendChild(alertDiv);
+
+      // Auto-remove after 3 seconds
+      setTimeout(() => {
+        if (alertDiv.parentNode) {
+          alertDiv.remove();
+        }
+      }, 3000);
+
+      // Close any open modals
+      const openModals = document.querySelectorAll('.modal.show');
+      openModals.forEach(modal => {
+        const modalInstance = bootstrap.Modal.getInstance(modal);
+        if (modalInstance) {
+          modalInstance.hide();
+        }
+      });
+
+      // Reload mandatory records to show updated state
+      setTimeout(() => {
+        loadMandatoryRecords();
+      }, 500);
+    } else {
+      alert("Error linking document: " + (data.message || "Unknown error"));
+    }
+  } catch (error) {
+    console.error("Linking error:", error);
+    alert("Error linking document: " + error.message);
+  }
 }
 
 // Add this new function too
