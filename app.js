@@ -21,6 +21,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`, req.body);
+  next();
+});
+
 // Configuration - CHANGE THIS TO YOUR SHARED DRIVE PATH
 const DOCUMENTS_ROOT = "I:/IMS"; // Your actual path
 const DB_PATH = path.join(__dirname, "data", "document_index.json");
@@ -2942,32 +2947,64 @@ app.post("/api/ai-config", express.json(), (req, res) => {
 });
 
 // Document Generation Route
+// Replace your existing /api/generate-document route with this:
 app.post("/api/generate-document", express.json(), async (req, res) => {
   try {
     const { documentType, documentName, customInputs } = req.body;
+    const { category } = customInputs || {};
 
-    console.log("Generating document:", documentType, documentName);
+    console.log("Generating document:", documentType, documentName, "for category:", category);
 
-    const result = await generateDocument(
-      documentType,
-      documentName,
-      customInputs
-    );
+    const result = await generateDocument(documentType, documentName, customInputs);
 
     if (result.success) {
-      // Save generated document
       const timestamp = moment().format("YYYY-MM-DD_HH-mm-ss");
-      const filename = `${documentName}_AI_Generated_${timestamp}.docx`;
-      const filepath = path.join(DOCUMENTS_ROOT, "AI Generated", filename);
+      const cleanDocName = documentName.replace(/[<>:"/\\|?*]/g, '_'); // Clean filename
+      const filename = `${cleanDocName}_AI_Generated_${timestamp}.docx`;
+      
+      // Determine destination folder based on document type and category
+      let destinationFolder = "AI Generated"; // Default fallback
+      
+      if (category) {
+        // Map categories to appropriate folders
+        const categoryFolderMap = {
+          "Work Instructions": "Section 04B Work Instructions",
+          "Safe Work Method Statements": "Section 04 SWMS", 
+          "Core Policies": "Section 01B IMS Policies",
+          "Incident and Injury Management": "Section 02 System Procedures",
+          "Consultation and Communication": "Section 02 System Procedures",
+          "Risk Management": "Section 02 System Procedures"
+        };
+        
+        destinationFolder = categoryFolderMap[category] || "AI Generated";
+      } else if (documentType) {
+        // Map document types to folders if no category
+        const typeFolderMap = {
+          "SWMS": "Section 04 SWMS",
+          "Safe Work Method Statement": "Section 04 SWMS",
+          "Risk Assessment": "Section 02 System Procedures",
+          "Safety Policy": "Section 01B IMS Policies",
+          "Training Manual": "Section 03 Proforma Docs",
+          "Emergency Procedure": "Section 02 System Procedures",
+          "Work Procedure": "Section 04B Work Instructions"
+        };
+        
+        destinationFolder = typeFolderMap[documentType] || "AI Generated";
+      }
 
-      // Create AI Generated folder if it doesn't exist
-      fs.ensureDirSync(path.join(DOCUMENTS_ROOT, "AI Generated"));
+      const fullDestinationPath = path.join(DOCUMENTS_ROOT, "Intergrated Management System", destinationFolder);
+      const filepath = path.join(fullDestinationPath, filename);
 
-      // Convert markdown/text to Word document (you'll need docx library)
+      // Create destination folder if it doesn't exist
+      fs.ensureDirSync(fullDestinationPath);
+
+      // Convert content to Word document
       const doc = createWordDocument(result.content, result.metadata);
       await doc.writeFile(filepath);
 
-      // Add to document index
+      console.log("AI document saved to:", filepath);
+
+      // Rebuild index to include new document
       setTimeout(() => {
         buildFileIndex();
       }, 1000);
@@ -2976,7 +3013,9 @@ app.post("/api/generate-document", express.json(), async (req, res) => {
         success: true,
         filepath: filepath,
         filename: filename,
+        destinationFolder: destinationFolder,
         metadata: result.metadata,
+        wordCount: result.content.split(' ').length
       });
     } else {
       res.json(result);
@@ -2986,7 +3025,6 @@ app.post("/api/generate-document", express.json(), async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 });
-
 // ========================================
 // ERROR HANDLING
 // ========================================
@@ -2999,10 +3037,15 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error("Application error:", err);
-  res.status(500).render("error", {
-    title: "500: Server Error",
-    message: "An internal server error occurred",
+  console.error("Application error:", err.stack);
+
+  // Don't leak error details in production
+  const isDevelopment = process.env.NODE_ENV !== "production";
+
+  res.status(err.status || 500).render("error", {
+    title: "Server Error",
+    message: isDevelopment ? err.message : "An internal server error occurred",
+    error: isDevelopment ? err : {},
   });
 });
 

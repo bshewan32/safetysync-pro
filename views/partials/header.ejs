@@ -12,32 +12,32 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
-            <a class="nav-link" href="/">
+            <a class="nav-link <%= title === 'IMS Document Management System' ? 'active' : '' %>" href="/">
               <i class="fas fa-home"></i> Home
             </a>
           </li>
-	  <li class="nav-item">
-  	    <a class="nav-link" href="/ims-index">
-    	      <i class="fas fa-sitemap"></i> IMS Index
-           </a>
+          <li class="nav-item">
+            <a class="nav-link <%= title === 'IMS Document Index' ? 'active' : '' %>" href="/ims-index">
+              <i class="fas fa-sitemap"></i> IMS Index
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/documents">
+            <a class="nav-link <%= title === 'All Documents' ? 'active' : '' %>" href="/documents">
               <i class="fas fa-file-alt"></i> Documents
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/folders">
+            <a class="nav-link <%= title === 'Document Folders' ? 'active' : '' %>" href="/folders">
               <i class="fas fa-folder-open"></i> Folders
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/reports">
+            <a class="nav-link <%= title === 'Executive Reports' ? 'active' : '' %>" href="/reports">
               <i class="fas fa-chart-line"></i> Reports
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/ai-settings">
+            <a class="nav-link <%= title === 'AI Configuration' ? 'active' : '' %>" href="/ai-settings">
               <i class="fas fa-robot"></i> AI Settings
             </a>
           </li>

@@ -184,6 +184,18 @@
       border-radius: 0.3rem;
       margin-left: 0.5rem;
     }
+
+    .btn-group-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .btn-xs {
+      padding: 0.2rem 0.4rem;
+      font-size: 0.7rem;
+      line-height: 1.2;
+    }
     
     @media print {
       .ims-hierarchy {
@@ -452,33 +464,68 @@
                   data-document="<%= categoryName %>" style="font-size: 0.6rem;" title="AI Generate document">
                   🤖 AI Generate
                 </button>
+                
+                <button class="btn btn-sm btn-outline-secondary ms-2 manage-category-btn" 
+                        data-category="<%= categoryName %>" 
+                        style="font-size: 0.7rem;"
+                        title="Edit category settings">
+                  <i class="fas fa-cog"></i>
+                </button>
               </div>
               
-              <!-- Category Children -->
-              <% if (category.enrichedChildren && category.enrichedChildren.length > 0) { %>
+              <!-- Category Children - FIXED VERSION -->
+              <% if (category.enrichedChildren && Array.isArray(category.enrichedChildren) && category.enrichedChildren.length > 0) { %>
                 <ul class="ims-child-list">
-                  <% category.enrichedChildren.forEach(child => { %>
+                  <% category.enrichedChildren.forEach(function(child) { %>
+                    <% if (!child) return; %>
                     <% const isArchived = child.document && child.document.isArchived; %>
                     <li class="ims-child-item ims-document-item <%= isArchived ? 'ims-document-archived' : '' %>" 
-                        data-document="<%= child.name %>" 
-                        data-is-archived="<%= isArchived %>">
-                      <% if (child.document) { %>
-                        <i class="fas fa-check-circle text-success ims-status-icon"></i>
-                        <a href="/document/<%= child.document.id %>" class="ims-document-link">
-                          <%= child.name %>
-                        </a>
-                        <% if (isArchived) { %>
-                          <span class="ims-archived-badge">ARCHIVED</span>
+                        data-document="<%= child.name || '' %>" 
+                        data-is-archived="<%= isArchived ? 'true' : 'false' %>">
+                      <div class="flex-grow-1">
+                        <% if (child.document) { %>
+                          <i class="fas fa-check-circle text-success ims-status-icon" aria-hidden="true"></i>
+                          <a href="/document/<%= child.document.id %>" class="ims-document-link">
+                            <%= child.name || 'Unnamed Document' %>
+                          </a>
+                          <% if (isArchived) { %>
+                            <span class="ims-archived-badge">ARCHIVED</span>
+                          <% } %>
+                        <% } else { %>
+                          <i class="fas fa-times-circle text-danger ims-status-icon" aria-hidden="true"></i>
+                          <span class="ims-document-missing">
+                            <%= child.name || 'Unnamed Document' %>
+                          </span>
                         <% } %>
-                      <% } else { %>
-                        <i class="fas fa-times-circle text-danger ims-status-icon"></i>
-                        <span class="ims-document-missing"><%= child.name %></span>
-                      <% } %>
-                      
-                      <button class="btn btn-sm btn-outline-success ms-1 ai-generate-btn" data-category="<%= categoryName %>"
-                        data-document="<%= child.name %>" style="font-size: 0.6rem;" title="AI Generate document">
-                        🤖 AI Generate
-                      </button>  </li>
+                      </div>
+
+                      <div class="btn-group-actions">
+                        <% if (!child.document) { %>
+                          <button class="btn btn-outline-success btn-xs ai-generate-btn" 
+                                  data-category="<%= categoryName %>"
+                                  data-document="<%= child.name || '' %>" 
+                                  title="Generate with AI">
+                            <i class="fas fa-robot" aria-hidden="true"></i>
+                          </button>
+                        <% } %>
+
+                        <% if (child.document) { %>
+                          <button class="btn btn-outline-warning btn-xs category-revision-btn"
+                                  data-document-id="<%= child.document.id %>" 
+                                  data-document-name="<%= child.name || '' %>"
+                                  title="Upload new revision">
+                            <i class="fas fa-edit" aria-hidden="true"></i>
+                          </button>
+                        <% } %>
+
+                        <button class="btn btn-outline-secondary btn-xs manage-document-btn"
+                                data-category="<%= categoryName %>" 
+                                data-document="<%= child.name || '' %>"
+                                title="Manage document link">
+                          <i class="fas fa-link" aria-hidden="true"></i>
+                        </button>
+                      </div>
+                    </li>
                   <% }); %>
                 </ul>
               <% } %>
