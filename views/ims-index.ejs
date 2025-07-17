@@ -208,6 +208,7 @@
       }
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 <body>
   <%- include('partials/header') %>
@@ -390,6 +391,11 @@
                               title="Change linked document">
                         <i class="fas fa-link"></i>
                       </button>
+                      <button class="btn btn-sm btn-outline-danger ms-1 category-unlink-btn" data-category="<%= categoryName %>"
+                        data-document-name="<%= categoryName %>" style="font-size: 0.6rem; <%= !category.document ? 'display: none;' : '' %>"
+                        title="Unlink document from category">
+                        <i class="fas fa-unlink"></i>
+                      </button>
                     </span>
                   <% } else { %>
                     <span class="ims-document-link" style="color: #2e7d32; display: inline-flex; align-items: center;">
@@ -458,14 +464,18 @@
                       </div>
 
                       <div class="btn-group-actions">
-                        <% if (!child.document) { %>
-                          <button class="btn btn-outline-success btn-xs ai-generate-btn" 
-                                  data-category="<%= categoryName %>"
-                                  data-document="<%= child.name || '' %>" 
-                                  title="Generate with AI">
-                            <i class="fas fa-robot" aria-hidden="true"></i>
+                        <!-- AI Generate button - ALWAYS show with different styling -->
+                        <% if (child.document) { %>
+                          <button class="btn btn-outline-info btn-xs ai-generate-btn" data-category="<%= categoryName %>"
+                            data-document="<%= child.name || '' %>" title="Generate improved AI version">
+                            🤖 AI Improve
                           </button>
-                        <% } %>
+                          <% } else { %>
+                            <button class="btn btn-outline-success btn-xs ai-generate-btn" data-category="<%= categoryName %>"
+                              data-document="<%= child.name || '' %>" title="Generate with AI">
+                              🤖 AI Create
+                            </button>
+                            <% } %>
 
                         <% if (child.document) { %>
                           <button class="btn btn-outline-warning btn-xs category-revision-btn"
@@ -475,6 +485,12 @@
                             <i class="fas fa-edit" aria-hidden="true"></i>
                           </button>
                         <% } %>
+                        <% if (child.document) { %>
+                          <button class="btn btn-outline-danger btn-xs child-unlink-btn" data-category="<%= categoryName %>"
+                            data-document="<%= child.name || '' %>" title="Unlink this document">
+                            <i class="fas fa-unlink" aria-hidden="true"></i>
+                          </button>
+                          <% } %>
 
                         <button class="btn btn-outline-secondary btn-xs manage-document-btn"
                                 data-category="<%= categoryName %>" 

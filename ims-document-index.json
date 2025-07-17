@@ -59,12 +59,9 @@
     "enrichedChildren": [
       {
         "name": "SP24 HS&E Response",
-        "document": {
-          "id": "104",
-          "name": "SP24 Emergency Response.doc",
-          "path": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP24 Emergency Response.doc"
-        },
-        "found": true
+        "document": null,
+        "found": false,
+        "unlinkedAt": "2025-07-17T03:31:36.196Z"
       },
       {
         "name": "SP25 HS&E Incident Reporting",

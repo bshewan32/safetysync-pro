@@ -1,0 +1,58 @@
+{
+  "documentPatterns": {
+    "sp24 hs&e response": [
+      {
+        "documentId": "117",
+        "documentName": "SP24 Emergency Response.doc",
+        "path": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP24 Emergency Response.doc",
+        "category": "Incident and Injury Management",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-07-16T23:55:22.984Z"
+      }
+    ]
+  },
+  "categoryPatterns": {
+    "Incident and Injury Management": {
+      "intergrated management system\\section 02 system procedures": 1
+    }
+  },
+  "keywordWeights": {
+    "sp24": {
+      "score": 1,
+      "uses": 1
+    },
+    "response": {
+      "score": 1,
+      "uses": 1
+    }
+  },
+  "manualCorrections": [
+    {
+      "searchTerm": "SP24 HS&E Response",
+      "foundDocument": "SP24 Emergency Response.doc",
+      "category": "Incident and Injury Management",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        "sp24",
+        "response"
+      ],
+      "timestamp": "2025-07-16T23:55:22.984Z"
+    }
+  ],
+  "lastUpdated": "2025-07-17T03:30:21.351Z",
+  "negativePatterns": [
+    {
+      "searchTerm": "sp24 hs&e response",
+      "avoidDocumentId": "117",
+      "avoidDocumentName": "SP24 Emergency Response.doc",
+      "avoidDocumentPath": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP24 Emergency Response.doc",
+      "isContractorDoc": false,
+      "isArchiveDoc": false,
+      "unlinkType": "child_unlink",
+      "category": "Incident and Injury Management",
+      "reason": "manual_unlink",
+      "timestamp": "2025-07-17T03:30:21.351Z"
+    }
+  ]
+}
