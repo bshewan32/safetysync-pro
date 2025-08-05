@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs").promises;
-const fsSync = require("fs");
+const fs = require("fs");
 const chokidar = require("chokidar");
 const { v4: uuidv4 } = require("uuid");
 
@@ -54,7 +54,7 @@ const storage = multer.diskStorage({
       : DOCUMENTS_DIR;
 
     // Ensure directory exists
-    fsSync.mkdirSync(uploadPath, { recursive: true });
+    fs.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
@@ -81,7 +81,7 @@ let fileWatcher = null;
 
 async function loadDocumentIndex() {
   try {
-    if (fsSync.existsSync(INDEX_FILE)) {
+    if (fs.existsSync(INDEX_FILE)) {
       const data = await fs.readFile(INDEX_FILE, "utf8");
       documentIndex = JSON.parse(data);
       console.log(
@@ -108,7 +108,7 @@ async function saveDocumentIndex() {
 
 async function loadFolderStructure() {
   try {
-    if (fsSync.existsSync(FOLDERS_FILE)) {
+    if (fs.existsSync(FOLDERS_FILE)) {
       const data = await fs.readFile(FOLDERS_FILE, "utf8");
       folderStructure = JSON.parse(data);
       console.log("Folder structure loaded from file.");
@@ -140,8 +140,8 @@ const REVISION_LOG_PATH = path.join(__dirname, "data", "revision-log.json");
 
 function loadLearningPatterns() {
   try {
-    if (fsSync.existsSync(LEARNING_DATA_PATH)) {
-      return JSON.parse(fsSync.readFileSync(LEARNING_DATA_PATH, "utf8"));
+    if (fs.existsSync(LEARNING_DATA_PATH)) {
+      return JSON.parse(fs.readFileSync(LEARNING_DATA_PATH, "utf8"));
     }
   } catch (err) {
     console.error("Error loading learning patterns:", err);
@@ -160,7 +160,7 @@ function loadLearningPatterns() {
 function saveLearningPatterns(patterns) {
   try {
     patterns.lastUpdated = new Date().toISOString();
-    fsSync.writeFileSync(LEARNING_DATA_PATH, JSON.stringify(patterns, null, 2));
+    fs.writeFileSync(LEARNING_DATA_PATH, JSON.stringify(patterns, null, 2));
     return true;
   } catch (err) {
     console.error("Error saving learning patterns:", err);
@@ -430,8 +430,8 @@ function findDocumentByNameWithLearning(docName, includeArchived = false) {
 
 function loadIMSIndex() {
   try {
-    if (fsSync.existsSync(IMS_INDEX_FILE)) {
-      return JSON.parse(fsSync.readFileSync(IMS_INDEX_FILE, "utf8"));
+    if (fs.existsSync(IMS_INDEX_FILE)) {
+      return JSON.parse(fs.readFileSync(IMS_INDEX_FILE, "utf8"));
     }
   } catch (err) {
     console.error("Error loading IMS index:", err);
@@ -481,7 +481,7 @@ function loadIMSIndex() {
 
 function saveIMSIndex(imsIndex) {
   try {
-    fsSync.writeFileSync(IMS_INDEX_FILE, JSON.stringify(imsIndex, null, 2));
+    fs.writeFileSync(IMS_INDEX_FILE, JSON.stringify(imsIndex, null, 2));
     return true;
   } catch (err) {
     console.error("Error saving IMS index:", err);
@@ -491,8 +491,8 @@ function saveIMSIndex(imsIndex) {
 
 function loadMandatoryRecords() {
   try {
-    if (fsSync.existsSync(MANDATORY_RECORDS_FILE)) {
-      return JSON.parse(fsSync.readFileSync(MANDATORY_RECORDS_FILE, "utf8"));
+    if (fs.existsSync(MANDATORY_RECORDS_FILE)) {
+      return JSON.parse(fs.readFileSync(MANDATORY_RECORDS_FILE, "utf8"));
     }
   } catch (err) {
     console.error("Error loading mandatory records:", err);
@@ -540,8 +540,8 @@ function saveRevisionLog(documentId, revisionData) {
     fs.ensureDirSync(path.dirname(REVISION_LOG_PATH));
     let revisionLog = {};
 
-    if (fsSync.existsSync(REVISION_LOG_PATH)) {
-      revisionLog = JSON.parse(fsSync.readFileSync(REVISION_LOG_PATH, "utf8"));
+    if (fs.existsSync(REVISION_LOG_PATH)) {
+      revisionLog = JSON.parse(fs.readFileSync(REVISION_LOG_PATH, "utf8"));
     }
 
     if (!revisionLog[documentId]) {
@@ -549,10 +549,7 @@ function saveRevisionLog(documentId, revisionData) {
     }
 
     revisionLog[documentId].push(revisionData);
-    fsSync.writeFileSync(
-      REVISION_LOG_PATH,
-      JSON.stringify(revisionLog, null, 2)
-    );
+    fs.writeFileSync(REVISION_LOG_PATH, JSON.stringify(revisionLog, null, 2));
     console.log("Revision log saved for document:", documentId);
   } catch (error) {
     console.error("Error saving revision log:", error);
@@ -600,7 +597,7 @@ app.get("/", async (req, res) => {
       totalDocuments: 0,
     };
     try {
-      if (fsSync.existsSync(IMS_INDEX_FILE)) {
+      if (fs.existsSync(IMS_INDEX_FILE)) {
         const imsData = JSON.parse(await fs.readFile(IMS_INDEX_FILE, "utf8"));
         // Calculate IMS stats from data
         let linkedCount = 0;
@@ -641,7 +638,7 @@ app.get("/", async (req, res) => {
       totalDocuments: 0,
     };
     try {
-      if (fsSync.existsSync(ISN_INDEX_FILE)) {
+      if (fs.existsSync(ISN_INDEX_FILE)) {
         const isnData = JSON.parse(await fs.readFile(ISN_INDEX_FILE, "utf8"));
         // Calculate ISN stats similar to IMS
         let linkedCount = 0;
@@ -981,7 +978,7 @@ app.get("/api/mandatory-records", async (req, res) => {
   try {
     let mandatoryRecords = {};
 
-    if (fsSync.existsSync(MANDATORY_RECORDS_FILE)) {
+    if (fs.existsSync(MANDATORY_RECORDS_FILE)) {
       const data = await fs.readFile(MANDATORY_RECORDS_FILE, "utf8");
       mandatoryRecords = JSON.parse(data);
     }
@@ -1004,7 +1001,7 @@ app.get("/api/isn-mandatory-records", async (req, res) => {
   try {
     let mandatoryRecords = {};
 
-    if (fsSync.existsSync(ISN_MANDATORY_RECORDS_FILE)) {
+    if (fs.existsSync(ISN_MANDATORY_RECORDS_FILE)) {
       const data = await fs.readFile(ISN_MANDATORY_RECORDS_FILE, "utf8");
       mandatoryRecords = JSON.parse(data);
     }
@@ -1715,8 +1712,8 @@ async function buildFolderStructure() {
 function initializeFileWatcher() {
   try {
     // Check if it's a network drive or has too many files
-    const stats = fsSync.statSync(DOCUMENTS_DIR);
-    const sampleDir = fsSync.readdirSync(DOCUMENTS_DIR);
+    const stats = fs.statSync(DOCUMENTS_DIR);
+    const sampleDir = fs.readdirSync(DOCUMENTS_DIR);
 
     if (
       sampleDir.length > 1000 ||
