@@ -1,8 +1,8 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs").promises;
-const fs = require("fs");
+//const fs = require('fs').promises;
+const fsSync = require("fs");
 const chokidar = require("chokidar");
 const { v4: uuidv4 } = require("uuid");
 
@@ -54,7 +54,7 @@ const storage = multer.diskStorage({
       : DOCUMENTS_DIR;
 
     // Ensure directory exists
-    fs.mkdirSync(uploadPath, { recursive: true });
+    fsSync.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
@@ -81,8 +81,8 @@ let fileWatcher = null;
 
 async function loadDocumentIndex() {
   try {
-    if (fs.existsSync(INDEX_FILE)) {
-      const data = await fs.readFile(INDEX_FILE, "utf8");
+    if (fsSync.existsSync(INDEX_FILE)) {
+      const data = await fsSync.readFile(INDEX_FILE, "utf8");
       documentIndex = JSON.parse(data);
       console.log(
         `Index loaded from file. ${documentIndex.length} documents in index.`
@@ -99,7 +99,7 @@ async function loadDocumentIndex() {
 
 async function saveDocumentIndex() {
   try {
-    await fs.writeFile(INDEX_FILE, JSON.stringify(documentIndex, null, 2));
+    await fsSync.writeFile(INDEX_FILE, JSON.stringify(documentIndex, null, 2));
     console.log(`Document index saved. ${documentIndex.length} documents.`);
   } catch (error) {
     console.error("Error saving document index:", error);
@@ -108,8 +108,8 @@ async function saveDocumentIndex() {
 
 async function loadFolderStructure() {
   try {
-    if (fs.existsSync(FOLDERS_FILE)) {
-      const data = await fs.readFile(FOLDERS_FILE, "utf8");
+    if (fsSync.existsSync(FOLDERS_FILE)) {
+      const data = await fsSync.readFile(FOLDERS_FILE, "utf8");
       folderStructure = JSON.parse(data);
       console.log("Folder structure loaded from file.");
     } else {
@@ -124,7 +124,10 @@ async function loadFolderStructure() {
 
 async function saveFolderStructure() {
   try {
-    await fs.writeFile(FOLDERS_FILE, JSON.stringify(folderStructure, null, 2));
+    await fsSync.writeFile(
+      FOLDERS_FILE,
+      JSON.stringify(folderStructure, null, 2)
+    );
     console.log("Folder structure saved.");
   } catch (error) {
     console.error("Error saving folder structure:", error);
@@ -140,8 +143,8 @@ const REVISION_LOG_PATH = path.join(__dirname, "data", "revision-log.json");
 
 function loadLearningPatterns() {
   try {
-    if (fs.existsSync(LEARNING_DATA_PATH)) {
-      return JSON.parse(fs.readFileSync(LEARNING_DATA_PATH, "utf8"));
+    if (fsSync.existsSync(LEARNING_DATA_PATH)) {
+      return JSON.parse(fsSync.readFileSync(LEARNING_DATA_PATH, "utf8"));
     }
   } catch (err) {
     console.error("Error loading learning patterns:", err);
@@ -160,7 +163,7 @@ function loadLearningPatterns() {
 function saveLearningPatterns(patterns) {
   try {
     patterns.lastUpdated = new Date().toISOString();
-    fs.writeFileSync(LEARNING_DATA_PATH, JSON.stringify(patterns, null, 2));
+    fsSync.writeFileSync(LEARNING_DATA_PATH, JSON.stringify(patterns, null, 2));
     return true;
   } catch (err) {
     console.error("Error saving learning patterns:", err);
@@ -430,8 +433,8 @@ function findDocumentByNameWithLearning(docName, includeArchived = false) {
 
 function loadIMSIndex() {
   try {
-    if (fs.existsSync(IMS_INDEX_FILE)) {
-      return JSON.parse(fs.readFileSync(IMS_INDEX_FILE, "utf8"));
+    if (fsSync.existsSync(IMS_INDEX_FILE)) {
+      return JSON.parse(fsSync.readFileSync(IMS_INDEX_FILE, "utf8"));
     }
   } catch (err) {
     console.error("Error loading IMS index:", err);
@@ -481,7 +484,7 @@ function loadIMSIndex() {
 
 function saveIMSIndex(imsIndex) {
   try {
-    fs.writeFileSync(IMS_INDEX_FILE, JSON.stringify(imsIndex, null, 2));
+    fsSync.writeFileSync(IMS_INDEX_FILE, JSON.stringify(imsIndex, null, 2));
     return true;
   } catch (err) {
     console.error("Error saving IMS index:", err);
@@ -491,8 +494,8 @@ function saveIMSIndex(imsIndex) {
 
 function loadMandatoryRecords() {
   try {
-    if (fs.existsSync(MANDATORY_RECORDS_FILE)) {
-      return JSON.parse(fs.readFileSync(MANDATORY_RECORDS_FILE, "utf8"));
+    if (fsSync.existsSync(MANDATORY_RECORDS_FILE)) {
+      return JSON.parse(fsSync.readFileSync(MANDATORY_RECORDS_FILE, "utf8"));
     }
   } catch (err) {
     console.error("Error loading mandatory records:", err);
@@ -537,11 +540,11 @@ function loadMandatoryRecords() {
 
 function saveRevisionLog(documentId, revisionData) {
   try {
-    fs.ensureDirSync(path.dirname(REVISION_LOG_PATH));
+    fsSync.ensureDirSync(path.dirname(REVISION_LOG_PATH));
     let revisionLog = {};
 
-    if (fs.existsSync(REVISION_LOG_PATH)) {
-      revisionLog = JSON.parse(fs.readFileSync(REVISION_LOG_PATH, "utf8"));
+    if (fsSync.existsSync(REVISION_LOG_PATH)) {
+      revisionLog = JSON.parse(fsSync.readFileSync(REVISION_LOG_PATH, "utf8"));
     }
 
     if (!revisionLog[documentId]) {
@@ -549,7 +552,10 @@ function saveRevisionLog(documentId, revisionData) {
     }
 
     revisionLog[documentId].push(revisionData);
-    fs.writeFileSync(REVISION_LOG_PATH, JSON.stringify(revisionLog, null, 2));
+    fsSync.writeFileSync(
+      REVISION_LOG_PATH,
+      JSON.stringify(revisionLog, null, 2)
+    );
     console.log("Revision log saved for document:", documentId);
   } catch (error) {
     console.error("Error saving revision log:", error);
@@ -597,8 +603,10 @@ app.get("/", async (req, res) => {
       totalDocuments: 0,
     };
     try {
-      if (fs.existsSync(IMS_INDEX_FILE)) {
-        const imsData = JSON.parse(await fs.readFile(IMS_INDEX_FILE, "utf8"));
+      if (fsSync.existsSync(IMS_INDEX_FILE)) {
+        const imsData = JSON.parse(
+          await fsSync.readFile(IMS_INDEX_FILE, "utf8")
+        );
         // Calculate IMS stats from data
         let linkedCount = 0;
         let totalImsCount = 0;
@@ -638,8 +646,10 @@ app.get("/", async (req, res) => {
       totalDocuments: 0,
     };
     try {
-      if (fs.existsSync(ISN_INDEX_FILE)) {
-        const isnData = JSON.parse(await fs.readFile(ISN_INDEX_FILE, "utf8"));
+      if (fsSync.existsSync(ISN_INDEX_FILE)) {
+        const isnData = JSON.parse(
+          await fsSync.readFile(ISN_INDEX_FILE, "utf8")
+        );
         // Calculate ISN stats similar to IMS
         let linkedCount = 0;
         let totalIsnCount = 0;
@@ -690,7 +700,7 @@ app.get("/ims-index", (req, res) => {
   try {
     // Load the IMS document index
     const imsIndexPath = path.join(__dirname, "ims-document-index.json");
-    const imsData = JSON.parse(fs.readFileSync(imsIndexPath, "utf8"));
+    const imsData = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
 
     // Load mandatory records
     const mandatoryRecordsPath = path.join(
@@ -700,7 +710,7 @@ app.get("/ims-index", (req, res) => {
     let mandatoryRecords = [];
     try {
       mandatoryRecords = JSON.parse(
-        fs.readFileSync(mandatoryRecordsPath, "utf8")
+        fsSync.readFileSync(mandatoryRecordsPath, "utf8")
       );
     } catch (err) {
       console.log("No mandatory records file found");
@@ -771,7 +781,7 @@ app.get("/isn-index", (req, res) => {
     const isnIndexPath = path.join(__dirname, "isn-index.json");
     let isnData = {};
     try {
-      isnData = JSON.parse(fs.readFileSync(isnIndexPath, "utf8"));
+      isnData = JSON.parse(fsSync.readFileSync(isnIndexPath, "utf8"));
     } catch (err) {
       console.log("No ISN index file found, using empty data");
     }
@@ -978,8 +988,8 @@ app.get("/api/mandatory-records", async (req, res) => {
   try {
     let mandatoryRecords = {};
 
-    if (fs.existsSync(MANDATORY_RECORDS_FILE)) {
-      const data = await fs.readFile(MANDATORY_RECORDS_FILE, "utf8");
+    if (fsSync.existsSync(MANDATORY_RECORDS_FILE)) {
+      const data = await fsSync.readFile(MANDATORY_RECORDS_FILE, "utf8");
       mandatoryRecords = JSON.parse(data);
     }
 
@@ -1001,8 +1011,8 @@ app.get("/api/isn-mandatory-records", async (req, res) => {
   try {
     let mandatoryRecords = {};
 
-    if (fs.existsSync(ISN_MANDATORY_RECORDS_FILE)) {
-      const data = await fs.readFile(ISN_MANDATORY_RECORDS_FILE, "utf8");
+    if (fsSync.existsSync(ISN_MANDATORY_RECORDS_FILE)) {
+      const data = await fsSync.readFile(ISN_MANDATORY_RECORDS_FILE, "utf8");
       mandatoryRecords = JSON.parse(data);
     }
 
@@ -1028,17 +1038,17 @@ app.post("/api/auto-link-documents", (req, res) => {
     const imsIndexPath = path.join(__dirname, "ims-document-index.json");
     const documentIndexPath = path.join(__dirname, "document-index.json");
 
-    if (!fs.existsSync(imsIndexPath)) {
+    if (!fsSync.existsSync(imsIndexPath)) {
       return res.status(404).json({ error: "IMS document index not found" });
     }
 
-    if (!fs.existsSync(documentIndexPath)) {
+    if (!fsSync.existsSync(documentIndexPath)) {
       return res.status(404).json({ error: "Document index not found" });
     }
 
-    const imsIndex = JSON.parse(fs.readFileSync(imsIndexPath, "utf8"));
+    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
     const documentIndex = JSON.parse(
-      fs.readFileSync(documentIndexPath, "utf8")
+      fsSync.readFileSync(documentIndexPath, "utf8")
     );
 
     let linkedCount = 0;
@@ -1103,7 +1113,7 @@ app.post("/api/auto-link-documents", (req, res) => {
     });
 
     // Save updated index
-    fs.writeFileSync(imsIndexPath, JSON.stringify(imsIndex, null, 2));
+    fsSync.writeFileSync(imsIndexPath, JSON.stringify(imsIndex, null, 2));
 
     console.log(
       `IMS Auto-link completed: ${linkedCount} documents linked out of ${totalProcessed} processed`
@@ -1130,17 +1140,17 @@ app.post("/api/auto-link-isn-documents", (req, res) => {
     const isnIndexPath = path.join(__dirname, "isn-index.json");
     const documentIndexPath = path.join(__dirname, "document-index.json");
 
-    if (!fs.existsSync(isnIndexPath)) {
+    if (!fsSync.existsSync(isnIndexPath)) {
       return res.status(404).json({ error: "ISN document index not found" });
     }
 
-    if (!fs.existsSync(documentIndexPath)) {
+    if (!fsSync.existsSync(documentIndexPath)) {
       return res.status(404).json({ error: "Document index not found" });
     }
 
-    const isnIndex = JSON.parse(fs.readFileSync(isnIndexPath, "utf8"));
+    const isnIndex = JSON.parse(fsSync.readFileSync(isnIndexPath, "utf8"));
     const documentIndex = JSON.parse(
-      fs.readFileSync(documentIndexPath, "utf8")
+      fsSync.readFileSync(documentIndexPath, "utf8")
     );
 
     let linkedCount = 0;
@@ -1202,7 +1212,7 @@ app.post("/api/auto-link-isn-documents", (req, res) => {
     });
 
     // Save updated ISN index
-    fs.writeFileSync(isnIndexPath, JSON.stringify(isnIndex, null, 2));
+    fsSync.writeFileSync(isnIndexPath, JSON.stringify(isnIndex, null, 2));
 
     console.log(
       `ISN Auto-link completed: ${linkedCount} documents linked out of ${totalProcessed} processed`
@@ -1227,7 +1237,7 @@ app.get("/api/ims-statistics", (req, res) => {
   try {
     const imsIndexPath = path.join(__dirname, "ims-document-index.json");
 
-    if (!fs.existsSync(imsIndexPath)) {
+    if (!fsSync.existsSync(imsIndexPath)) {
       return res.json({
         totalCategories: 0,
         totalDocuments: 0,
@@ -1236,7 +1246,7 @@ app.get("/api/ims-statistics", (req, res) => {
       });
     }
 
-    const imsIndex = JSON.parse(fs.readFileSync(imsIndexPath, "utf8"));
+    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
 
     const stats = {
       totalCategories: Object.keys(imsIndex).length,
@@ -1272,7 +1282,7 @@ app.get("/api/isn-statistics", (req, res) => {
   try {
     const isnIndexPath = path.join(__dirname, "isn-index.json");
 
-    if (!fs.existsSync(isnIndexPath)) {
+    if (!fsSync.existsSync(isnIndexPath)) {
       return res.json({
         totalCategories: 0,
         totalDocuments: 0,
@@ -1281,7 +1291,7 @@ app.get("/api/isn-statistics", (req, res) => {
       });
     }
 
-    const isnIndex = JSON.parse(fs.readFileSync(isnIndexPath, "utf8"));
+    const isnIndex = JSON.parse(fsSync.readFileSync(isnIndexPath, "utf8"));
 
     const stats = {
       totalCategories: Object.keys(isnIndex).length,
@@ -1317,11 +1327,11 @@ app.get("/api/export-ims-index", (req, res) => {
   try {
     const imsIndexPath = path.join(__dirname, "ims-document-index.json");
 
-    if (!fs.existsSync(imsIndexPath)) {
+    if (!fsSync.existsSync(imsIndexPath)) {
       return res.status(404).json({ error: "IMS index not found" });
     }
 
-    const imsIndex = JSON.parse(fs.readFileSync(imsIndexPath, "utf8"));
+    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
 
     res.setHeader("Content-Type", "application/json");
     res.setHeader(
@@ -1341,11 +1351,11 @@ app.get("/api/export-isn-index", (req, res) => {
   try {
     const isnIndexPath = path.join(__dirname, "isn-index.json");
 
-    if (!fs.existsSync(isnIndexPath)) {
+    if (!fsSync.existsSync(isnIndexPath)) {
       return res.status(404).json({ error: "ISN index not found" });
     }
 
-    const isnIndex = JSON.parse(fs.readFileSync(isnIndexPath, "utf8"));
+    const isnIndex = JSON.parse(fsSync.readFileSync(isnIndexPath, "utf8"));
 
     res.setHeader("Content-Type", "application/json");
     res.setHeader(
@@ -1388,9 +1398,9 @@ app.post("/api/link-ims-document", (req, res) => {
     const imsIndexPath = path.join(__dirname, "ims-document-index.json");
     const documentIndexPath = path.join(__dirname, "document-index.json");
 
-    const imsIndex = JSON.parse(fs.readFileSync(imsIndexPath, "utf8"));
+    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
     const documentIndex = JSON.parse(
-      fs.readFileSync(documentIndexPath, "utf8")
+      fsSync.readFileSync(documentIndexPath, "utf8")
     );
 
     const targetCategory = imsIndex[category];
@@ -1430,7 +1440,7 @@ app.post("/api/link-ims-document", (req, res) => {
       });
     }
 
-    fs.writeFileSync(imsIndexPath, JSON.stringify(imsIndex, null, 2));
+    fsSync.writeFileSync(imsIndexPath, JSON.stringify(imsIndex, null, 2));
 
     res.json({ success: true, message: "Document linked successfully" });
   } catch (error) {
@@ -1446,9 +1456,9 @@ app.post("/api/link-isn-document", (req, res) => {
     const isnIndexPath = path.join(__dirname, "isn-index.json");
     const documentIndexPath = path.join(__dirname, "document-index.json");
 
-    const isnIndex = JSON.parse(fs.readFileSync(isnIndexPath, "utf8"));
+    const isnIndex = JSON.parse(fsSync.readFileSync(isnIndexPath, "utf8"));
     const documentIndex = JSON.parse(
-      fs.readFileSync(documentIndexPath, "utf8")
+      fsSync.readFileSync(documentIndexPath, "utf8")
     );
 
     const targetCategory = isnIndex[category];
@@ -1488,7 +1498,7 @@ app.post("/api/link-isn-document", (req, res) => {
       });
     }
 
-    fs.writeFileSync(isnIndexPath, JSON.stringify(isnIndex, null, 2));
+    fsSync.writeFileSync(isnIndexPath, JSON.stringify(isnIndex, null, 2));
 
     res.json({ success: true, message: "ISN document linked successfully" });
   } catch (error) {
@@ -1503,7 +1513,7 @@ app.post("/api/unlink-ims-document", (req, res) => {
     const { category, document } = req.body;
 
     const imsIndexPath = path.join(__dirname, "ims-document-index.json");
-    const imsIndex = JSON.parse(fs.readFileSync(imsIndexPath, "utf8"));
+    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
 
     const targetCategory = imsIndex[category];
     if (!targetCategory || !targetCategory.enrichedChildren) {
@@ -1521,7 +1531,7 @@ app.post("/api/unlink-ims-document", (req, res) => {
       delete enrichedChild.document;
     }
 
-    fs.writeFileSync(imsIndexPath, JSON.stringify(imsIndex, null, 2));
+    fsSync.writeFileSync(imsIndexPath, JSON.stringify(imsIndex, null, 2));
 
     res.json({ success: true, message: "Document unlinked successfully" });
   } catch (error) {
@@ -1536,7 +1546,7 @@ app.post("/api/unlink-isn-document", (req, res) => {
     const { category, document } = req.body;
 
     const isnIndexPath = path.join(__dirname, "isn-index.json");
-    const isnIndex = JSON.parse(fs.readFileSync(isnIndexPath, "utf8"));
+    const isnIndex = JSON.parse(fsSync.readFileSync(isnIndexPath, "utf8"));
 
     const targetCategory = isnIndex[category];
     if (!targetCategory || !targetCategory.enrichedChildren) {
@@ -1554,7 +1564,7 @@ app.post("/api/unlink-isn-document", (req, res) => {
       delete enrichedChild.document;
     }
 
-    fs.writeFileSync(isnIndexPath, JSON.stringify(isnIndex, null, 2));
+    fsSync.writeFileSync(isnIndexPath, JSON.stringify(isnIndex, null, 2));
 
     res.json({ success: true, message: "ISN document unlinked successfully" });
   } catch (error) {
@@ -1574,11 +1584,11 @@ async function buildDocumentIndex() {
 
     async function scanDirectory(dirPath, relativePath = "") {
       try {
-        const items = await fs.readdir(dirPath);
+        const items = await fsSync.readdir(dirPath);
 
         for (const item of items) {
           const fullPath = path.join(dirPath, item);
-          const stats = await fs.stat(fullPath);
+          const stats = await fsSync.stat(fullPath);
 
           if (stats.isDirectory()) {
             const newRelativePath = relativePath
@@ -1638,13 +1648,13 @@ async function buildFolderStructure() {
 
     async function scanFolders(dirPath, relativePath = "", level = 0) {
       try {
-        const items = await fs.readdir(dirPath);
+        const items = await fsSync.readdir(dirPath);
         const folders = [];
         const documents = [];
 
         for (const item of items) {
           const fullPath = path.join(dirPath, item);
-          const stats = await fs.stat(fullPath);
+          const stats = await fsSync.stat(fullPath);
 
           if (stats.isDirectory()) {
             const newRelativePath = relativePath
@@ -1712,8 +1722,8 @@ async function buildFolderStructure() {
 function initializeFileWatcher() {
   try {
     // Check if it's a network drive or has too many files
-    const stats = fs.statSync(DOCUMENTS_DIR);
-    const sampleDir = fs.readdirSync(DOCUMENTS_DIR);
+    const stats = fsSync.statSync(DOCUMENTS_DIR);
+    const sampleDir = fsSync.readdirSync(DOCUMENTS_DIR);
 
     if (
       sampleDir.length > 1000 ||
