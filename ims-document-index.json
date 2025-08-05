@@ -2,7 +2,7 @@
   "OHS Policy": {
     "type": "policy",
     "level": 1,
-    "documentId": "54",
+    "documentId": "56",
     "children": []
   },
   "Core Policies": {
@@ -34,12 +34,13 @@
       {
         "name": "Discrimination, Harassment and Bullying Policy",
         "document": {
-          "id": "42",
+          "id": "45",
           "name": "GMK - Discrimination, Harassment & Bullying Policy.pdf",
           "path": "I:\\IMS\\Intergrated Management System\\Section 01B IMS Policies\\GMK - Discrimination, Harassment & Bullying Policy.pdf",
           "isArchived": false
         },
-        "found": true
+        "found": true,
+        "unlinkedAt": "2025-07-17T03:39:41.106Z"
       }
     ]
   },
@@ -59,14 +60,19 @@
     "enrichedChildren": [
       {
         "name": "SP24 HS&E Response",
-        "document": null,
-        "found": false,
+        "document": {
+          "id": "116",
+          "name": "SP24 Emergency Response.doc",
+          "path": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP24 Emergency Response.doc",
+          "isArchived": false
+        },
+        "found": true,
         "unlinkedAt": "2025-07-17T03:31:36.196Z"
       },
       {
         "name": "SP25 HS&E Incident Reporting",
         "document": {
-          "id": "116",
+          "id": "117",
           "name": "SP25 Incident Reporting.docx",
           "path": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP25 Incident Reporting.docx",
           "isArchived": false
@@ -98,9 +104,10 @@
       {
         "name": "SP38 OHS Committee Meetings",
         "document": {
-          "id": "115",
+          "id": "127",
           "name": "SP38 OHS Committee Meetings.doc",
-          "path": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP38 OHS Committee Meetings.doc"
+          "path": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP38 OHS Committee Meetings.doc",
+          "isArchived": false
         },
         "found": true
       }

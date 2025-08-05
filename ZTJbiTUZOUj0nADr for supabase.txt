@@ -1,0 +1,3 @@
+ZTJbiTUZOUj0nADr for supabase
+
+postgresql://postgres:m148FvtdRSWMRl5J@db.faoglnnxkqujjjhctfzd.supabase.co:5432/postgres

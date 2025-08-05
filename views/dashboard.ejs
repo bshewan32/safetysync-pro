@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafetySync Pro - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .dashboard-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        .module-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .bg-gradient-primary {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+        }
+        .bg-gradient-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+        .bg-gradient-info {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+        }
+        .bg-gradient-warning {
+            background: linear-gradient(45deg, #ffc107, #e0a800);
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-shield-alt me-2"></i>SafetySync Pro
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/"><i class="fas fa-home me-1"></i>Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/documents"><i class="fas fa-file-alt me-1"></i>Documents</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/folders"><i class="fas fa-folder me-1"></i>Folders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reports"><i class="fas fa-chart-bar me-1"></i>Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/search"><i class="fas fa-search me-1"></i>Search</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="modulesDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-th-large me-1"></i>Modules
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/ims-index"><i class="fas fa-clipboard-list me-2"></i>IMS Index</a></li>
+                            <li><a class="dropdown-item" href="/isn-index"><i class="fas fa-hard-hat me-2"></i>ISN Index</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="display-4 text-center mb-2">
+                    <i class="fas fa-tachometer-alt me-3"></i>SafetySync Pro Dashboard
+                </h1>
+                <p class="lead text-center text-muted">Your comprehensive document management and safety compliance hub</p>
+            </div>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="row mb-5">
+            <div class="col-md-3 mb-4">
+                <div class="card dashboard-card bg-gradient-primary text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-file-alt stat-icon mb-3"></i>
+                        <h3 class="mb-2"><%= totalDocuments %></h3>
+                        <p class="mb-0">Total Documents</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card dashboard-card bg-gradient-success text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-folder stat-icon mb-3"></i>
+                        <h3 class="mb-2"><%= totalFolders %></h3>
+                        <p class="mb-0">Total Folders</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card dashboard-card bg-gradient-info text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle stat-icon mb-3"></i>
+                        <h3 class="mb-2"><%= imsStats.linkedDocuments %></h3>
+                        <p class="mb-0">IMS Linked</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card dashboard-card bg-gradient-warning text-white">
+                    <div class="card-body text-center">
+                        <i class="fas fa-hard-hat stat-icon mb-3"></i>
+                        <h3 class="mb-2"><%= isnStats.linkedDocuments %></h3>
+                        <p class="mb-0">ISN Linked</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module Access -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="mb-4"><i class="fas fa-th-large me-2"></i>Module Access</h2>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clipboard-list module-icon text-primary"></i>
+                        <h4 class="card-title">IMS Index</h4>
+                        <p class="card-text">Integrated Management System document tracking and compliance monitoring.</p>
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <strong><%= imsStats.linkedDocuments %></strong> linked / 
+                                <strong><%= imsStats.totalDocuments %></strong> total
+                            </small>
+                        </div>
+                        <a href="/ims-index" class="btn btn-primary">
+                            <i class="fas fa-arrow-right me-1"></i>Access IMS
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-hard-hat module-icon text-warning"></i>
+                        <h4 class="card-title">ISN Index</h4>
+                        <p class="card-text">ISNetworld safety compliance and contractor management documentation.</p>
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <strong><%= isnStats.linkedDocuments %></strong> linked / 
+                                <strong><%= isnStats.totalDocuments %></strong> total
+                            </small>
+                        </div>
+                        <a href="/isn-index" class="btn btn-warning">
+                            <i class="fas fa-arrow-right me-1"></i>Access ISN
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line module-icon text-success"></i>
+                        <h4 class="card-title">Reports & Analytics</h4>
+                        <p class="card-text">Comprehensive reporting and analysis tools for compliance tracking.</p>
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                Real-time insights and metrics
+                            </small>
+                        </div>
+                        <a href="/reports" class="btn btn-success">
+                            <i class="fas fa-arrow-right me-1"></i>View Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="mb-4"><i class="fas fa-bolt me-2"></i>Quick Actions</h2>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card dashboard-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-sync-alt fa-2x text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">Rebuild Document Index</h5>
+                                <p class="mb-2 text-muted">Refresh the document database with latest files</p>
+                                <button class="btn btn-sm btn-outline-primary" id="rebuildIndexBtn">
+                                    <i class="fas fa-refresh me-1"></i>Rebuild Index
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card dashboard-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-search fa-2x text-info"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">Search Documents</h5>
+                                <p class="mb-2 text-muted">Find documents across all modules</p>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" id="quickSearch" placeholder="Search documents...">
+                                    <button class="btn btn-outline-info" type="button" id="quickSearchBtn">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Documents -->
+        <% if (recentDocuments && recentDocuments.length > 0) { %>
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="mb-4"><i class="fas fa-clock me-2"></i>Recent Documents</h2>
+                <div class="card dashboard-card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-file me-1"></i>Document</th>
+                                        <th><i class="fas fa-folder me-1"></i>Location</th>
+                                        <th><i class="fas fa-calendar me-1"></i>Modified</th>
+                                        <th><i class="fas fa-hdd me-1"></i>Size</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% recentDocuments.forEach(doc => { %>
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-file-alt text-muted me-2"></i>
+                                            <strong><%= doc.name %></strong>
+                                            <% if (doc.isArchived) { %>
+                                                <span class="badge bg-secondary ms-2">ARCHIVED</span>
+                                            <% } %>
+                                        </td>
+                                        <td class="text-muted">
+                                            <i class="fas fa-folder-open me-1"></i>
+                                            <%= doc.folder || 'Root' %>
+                                        </td>
+                                        <td class="text-muted">
+                                            <%= new Date(doc.modified).toLocaleDateString() %>
+                                        </td>
+                                        <td class="text-muted">
+                                            <%= (doc.size / 1024).toFixed(1) %> KB
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- System Status -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card dashboard-card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-info-circle me-2"></i>System Status</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p class="mb-1"><strong>IMS Coverage:</strong></p>
+                                <div class="progress mb-3">
+                                    <% const imsCoverage = imsStats.totalDocuments > 0 ? Math.round((imsStats.linkedDocuments / imsStats.totalDocuments) * 100) : 0; %>
+                                    <div class="progress-bar bg-primary" style="width: <%= imsCoverage %>%">
+                                        <%= imsCoverage %>%
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1"><strong>ISN Coverage:</strong></p>
+                                <div class="progress mb-3">
+                                    <% const isnCoverage = isnStats.totalDocuments > 0 ? Math.round((isnStats.linkedDocuments / isnStats.totalDocuments) * 100) : 0; %>
+                                    <div class="progress-bar bg-warning" style="width: <%= isnCoverage %>%">
+                                        <%= isnCoverage %>%
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1"><strong>Last Updated:</strong></p>
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-clock me-1"></i>
+                                    <%= new Date().toLocaleString() %>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">
+                <i class="fas fa-shield-alt me-2"></i>
+                SafetySync Pro &copy; 2024 - Document Management & Safety Compliance
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Rebuild index functionality
+        document.getElementById('rebuildIndexBtn').addEventListener('click', async function() {
+            const btn = this;
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Rebuilding...';
+            
+            try {
+                const response = await fetch('/api/rebuild-index', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Index rebuilt successfully!\n${data.documentCount} documents\n${data.folderCount} folders`);
+                    window.location.reload();
+                } else {
+                    alert('Error rebuilding index: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error rebuilding index');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+
+        // Quick search functionality
+        function performQuickSearch() {
+            const query = document.getElementById('quickSearch').value.trim();
+            if (query) {
+                window.location.href = `/search?q=${encodeURIComponent(query)}`;
+            }
+        }
+
+        document.getElementById('quickSearchBtn').addEventListener('click', performQuickSearch);
+        
+        document.getElementById('quickSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performQuickSearch();
+            }
+        });
+
+        // Auto-refresh statistics every 5 minutes
+        setInterval(function() {
+            window.location.reload();
+        }, 300000);
+    </script>
+</body>
+</html>

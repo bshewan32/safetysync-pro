@@ -1,0 +1,124 @@
+<!-- views/document-details.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | IMS Document Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+  
+  <div class="container my-4">
+    <div class="row">
+      <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/documents">Documents</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><%= document.name %></li>
+          </ol>
+        </nav>
+        
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-light">
+            <h3 class="mb-0">
+              <% if (document.extension === '.pdf') { %>
+                <i class="far fa-file-pdf text-danger me-2"></i>
+              <% } else if (['.doc', '.docx'].includes(document.extension)) { %>
+                <i class="far fa-file-word text-primary me-2"></i>
+              <% } else if (['.xls', '.xlsx'].includes(document.extension)) { %>
+                <i class="far fa-file-excel text-success me-2"></i>
+              <% } else if (['.ppt', '.pptx'].includes(document.extension)) { %>
+                <i class="far fa-file-powerpoint text-warning me-2"></i>
+              <% } else { %>
+                <i class="far fa-file text-secondary me-2"></i>
+              <% } %>
+              <%= document.name %>
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <h4>Document Information</h4>
+                <table class="table table-borderless">
+                  <tbody>
+                    <tr>
+                      <th scope="row">File Name:</th>
+                      <td><%= document.name %></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">File Type:</th>
+                      <td><%= document.extension.substring(1).toUpperCase() %></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Size:</th>
+                      <td><%= document.size %></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Location:</th>
+                      <td><%= document.folder || 'Root' %></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Full Path:</th>
+                      <td><small class="text-muted"><%= document.path %></small></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="col-md-6">
+                <h4>Timestamps</h4>
+                <table class="table table-borderless">
+                  <tbody>
+                    <tr>
+                      <th scope="row">Created:</th>
+                      <td><%= moment(document.created).format('YYYY-MM-DD HH:mm:ss') %></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Last Modified:</th>
+                      <td><%= moment(document.modified).format('YYYY-MM-DD HH:mm:ss') %></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Last Accessed:</th>
+                      <td><%= moment(document.lastAccessed).format('YYYY-MM-DD HH:mm:ss') %></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div class="mt-4 d-flex justify-content-center">
+              <a href="/open/<%= document.id %>" class="btn btn-primary me-2">
+                <i class="fas fa-external-link-alt"></i> Open Document
+              </a>
+              <!-- Additional buttons can be added here -->
+              <a href="/documents" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Documents
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Document History Section (Optional) -->
+        <div class="card shadow-sm">
+          <div class="card-header bg-light">
+            <h4 class="mb-0"><i class="fas fa-history"></i> Document History</h4>
+          </div>
+          <div class="card-body">
+            <p class="text-muted">Access history will be displayed here if tracking is enabled.</p>
+            <!-- This section could be expanded to show document access history -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <%- include('partials/footer') %>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

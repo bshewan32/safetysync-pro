@@ -94,7 +94,10 @@
               <a href="/open/<%= document.id %>" class="btn btn-primary me-2">
                 <i class="fas fa-external-link-alt"></i> Open Document
               </a>
-              <!-- Additional buttons can be added here -->
+              <!-- NEW: Upload New Version Button -->
+              <button class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#uploadRevisionModal">
+                <i class="fas fa-upload"></i> Upload New Version
+              </button>
               <a href="/documents" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Documents
               </a>
@@ -116,9 +119,106 @@
     </div>
   </div>
   
+  <!-- NEW: Upload Revision Modal -->
+  <div class="modal fade" id="uploadRevisionModal" tabindex="-1" aria-labelledby="uploadRevisionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="uploadRevisionModalLabel">
+            <i class="fas fa-upload"></i> Upload New Version
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="revisionUploadForm" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="revisionFile" class="form-label">Select New Version</label>
+              <input type="file" class="form-control" id="revisionFile" name="newDocument" required>
+              <div class="form-text">
+                Current file: <strong><%= document.name %></strong><br>
+                Upload a new version to replace this document. The old version will be backed up.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="revisionComment" class="form-label">Revision Comment (Optional)</label>
+              <textarea class="form-control" id="revisionComment" name="revisionNote" rows="3" 
+                        placeholder="Describe what changed in this revision..."></textarea>
+            </div>
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="keepOriginalCheck" name="keepOriginal" value="true" checked>
+                <label class="form-check-label" for="keepOriginalCheck">
+                  Create backup of original document
+                </label>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-warning" id="uploadRevisionBtn">
+            <i class="fas fa-upload"></i> Upload New Version
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <%- include('partials/footer') %>
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
   <script src="/js/main.js"></script>
+  
+  <!-- NEW: Document Upload JavaScript -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const uploadBtn = document.getElementById('uploadRevisionBtn');
+    const uploadForm = document.getElementById('revisionUploadForm');
+    const modal = document.getElementById('uploadRevisionModal');
+    const bootstrapModal = new bootstrap.Modal(modal);
+    
+    if (uploadBtn && uploadForm) {
+      uploadBtn.addEventListener('click', function() {
+        const formData = new FormData(uploadForm);
+        const fileInput = document.getElementById('revisionFile');
+        
+        if (!fileInput.files[0]) {
+          alert('Please select a file to upload.');
+          return;
+        }
+        
+        // Disable button and show loading state
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+        
+        // Upload the file
+        fetch('/api/replace-document/<%= document.id %>', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert('Document updated successfully!');
+            bootstrapModal.hide();
+            // Reload the page to show updated information
+            window.location.reload();
+          } else {
+            alert('Error uploading document: ' + (data.message || 'Unknown error'));
+          }
+        })
+        .catch(error => {
+          console.error('Upload error:', error);
+          alert('Error uploading document. Please try again.');
+        })
+        .finally(() => {
+          // Re-enable button
+          uploadBtn.disabled = false;
+          uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload New Version';
+        });
+      });
+    }
+  });
+  </script>
 </body>
 </html>

@@ -1,0 +1,5 @@
+Current index system is run by:
+
+mapping the Z drive and going to safetysync-pro
+
+running node app.js (from c:\nodejs) in the above directory

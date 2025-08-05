@@ -11,3 +11,6 @@ echo   npm install
 echo   npm start
 echo.
 cmd /k
+
+
+"C:\NodeJS"

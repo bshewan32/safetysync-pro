@@ -9,20 +9,162 @@
         "recordType": "IMS",
         "confidence": 1,
         "learnedAt": "2025-07-16T23:55:22.984Z"
+      },
+      {
+        "documentId": "116",
+        "documentName": "SP24 Emergency Response.doc",
+        "path": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP24 Emergency Response.doc",
+        "category": "Incident and Injury Management",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-07-23T00:23:10.791Z"
+      },
+      {
+        "documentId": "116",
+        "documentName": "SP24 Emergency Response.doc",
+        "path": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP24 Emergency Response.doc",
+        "category": "Incident and Injury Management",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-07-23T00:24:19.580Z"
+      }
+    ],
+    "discrimination, harassment and bullying policy": [
+      {
+        "documentId": "51",
+        "documentName": "GMK - Discrimination, Harassment & Bullying Policy.pdf",
+        "path": "I:\\IMS\\Intergrated Management System\\Section 01B IMS Policies\\GMK - Discrimination, Harassment & Bullying Policy.pdf",
+        "category": "Core Policies",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-07-17T03:40:46.391Z"
+      },
+      {
+        "documentId": "52",
+        "documentName": "GMK - Discrimination, Harassment & Bullying Policy.pdf",
+        "path": "I:\\IMS\\Intergrated Management System\\Section 01B IMS Policies\\GMK - Discrimination, Harassment & Bullying Policy.pdf",
+        "category": "Core Policies",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-07-28T00:54:31.940Z"
+      },
+      {
+        "documentId": "52",
+        "documentName": "GMK - Discrimination, Harassment & Bullying Policy.pdf",
+        "path": "I:\\IMS\\Intergrated Management System\\Section 01B IMS Policies\\GMK - Discrimination, Harassment & Bullying Policy.pdf",
+        "category": "Core Policies",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-07-28T00:55:37.099Z"
+      },
+      {
+        "documentId": "45",
+        "documentName": "GMK - Discrimination, Harassment & Bullying Policy.pdf",
+        "path": "I:\\IMS\\Intergrated Management System\\Section 01B IMS Policies\\GMK - Discrimination, Harassment & Bullying Policy.pdf",
+        "category": "Core Policies",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-08-04T04:03:01.784Z"
+      }
+    ],
+    "sp38 ohs committee meetings": [
+      {
+        "documentId": "127",
+        "documentName": "SP38 OHS Committee Meetings.doc",
+        "path": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP38 OHS Committee Meetings.doc",
+        "category": "Consultation and Communication",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-07-17T03:42:26.509Z"
+      }
+    ],
+    "sp25 hs&e incident reporting": [
+      {
+        "documentId": "117",
+        "documentName": "SP25 Incident Reporting.docx",
+        "path": "I:\\IMS\\Intergrated Management System\\Section 02 System Procedures\\SP25 Incident Reporting.docx",
+        "category": "Incident and Injury Management",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-07-21T02:16:22.317Z"
+      }
+    ],
+    "ohs policy": [
+      {
+        "documentId": "56",
+        "documentName": "GMK - Occupational Health & Safety Policy.pdf",
+        "path": "I:\\IMS\\Intergrated Management System\\Section 01B IMS Policies\\GMK - Occupational Health & Safety Policy.pdf",
+        "category": "OHS Policy",
+        "recordType": "IMS_Category",
+        "confidence": 1,
+        "learnedAt": "2025-07-23T00:28:34.625Z"
       }
     ]
   },
   "categoryPatterns": {
     "Incident and Injury Management": {
+      "intergrated management system\\section 02 system procedures": 4
+    },
+    "Core Policies": {
+      "intergrated management system\\section 01b ims policies": 4
+    },
+    "Consultation and Communication": {
       "intergrated management system\\section 02 system procedures": 1
+    },
+    "OHS Policy": {
+      "intergrated management system\\section 01b ims policies": 1
     }
   },
   "keywordWeights": {
     "sp24": {
+      "score": 3,
+      "uses": 3
+    },
+    "response": {
+      "score": 3,
+      "uses": 3
+    },
+    "discrimination,": {
+      "score": 4,
+      "uses": 4
+    },
+    "harassment": {
+      "score": 4,
+      "uses": 4
+    },
+    "bullying": {
+      "score": 4,
+      "uses": 4
+    },
+    "policy": {
+      "score": 5,
+      "uses": 5
+    },
+    "sp38": {
       "score": 1,
       "uses": 1
     },
-    "response": {
+    "ohs": {
+      "score": 1,
+      "uses": 1
+    },
+    "committee": {
+      "score": 1,
+      "uses": 1
+    },
+    "meetings": {
+      "score": 1,
+      "uses": 1
+    },
+    "sp25": {
+      "score": 1,
+      "uses": 1
+    },
+    "incident": {
+      "score": 1,
+      "uses": 1
+    },
+    "reporting": {
       "score": 1,
       "uses": 1
     }
@@ -38,9 +180,118 @@
         "response"
       ],
       "timestamp": "2025-07-16T23:55:22.984Z"
+    },
+    {
+      "searchTerm": "Discrimination, Harassment and Bullying Policy",
+      "foundDocument": "GMK - Discrimination, Harassment & Bullying Policy.pdf",
+      "category": "Core Policies",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        "discrimination,",
+        "harassment",
+        "bullying",
+        "policy"
+      ],
+      "timestamp": "2025-07-17T03:40:46.391Z"
+    },
+    {
+      "searchTerm": "SP38 OHS Committee Meetings",
+      "foundDocument": "SP38 OHS Committee Meetings.doc",
+      "category": "Consultation and Communication",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        "sp38",
+        "ohs",
+        "committee",
+        "meetings"
+      ],
+      "timestamp": "2025-07-17T03:42:26.510Z"
+    },
+    {
+      "searchTerm": "SP25 HS&E Incident Reporting",
+      "foundDocument": "SP25 Incident Reporting.docx",
+      "category": "Incident and Injury Management",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        "sp25",
+        "incident",
+        "reporting"
+      ],
+      "timestamp": "2025-07-21T02:16:22.317Z"
+    },
+    {
+      "searchTerm": "SP24 HS&E Response",
+      "foundDocument": "SP24 Emergency Response.doc",
+      "category": "Incident and Injury Management",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        "sp24",
+        "response"
+      ],
+      "timestamp": "2025-07-23T00:23:10.791Z"
+    },
+    {
+      "searchTerm": "SP24 HS&E Response",
+      "foundDocument": "SP24 Emergency Response.doc",
+      "category": "Incident and Injury Management",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        "sp24",
+        "response"
+      ],
+      "timestamp": "2025-07-23T00:24:19.580Z"
+    },
+    {
+      "searchTerm": "OHS Policy",
+      "foundDocument": "GMK - Occupational Health & Safety Policy.pdf",
+      "category": "OHS Policy",
+      "recordType": "IMS_Category",
+      "successfulKeywords": [
+        "policy"
+      ],
+      "timestamp": "2025-07-23T00:28:34.625Z"
+    },
+    {
+      "searchTerm": "Discrimination, Harassment and Bullying Policy",
+      "foundDocument": "GMK - Discrimination, Harassment & Bullying Policy.pdf",
+      "category": "Core Policies",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        "discrimination,",
+        "harassment",
+        "bullying",
+        "policy"
+      ],
+      "timestamp": "2025-07-28T00:54:31.940Z"
+    },
+    {
+      "searchTerm": "Discrimination, Harassment and Bullying Policy",
+      "foundDocument": "GMK - Discrimination, Harassment & Bullying Policy.pdf",
+      "category": "Core Policies",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        "discrimination,",
+        "harassment",
+        "bullying",
+        "policy"
+      ],
+      "timestamp": "2025-07-28T00:55:37.099Z"
+    },
+    {
+      "searchTerm": "Discrimination, Harassment and Bullying Policy",
+      "foundDocument": "GMK - Discrimination, Harassment & Bullying Policy.pdf",
+      "category": "Core Policies",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        "discrimination,",
+        "harassment",
+        "bullying",
+        "policy"
+      ],
+      "timestamp": "2025-08-04T04:03:01.784Z"
     }
   ],
-  "lastUpdated": "2025-07-17T03:30:21.351Z",
+  "lastUpdated": "2025-08-04T04:03:01.784Z",
   "negativePatterns": [
     {
       "searchTerm": "sp24 hs&e response",
@@ -53,6 +304,18 @@
       "category": "Incident and Injury Management",
       "reason": "manual_unlink",
       "timestamp": "2025-07-17T03:30:21.351Z"
+    },
+    {
+      "searchTerm": "discrimination, harassment and bullying policy",
+      "avoidDocumentId": "42",
+      "avoidDocumentName": "GMK - Discrimination, Harassment & Bullying Policy.pdf",
+      "avoidDocumentPath": "I:\\IMS\\Intergrated Management System\\Section 01B IMS Policies\\GMK - Discrimination, Harassment & Bullying Policy.pdf",
+      "isContractorDoc": false,
+      "isArchiveDoc": false,
+      "unlinkType": "child_unlink",
+      "category": "Core Policies",
+      "reason": "manual_unlink",
+      "timestamp": "2025-07-17T03:35:27.908Z"
     }
   ]
 }

@@ -1,669 +1,456 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title %> | IMS Document Management</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="/css/styles.css">
-  <style>
-    .ims-policy-level-1 {
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #0d47a1;
-      margin: 2rem 0 1rem 0;
-      padding: 1rem;
-      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-      border-left: 5px solid #1976d2;
-      border-radius: 8px;
-    }
-    
-    .ims-category-level-2 {
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: #2e7d32;
-      margin: 1.5rem 0 0.8rem 0;
-      padding: 0.8rem;
-      background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
-      border-left: 4px solid #4caf50;
-      border-radius: 6px;
-    }
-    
-    .ims-document-item {
-      margin: 0.3rem 0 0.3rem 2rem;
-      padding: 0.5rem 0.8rem;
-      border-radius: 4px;
-      transition: background-color 0.2s ease;
-    }
-    
-    .ims-document-item:hover {
-      background-color: #f5f5f5;
-    }
-    
-    .ims-document-link {
-      color: #1565c0;
-      text-decoration: none;
-      font-weight: 500;
-    }
-    
-    .ims-document-link:hover {
-      color: #0d47a1;
-      text-decoration: underline;
-    }
-    
-    .ims-document-missing {
-      color: #d32f2f;
-      font-style: italic;
-    }
-    
-    .ims-status-icon {
-      margin-right: 0.5rem;
-      font-size: 0.9rem;
-    }
-    
-    .ims-hierarchy {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      padding: 2rem;
-      margin: 1rem 0;
-    }
-    
-    .ims-stats {
-      background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 2rem;
-      border: 1px solid #ffcc02;
-    }
-    
-    .ims-search-box {
-      margin-bottom: 2rem;
-    }
-    
-    .ims-legend {
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 2rem;
-      border: 1px solid #e9ecef;
-    }
-    
-    .ims-child-list {
-      list-style: none;
-      padding-left: 0;
-    }
-    
-    .ims-child-item {
-      display: flex;
-      align-items: center;
-      padding: 0.25rem 0;
-    }
-    
-    .document-result:hover {
-      background-color: #f8f9fa;
-    }
-
-    .child-item {
-      border: 1px solid #e9ecef;
-      border-radius: 4px;
-      padding: 0.5rem;
-      background-color: #f8f9fa;
-    }
-
-    .child-item:hover {
-      background-color: #e9ecef;
-    }
-
-    #documentSearchResults {
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-
-    /* Archive Detection Styles */
-    .ims-document-archived {
-      background-color: #fff3cd;
-      border-left: 4px solid #ffc107;
-      opacity: 0.7;
-      position: relative;
-    }
-
-    .ims-document-archived::before {
-      content: "📦";
-      position: absolute;
-      left: -25px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.2em;
-    }
-
-    .ims-document-archived .ims-document-link {
-      color: #856404;
-      text-decoration: line-through;
-    }
-
-    .ims-document-archived .ims-document-link:hover {
-      color: #533f02;
-    }
-
-    .ims-archived-badge {
-      background-color: #ffc107;
-      color: #212529;
-      font-size: 0.7rem;
-      padding: 0.2rem 0.4rem;
-      border-radius: 0.3rem;
-      margin-left: 0.5rem;
-    }
-
-    .ims-archive-controls {
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border: 1px solid #e9ecef;
-    }
-
-    .document-link-result.archived {
-      background-color: #fff3cd;
-      border-left: 4px solid #ffc107;
-    }
-
-    .document-link-result.archived::before {
-      content: "📦 ";
-      font-weight: bold;
-      color: #856404;
-    }
-
-    .ims-legend .archive-legend {
-      color: #856404;
-      background-color: #fff3cd;
-      padding: 0.2rem 0.4rem;
-      border-radius: 0.3rem;
-      margin-left: 0.5rem;
-    }
-
-    .btn-group-actions {
-      margin-left: auto;
-      display: flex;
-      gap: 0.25rem;
-    }
-
-    .btn-xs {
-      padding: 0.2rem 0.4rem;
-      font-size: 0.7rem;
-      line-height: 1.2;
-    }
-    
-    @media print {
-      .ims-hierarchy {
-        box-shadow: none;
-        border: 1px solid #ddd;
-      }
-      
-      .btn, .ims-search-box, .ims-stats {
-        display: none !important;
-      }
-    }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - SafetySync Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Dashboard styling consistency */
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(45deg, #343a40, #495057) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+        }
+        
+        .dashboard-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: white;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .bg-gradient-primary {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+        }
+        
+        .bg-gradient-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+        
+        .bg-gradient-info {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+        }
+        
+        .bg-gradient-warning {
+            background: linear-gradient(45deg, #ffc107, #e0a800);
+        }
+        
+        .stats-card {
+            border-radius: 15px;
+            padding: 1.5rem;
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .category-card {
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #007bff;
+        }
+        
+        .category-header {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-radius: 8px 8px 0 0;
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .document-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f1f3f4;
+            transition: background-color 0.2s ease;
+        }
+        
+        .document-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .document-item:last-child {
+            border-bottom: none;
+        }
+        
+        .badge-status {
+            font-size: 0.75rem;
+            padding: 0.35rem 0.65rem;
+        }
+        
+        .btn-modern {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .progress-modern {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #e9ecef;
+        }
+        
+        .progress-bar-modern {
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+        
+        .main-content {
+            padding: 2rem 0;
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .page-title {
+            color: #343a40;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+    </style>
 </head>
 <body>
-  <%- include('partials/header') %>
-  
-  <div class="container my-4">
-    <div class="row">
-      <div class="col-md-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h1><i class="fas fa-sitemap"></i> <%= title %></h1>
-          <div>
-            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#manageIndexModal">
-              <i class="fas fa-cog"></i> Manage Index
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-shield-alt me-2"></i>SafetySync Pro
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
             </button>
-            <button class="btn btn-outline-secondary" onclick="window.print()">
-              <i class="fas fa-print"></i> Print
-            </button>
-          </div>
-        </div>
-        
-        <!-- Statistics -->
-        <div class="ims-stats">
-          <div class="row">
-            <div class="col-md-3">
-              <h6><i class="fas fa-file-alt"></i> Total Categories</h6>
-              <strong><%= Object.keys(imsIndex).length %></strong>
-            </div>
-            <div class="col-md-3">
-              <h6><i class="fas fa-link"></i> Linked Documents</h6>
-              <strong id="linkedCount">0</strong>
-            </div>
-            <div class="col-md-3">
-              <h6><i class="fas fa-exclamation-triangle"></i> Missing Documents</h6>
-              <strong id="missingCount">0</strong>
-            </div>
-            <div class="col-md-3">
-              <h6><i class="fas fa-percentage"></i> Coverage</h6>
-              <strong id="coveragePercent">0%</strong>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Search/Filter -->
-        <div class="ims-search-box">
-          <div class="row">
-            <div class="col-md-6">
-              <input type="text" id="imsSearch" class="form-control" placeholder="Search IMS documents...">
-            </div>
-            <div class="col-md-3">
-              <select id="imsFilter" class="form-select">
-                <option value="all">Show All</option>
-                <option value="linked">Linked Only</option>
-                <option value="missing">Missing Only</option>
-                <option value="policies">Policies Only</option>
-                <option value="procedures">Procedures Only</option>
-                <option value="archived">Archived Only</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <div class="form-check mt-2">
-                <input class="form-check-input" type="checkbox" id="hideArchivedCheck" checked>
-                <label class="form-check-label" for="hideArchivedCheck">
-                  Hide archived documents
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Legend -->
-        <div class="ims-legend">
-          <h6><i class="fas fa-info-circle"></i> Legend</h6>
-          <div class="row">
-            <div class="col-md-6">
-              <small>
-                <i class="fas fa-check-circle text-success ims-status-icon"></i> Document found and linked<br>
-                <i class="fas fa-exclamation-triangle text-warning ims-status-icon"></i> Document found but not linked<br>
-                <i class="fas fa-times-circle text-danger ims-status-icon"></i> Document not found<br>
-                <span class="archive-legend">📦 ARCHIVED</span> Archived document
-              </small>
-            </div>
-            <div class="col-md-6">
-              <small>
-                <strong>Level 1:</strong> Core Policies<br>
-                <strong>Level 2:</strong> Procedures & Categories<br>
-                <strong>Level 3:</strong> Work Instructions & SWMS
-              </small>
-            </div>
-          </div>
-        </div>
-        
-        <!-- IMS Document Hierarchy -->
-        <div class="ims-hierarchy">
-          <% 
-          let hierarchyTotalDocuments = 0;
-          let hierarchyLinkedDocuments = 0;
-          let hierarchyMissingDocuments = 0;
-          
-          Object.keys(imsIndex).forEach(categoryName => {
-            const category = imsIndex[categoryName];
-            
-            // Check category completion with smart logic
-            let categoryComplete = false;
-            
-            if (category.document) {
-              // Category has its own document
-              categoryComplete = true;
-            } else if (category.enrichedChildren && category.enrichedChildren.length > 0) {
-              // Category is complete if all children are linked
-              categoryComplete = category.enrichedChildren.every(child => child.document);
-            } else {
-              // Category with no children and no document
-              categoryComplete = false;
-            }
-            
-            hierarchyTotalDocuments++;
-            
-            if (categoryComplete) {
-              hierarchyLinkedDocuments++;
-            } else {
-              hierarchyMissingDocuments++;
-            }
-            
-            if (category.enrichedChildren) {
-              category.enrichedChildren.forEach(child => {
-                hierarchyTotalDocuments++;
-                if (child.found) {
-                  hierarchyLinkedDocuments++;
-                } else {
-                  hierarchyMissingDocuments++;
-                }
-              });
-            }
-          });
-          %>
-          
-          <% Object.keys(imsIndex).forEach(categoryName => { %>
-            <% const category = imsIndex[categoryName]; %>
-            <% 
-            // Determine if category should show as "complete"
-            let categoryComplete = false;
-            
-            if (category.document) {
-              // Category has its own document
-              categoryComplete = true;
-            } else if (category.enrichedChildren && category.enrichedChildren.length > 0) {
-              // Category is complete if all children are linked
-              categoryComplete = category.enrichedChildren.every(child => child.document);
-            } else {
-              // Category with no children and no document - check if it's supposed to have a document
-              categoryComplete = false;
-            }
-            %>
-            
-            <div class="ims-category" data-category="<%= categoryName %>" data-type="<%= category.type %>" data-level="<%= category.level %>">
-              <!-- Category Header -->
-              <div class="<%= category.level === 1 ? 'ims-policy-level-1' : 'ims-category-level-2' %>">
-                <% if (categoryComplete) { %>
-                  <i class="fas fa-check-circle text-success ims-status-icon"></i>
-                  <% if (category.document) { %>
-                    <% const isCategoryArchived = category.document && category.document.isArchived; %>
-                    <span class="<%= isCategoryArchived ? 'ims-document-archived' : '' %>" style="display: inline-flex; align-items: center;">
-                      <a href="/document/<%= category.document.id %>" class="ims-document-link">
-                        <%= categoryName %>
-                      </a>
-                      <% if (isCategoryArchived) { %>
-                        <span class="ims-archived-badge">ARCHIVED</span>
-                      <% } %>
-                      <!-- Category Document Management Buttons -->
-                      <button class="btn btn-sm btn-outline-warning ms-1 category-revision-btn" 
-                              data-document-id="<%= category.document.id %>" 
-                              data-document-name="<%= categoryName %>"
-                              style="font-size: 0.6rem;" 
-                              title="Upload new revision">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-info ms-1 category-link-btn" 
-                              data-category="<%= categoryName %>" 
-                              data-document-name="<%= categoryName %>"
-                              style="font-size: 0.6rem;" 
-                              title="Change linked document">
-                        <i class="fas fa-link"></i>
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger ms-1 category-unlink-btn" data-category="<%= categoryName %>"
-                        data-document-name="<%= categoryName %>" style="font-size: 0.6rem; <%= !category.document ? 'display: none;' : '' %>"
-                        title="Unlink document from category">
-                        <i class="fas fa-unlink"></i>
-                      </button>
-                    </span>
-                  <% } else { %>
-                    <span class="ims-document-link" style="color: #2e7d32; display: inline-flex; align-items: center;">
-                      <%= categoryName %>
-                      <!-- Link button for categories without documents -->
-                      <button class="btn btn-sm btn-outline-info ms-1 category-link-btn" 
-                              data-category="<%= categoryName %>" 
-                              data-document-name="<%= categoryName %>"
-                              style="font-size: 0.6rem;" 
-                              title="Link document to category">
-                        <i class="fas fa-link"></i>
-                      </button>
-                    </span>
-                  <% } %>
-                <% } else { %>
-                  <i class="fas fa-times-circle text-danger ims-status-icon"></i>
-                  <span class="ims-document-missing" style="display: inline-flex; align-items: center;">
-                    <%= categoryName %>
-                    <!-- Link button for missing category documents -->
-                    <button class="btn btn-sm btn-outline-info ms-1 category-link-btn" 
-                            data-category="<%= categoryName %>" 
-                            data-document-name="<%= categoryName %>"
-                            style="font-size: 0.6rem;" 
-                            title="Link document to category">
-                      <i class="fas fa-link"></i>
-                    </button>
-                  </span>
-                <% } %>
-                <button class="btn btn-sm btn-outline-success ms-1 ai-generate-btn" data-category="<%= categoryName %>"
-                  data-document="<%= categoryName %>" style="font-size: 0.6rem;" title="AI Generate document">
-                  🤖 AI Generate
-                </button>
-                
-                <button class="btn btn-sm btn-outline-secondary ms-2 manage-category-btn" 
-                        data-category="<%= categoryName %>" 
-                        style="font-size: 0.7rem;"
-                        title="Edit category settings">
-                  <i class="fas fa-cog"></i>
-                </button>
-              </div>
-              
-              <!-- Category Children - FIXED VERSION -->
-              <% if (category.enrichedChildren && Array.isArray(category.enrichedChildren) && category.enrichedChildren.length > 0) { %>
-                <ul class="ims-child-list">
-                  <% category.enrichedChildren.forEach(function(child) { %>
-                    <% if (!child) return; %>
-                    <% const isArchived = child.document && child.document.isArchived; %>
-                    <li class="ims-child-item ims-document-item <%= isArchived ? 'ims-document-archived' : '' %>" 
-                        data-document="<%= child.name || '' %>" 
-                        data-is-archived="<%= isArchived ? 'true' : 'false' %>">
-                      <div class="flex-grow-1">
-                        <% if (child.document) { %>
-                          <i class="fas fa-check-circle text-success ims-status-icon" aria-hidden="true"></i>
-                          <a href="/document/<%= child.document.id %>" class="ims-document-link">
-                            <%= child.name || 'Unnamed Document' %>
-                          </a>
-                          <% if (isArchived) { %>
-                            <span class="ims-archived-badge">ARCHIVED</span>
-                          <% } %>
-                        <% } else { %>
-                          <i class="fas fa-times-circle text-danger ims-status-icon" aria-hidden="true"></i>
-                          <span class="ims-document-missing">
-                            <%= child.name || 'Unnamed Document' %>
-                          </span>
-                        <% } %>
-                      </div>
-
-                      <div class="btn-group-actions">
-                        <!-- AI Generate button - ALWAYS show with different styling -->
-                        <% if (child.document) { %>
-                          <button class="btn btn-outline-info btn-xs ai-generate-btn" data-category="<%= categoryName %>"
-                            data-document="<%= child.name || '' %>" title="Generate improved AI version">
-                            🤖 AI Improve
-                          </button>
-                          <% } else { %>
-                            <button class="btn btn-outline-success btn-xs ai-generate-btn" data-category="<%= categoryName %>"
-                              data-document="<%= child.name || '' %>" title="Generate with AI">
-                              🤖 AI Create
-                            </button>
-                            <% } %>
-
-                        <% if (child.document) { %>
-                          <button class="btn btn-outline-warning btn-xs category-revision-btn"
-                                  data-document-id="<%= child.document.id %>" 
-                                  data-document-name="<%= child.name || '' %>"
-                                  title="Upload new revision">
-                            <i class="fas fa-edit" aria-hidden="true"></i>
-                          </button>
-                        <% } %>
-                        <% if (child.document) { %>
-                          <button class="btn btn-outline-danger btn-xs child-unlink-btn" data-category="<%= categoryName %>"
-                            data-document="<%= child.name || '' %>" title="Unlink this document">
-                            <i class="fas fa-unlink" aria-hidden="true"></i>
-                          </button>
-                          <% } %>
-
-                        <button class="btn btn-outline-secondary btn-xs manage-document-btn"
-                                data-category="<%= categoryName %>" 
-                                data-document="<%= child.name || '' %>"
-                                title="Manage document link">
-                          <i class="fas fa-link" aria-hidden="true"></i>
-                        </button>
-                      </div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Dashboard</a>
                     </li>
-                  <% }); %>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/ims-index">IMS Index</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/isn-index">ISN Index</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/documents">Documents</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reports">Reports</a>
+                    </li>
                 </ul>
-              <% } %>
             </div>
-          <% }); %>
-          
-          <!-- Store variables for JavaScript -->
-          <script>
-            window.imsStats = {
-              totalDocuments: <%= hierarchyTotalDocuments %>,
-              linkedDocuments: <%= hierarchyLinkedDocuments %>,
-              missingDocuments: <%= hierarchyMissingDocuments %>
-            };
-          </script>
         </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Mandatory Records Section -->
-  <div class="container my-4">
-    <div class="row">
-      <div class="col-md-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h2><i class="fas fa-clipboard-check"></i> Mandatory Records</h2>
-          <div>
-            <button class="btn btn-outline-success" id="autoDetectMandatoryBtn">
-              <i class="fas fa-search"></i> Auto-Detect Records
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-file-alt me-2"></i>IMS Document Index
+            </h1>
+            <p class="page-subtitle">Integrated Management System Document Categories and Status</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card bg-gradient-primary">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h3 class="mb-0"><%= stats.totalCategories %></h3>
+                            <p class="mb-0">Categories</p>
+                        </div>
+                        <i class="fas fa-folder-open fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card bg-gradient-success">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h3 class="mb-0"><%= stats.totalDocuments %></h3>
+                            <p class="mb-0">Total Documents</p>
+                        </div>
+                        <i class="fas fa-file-alt fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card bg-gradient-info">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h3 class="mb-0"><%= stats.linkedDocuments %></h3>
+                            <p class="mb-0">Linked Documents</p>
+                        </div>
+                        <i class="fas fa-link fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card bg-gradient-warning">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h3 class="mb-0"><%= stats.completionRate %>%</h3>
+                            <p class="mb-0">Completion Rate</p>
+                        </div>
+                        <i class="fas fa-chart-pie fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="dashboard-card p-3 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Overall Progress</h6>
+                <small class="text-muted"><%= stats.linkedDocuments %>/<%= stats.totalDocuments %> documents linked</small>
+            </div>
+            <div class="progress progress-modern">
+                <div class="progress-bar progress-bar-modern bg-success" style="width: <%= stats.completionRate %>%"></div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="dashboard-card p-3 mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <button onclick="rebuildIndex()" class="btn btn-primary btn-modern me-2">
+                        <i class="fas fa-sync-alt me-1"></i> Rebuild Index
+                    </button>
+                    <button onclick="autoLinkDocuments()" class="btn btn-success btn-modern">
+                        <i class="fas fa-magic me-1"></i> Auto-Link Documents
+                    </button>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button class="btn btn-info btn-modern me-2" onclick="exportIndex()">
+                        <i class="fas fa-download me-1"></i> Export Index
+                    </button>
+                    <button class="btn btn-outline-primary btn-modern" onclick="showMandatoryRecords()">
+                        <i class="fas fa-clipboard-check me-1"></i> Mandatory Records
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-warning dashboard-card">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <%= error %>
+        </div>
+        <% } %>
+
+        <!-- Document Categories -->
+        <% if (categories && categories.length > 0) { %>
+            <% categories.forEach(function(category) { %>
+            <div class="dashboard-card category-card">
+                <div class="category-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">
+                                <i class="fas fa-folder me-2 text-primary"></i>
+                                <%= category.name %>
+                            </h5>
+                            <small class="text-muted">
+                                Type: <%= category.type %> | Level: <%= category.level %>
+                                <% if (category.documentId) { %> | Doc ID: <%= category.documentId %><% } %>
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge badge-status bg-primary me-1">
+                                <%= category.totalDocuments %> docs
+                            </span>
+                            <span class="badge badge-status bg-success">
+                                <%= category.linkedDocuments %> linked
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="category-content">
+                    <!-- Child Documents -->
+                    <% if (category.children && category.children.length > 0) { %>
+                        <div class="p-3">
+                            <h6 class="text-muted mb-2">
+                                <i class="fas fa-list me-1"></i>Documents in Category:
+                            </h6>
+                            <div class="row">
+                                <% category.children.forEach(function(child, index) { %>
+                                <div class="col-md-6 mb-2">
+                                    <% 
+                                    // Find if this child has an enriched version
+                                    const enrichedChild = category.enrichedChildren.find(ec => ec.name === child);
+                                    %>
+                                    <div class="document-item rounded">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <% if (enrichedChild && enrichedChild.found) { %>
+                                                    <i class="fas fa-file-check text-success me-2"></i>
+                                                <% } else { %>
+                                                    <i class="fas fa-file text-muted me-2"></i>
+                                                <% } %>
+                                                <%= child %>
+                                            </span>
+                                            <% if (enrichedChild && enrichedChild.found) { %>
+                                                <span class="badge bg-success badge-status">Linked</span>
+                                            <% } else { %>
+                                                <span class="badge bg-warning badge-status">Unlinked</span>
+                                            <% } %>
+                                        </div>
+                                        <% if (enrichedChild && enrichedChild.document) { %>
+                                        <small class="text-muted d-block mt-1">
+                                            File: <%= enrichedChild.document.name %>
+                                        </small>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <% }); %>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <div class="p-3 text-center text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                            <p>No documents in this category</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+            <% }); %>
+        <% } else { %>
+        <div class="dashboard-card p-4 text-center">
+            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No Categories Found</h4>
+            <p class="text-muted">Try rebuilding the index or check your data files.</p>
+            <button onclick="rebuildIndex()" class="btn btn-primary btn-modern">
+                <i class="fas fa-sync-alt me-1"></i> Rebuild Index
             </button>
-            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#manageMandatoryModal">
-              <i class="fas fa-cog"></i> Manage Records
-            </button>
-          </div>
         </div>
+        <% } %>
+
+        <!-- Mandatory Records Section -->
+        <div id="mandatory-records-section" class="dashboard-card p-4 mt-4" style="display: none;">
+            <h5>
+                <i class="fas fa-clipboard-check me-2 text-primary"></i>
+                Mandatory Records
+            </h5>
+            <div id="mandatory-records-content">
+                <!-- Content loaded via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/ims-index.js"></script>
+    <script>
+        // Enhanced functions with modern styling
+        function rebuildIndex() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Rebuilding...';
+            btn.disabled = true;
+            
+            fetch('/api/rebuild-index', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        throw new Error(data.error || 'Rebuild failed');
+                    }
+                })
+                .catch(error => {
+                    alert('Error rebuilding index: ' + error.message);
+                })
+                .finally(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        }
         
-        <!-- Mandatory Records Stats -->
-        <div class="alert alert-info">
-          <div class="row">
-            <div class="col-md-8">
-              <h6><i class="fas fa-info-circle"></i> Auditor Requirements</h6>
-              <small>These are mandatory records required for compliance. Ensure all categories have appropriate documents linked.</small>
-            </div>
-            <div class="col-md-4 text-end">
-              <div id="mandatoryStats">
-                <small><strong>Coverage:</strong> <span id="mandatoryCoverage">0%</span></small><br>
-                <small><strong>Total Records:</strong> <span id="mandatoryTotal">0</span></small>
-              </div>
-            </div>
-          </div>
-        </div>
+        function autoLinkDocuments() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Linking...';
+            btn.disabled = true;
+            
+            fetch('/api/auto-link-documents', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        throw new Error(data.error || 'Auto-linking failed');
+                    }
+                })
+                .catch(error => {
+                    alert('Error auto-linking documents: ' + error.message);
+                })
+                .finally(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        }
         
-        <!-- Mandatory Records List -->
-        <div class="ims-hierarchy">
-          <div id="mandatoryRecordsList">
-            <div class="text-center text-muted">
-              <i class="fas fa-spinner fa-spin"></i> Loading mandatory records...
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Management Modal -->
-  <div class="modal fade" id="manageIndexModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Manage IMS Index</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-6">
-              <h6>Add New Category</h6>
-              <div class="mb-3">
-                <input type="text" id="newCategoryName" class="form-control" placeholder="Category name">
-              </div>
-              <div class="mb-3">
-                <select id="newCategoryLevel" class="form-select">
-                  <option value="1">Level 1 (Policy)</option>
-                  <option value="2" selected>Level 2 (Category)</option>
-                </select>
-              </div>
-              <button class="btn btn-primary" id="addCategoryBtn">Add Category</button>
-            </div>
-            <div class="col-md-6">
-              <h6>Auto-Link Documents</h6>
-              <p class="small text-muted">Automatically find and link documents based on name matching.</p>
-              <button class="btn btn-success" id="autoLinkBtn">Auto-Link Documents</button>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Manage Mandatory Records Modal -->
-  <div class="modal fade" id="manageMandatoryModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Manage Mandatory Records</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-6">
-              <h6>Auto-Detection Settings</h6>
-              <div class="mb-3">
-                <label class="form-label">Record Type</label>
-                <select id="mandatoryRecordSelect" class="form-select">
-                  <option value="">Select a record type...</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Description</label>
-                <textarea id="mandatoryDescription" class="form-control" rows="2"></textarea>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Auto-Detect Keywords (comma separated)</label>
-                <textarea id="mandatoryKeywords" class="form-control" rows="3" 
-                          placeholder="audit, audit report, internal audit"></textarea>
-              </div>
-              <button class="btn btn-primary" id="updateMandatoryBtn">Update Settings</button>
-            </div>
-            <div class="col-md-6">
-              <h6>Manual Operations</h6>
-              <div class="mb-3">
-                <button class="btn btn-success w-100" id="runAutoDetectBtn">
-                  <i class="fas fa-search"></i> Run Auto-Detection
-                </button>
-              </div>
-              <div class="mb-3">
-                <button class="btn btn-info w-100" onclick="loadMandatoryRecords()">
-                  <i class="fas fa-refresh"></i> Refresh Records
-                </button>
-              </div>
-              <div class="alert alert-warning">
-                <small>
-                  <strong>Auto-Detection:</strong> Searches document names and folders for keywords.
-                  You can manually link additional documents using the link buttons.
-                </small>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <footer class="footer mt-auto py-3 bg-light">
-    <div class="container text-center">
-      <span class="text-muted">IMS Document Management System &copy; <%= new Date().getFullYear() %></span>
-    </div>
-  </footer>
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-  <script src="/js/ims-index.js"></script>
+        function exportIndex() {
+            window.location.href = '/api/export-ims-index';
+        }
+        
+        function showMandatoryRecords() {
+            const section = document.getElementById('mandatory-records-section');
+            const content = document.getElementById('mandatory-records-content');
+            
+            if (section.style.display === 'none') {
+                content.innerHTML = '<div class="text-center"><span class="spinner-border"></span> Loading...</div>';
+                section.style.display = 'block';
+                
+                fetch('/api/mandatory-records')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (Array.isArray(data) && data.length > 0) {
+                            content.innerHTML = data.map(record => 
+                                `<div class="document-item rounded mb-2">
+                                    <i class="fas fa-clipboard-check text-primary me-2"></i>
+                                    ${record.name || record.title || JSON.stringify(record)}
+                                </div>`
+                            ).join('');
+                        } else {
+                            content.innerHTML = '<p class="text-muted">No mandatory records found.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        content.innerHTML = '<p class="text-danger">Error loading mandatory records: ' + error.message + '</p>';
+                    });
+            } else {
+                section.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

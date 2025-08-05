@@ -1069,6 +1069,380 @@ function updateMandatoryRecordSettings() {
 }
 
 // ========================================
+// MISSING MODAL FUNCTIONS - COMPLETE IMPLEMENTATIONS
+// ========================================
+
+function openDocumentLinker(categoryName, documentName) {
+  console.log("Opening document linker for:", categoryName, documentName);
+
+  const modalHtml = `
+    <div class="modal fade" id="linkDocumentModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-link"></i> Link Document: ${documentName}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              Search for the actual document file to link to "${documentName}" in category "${categoryName}".
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Search for documents:</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="linkDocumentSearch" 
+                       placeholder="Type document name..." value="${documentName}">
+                <button type="button" class="btn btn-outline-primary" id="searchDocumentBtn">
+                  <i class="fas fa-search"></i> Search
+                </button>
+              </div>
+            </div>
+            
+            <div id="linkDocumentResults">
+              <div class="text-center text-muted">
+                <i class="fas fa-search fa-2x mb-2"></i><br>
+                Click search to find documents
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  removeExistingModal("linkDocumentModal");
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  const modal = new bootstrap.Modal(
+    document.getElementById("linkDocumentModal")
+  );
+  modal.show();
+
+  // Add search functionality
+  document
+    .getElementById("searchDocumentBtn")
+    .addEventListener("click", function () {
+      const searchTerm = document
+        .getElementById("linkDocumentSearch")
+        .value.trim();
+      if (searchTerm) {
+        searchForDocuments(searchTerm, categoryName, documentName);
+      }
+    });
+}
+
+function openCategoryEditor(categoryName) {
+  console.log("Opening category editor for:", categoryName);
+
+  const modalHtml = `
+    <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-edit"></i> Edit Category: ${categoryName}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="editCategoryForm">
+              <div class="mb-3">
+                <label class="form-label">Category Name</label>
+                <input type="text" class="form-control" id="editCategoryName" value="${categoryName}">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Level</label>
+                <select class="form-select" id="editCategoryLevel">
+                  <option value="1">Level 1 (Policy)</option>
+                  <option value="2" selected>Level 2 (Category)</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Type</label>
+                <select class="form-select" id="editCategoryType">
+                  <option value="policy">Policy</option>
+                  <option value="category" selected>Category</option>
+                  <option value="procedure">Procedure</option>
+                </select>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" id="deleteCategoryBtn">Delete</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="saveCategoryBtn">Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  removeExistingModal("editCategoryModal");
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  const modal = new bootstrap.Modal(
+    document.getElementById("editCategoryModal")
+  );
+  modal.show();
+
+  // Add event listeners
+  document
+    .getElementById("saveCategoryBtn")
+    .addEventListener("click", function () {
+      saveCategoryChanges(categoryName);
+    });
+
+  document
+    .getElementById("deleteCategoryBtn")
+    .addEventListener("click", function () {
+      if (confirm("Are you sure you want to delete this category?")) {
+        deleteCategory(categoryName);
+      }
+    });
+}
+
+function openRevisionModal(documentId, documentName) {
+  console.log("Opening revision modal for:", documentId, documentName);
+
+  const modalHtml = `
+    <div class="modal fade" id="revisionModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-edit"></i> Upload Revision: ${documentName}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="revisionForm" enctype="multipart/form-data">
+              <div class="mb-3">
+                <label class="form-label">Select New Document</label>
+                <input type="file" class="form-control" id="revisionFile" name="newDocument" required>
+                <div class="form-text">Replacing: <strong>${documentName}</strong></div>
+              </div>
+              
+              <div class="mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="keepOriginal" checked>
+                  <label class="form-check-label" for="keepOriginal">
+                    Keep backup copy of original
+                  </label>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Revision Note</label>
+                <textarea class="form-control" id="revisionNote" rows="2" 
+                          placeholder="Describe what changed..."></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="uploadRevisionBtn">
+              <i class="fas fa-upload"></i> Upload
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  removeExistingModal("revisionModal");
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  const modal = new bootstrap.Modal(document.getElementById("revisionModal"));
+  modal.show();
+
+  // Add upload functionality
+  document
+    .getElementById("uploadRevisionBtn")
+    .addEventListener("click", function () {
+      uploadRevision(documentId);
+    });
+}
+
+// ========================================
+// SEARCH AND LINK FUNCTIONS
+// ========================================
+
+async function searchForDocuments(searchTerm, categoryName, documentName) {
+  const resultsDiv = document.getElementById("linkDocumentResults");
+  resultsDiv.innerHTML =
+    '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+
+  try {
+    const response = await fetch(
+      `/api/available-documents?search=${encodeURIComponent(searchTerm)}`
+    );
+    const documents = await response.json();
+
+    if (documents.length === 0) {
+      resultsDiv.innerHTML =
+        '<div class="alert alert-info">No documents found</div>';
+      return;
+    }
+
+    let html = '<div class="list-group">';
+    documents.slice(0, 10).forEach((doc) => {
+      html += `
+        <div class="list-group-item list-group-item-action" style="cursor: pointer;" 
+             onclick="linkDocument('${categoryName}', '${documentName}', '${
+        doc.id
+      }', '${doc.name}')">
+          <h6 class="mb-1">${doc.name}</h6>
+          <small class="text-muted">${doc.folder || "Root folder"}</small>
+        </div>
+      `;
+    });
+    html += "</div>";
+
+    resultsDiv.innerHTML = html;
+  } catch (error) {
+    resultsDiv.innerHTML = '<div class="alert alert-danger">Search error</div>';
+  }
+}
+
+function linkDocument(categoryName, documentName, docId, actualDocName) {
+  if (confirm(`Link "${actualDocName}" to "${documentName}"?`)) {
+    fetch("/api/link-ims-document", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        categoryName,
+        documentName,
+        documentId: docId,
+        actualDocumentName: actualDocName,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showSuccessAlert("Document linked successfully!");
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("linkDocumentModal")
+          );
+          modal.hide();
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          alert("Error linking document: " + data.message);
+        }
+      });
+  }
+}
+
+// ========================================
+// CATEGORY MANAGEMENT FUNCTIONS
+// ========================================
+
+async function saveCategoryChanges(originalCategoryName) {
+  const newName = document.getElementById("editCategoryName").value.trim();
+  const level = document.getElementById("editCategoryLevel").value;
+  const type = document.getElementById("editCategoryType").value;
+
+  try {
+    const response = await fetch("/api/update-ims-category", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "update",
+        categoryName: originalCategoryName,
+        newName: newName !== originalCategoryName ? newName : undefined,
+        level: parseInt(level),
+        type: type,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showSuccessAlert("Category updated successfully!");
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("editCategoryModal")
+      );
+      modal.hide();
+      setTimeout(() => window.location.reload(), 1000);
+    } else {
+      alert("Error updating category: " + data.message);
+    }
+  } catch (error) {
+    console.error("Error updating category:", error);
+    alert("Error updating category");
+  }
+}
+
+async function deleteCategory(categoryName) {
+  try {
+    const response = await fetch(
+      `/api/delete-ims-category/${encodeURIComponent(categoryName)}`,
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.success) {
+      showSuccessAlert("Category deleted successfully!");
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("editCategoryModal")
+      );
+      modal.hide();
+      setTimeout(() => window.location.reload(), 1000);
+    } else {
+      alert("Error deleting category: " + data.message);
+    }
+  } catch (error) {
+    console.error("Error deleting category:", error);
+    alert("Error deleting category");
+  }
+}
+
+async function uploadRevision(documentId) {
+  const form = document.getElementById("revisionForm");
+  const formData = new FormData(form);
+
+  const uploadBtn = document.getElementById("uploadRevisionBtn");
+  uploadBtn.disabled = true;
+  uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+  try {
+    const response = await fetch(`/api/replace-document/${documentId}`, {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showSuccessAlert("Document revision uploaded successfully!");
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("revisionModal")
+      );
+      modal.hide();
+      setTimeout(() => window.location.reload(), 1000);
+    } else {
+      alert("Error uploading revision: " + data.message);
+    }
+  } catch (error) {
+    console.error("Error uploading revision:", error);
+    alert("Error uploading revision");
+  } finally {
+    uploadBtn.disabled = false;
+    uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload';
+  }
+}
+
+// ========================================
 // ADDITIONAL MODAL FUNCTIONS (keeping existing implementations)
 // ========================================
 
