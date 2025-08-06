@@ -1,7 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
-//const fs = require('fs').promises;
+const fs = require("fs").promises;
 const fsSync = require("fs");
 const chokidar = require("chokidar");
 const { v4: uuidv4 } = require("uuid");
@@ -82,7 +82,7 @@ let fileWatcher = null;
 async function loadDocumentIndex() {
   try {
     if (fsSync.existsSync(INDEX_FILE)) {
-      const data = await fsSync.readFile(INDEX_FILE, "utf8");
+      const data = fsSync.readFileSync(INDEX_FILE, "utf8");
       documentIndex = JSON.parse(data);
       console.log(
         `Index loaded from file. ${documentIndex.length} documents in index.`
@@ -99,7 +99,7 @@ async function loadDocumentIndex() {
 
 async function saveDocumentIndex() {
   try {
-    await fsSync.writeFile(INDEX_FILE, JSON.stringify(documentIndex, null, 2));
+    fsSync.writeFileSync(INDEX_FILE, JSON.stringify(documentIndex, null, 2));
     console.log(`Document index saved. ${documentIndex.length} documents.`);
   } catch (error) {
     console.error("Error saving document index:", error);
@@ -109,8 +109,7 @@ async function saveDocumentIndex() {
 async function loadFolderStructure() {
   try {
     if (fsSync.existsSync(FOLDERS_FILE)) {
-      const data = await fsSync.readFile(FOLDERS_FILE, "utf8");
-      folderStructure = JSON.parse(data);
+      const data = fsSync.readFileSync(FOLDERS_FILE, "utf8");
       console.log("Folder structure loaded from file.");
     } else {
       console.log("No existing folder structure found. Building from scratch.");
@@ -124,7 +123,7 @@ async function loadFolderStructure() {
 
 async function saveFolderStructure() {
   try {
-    await fsSync.writeFile(
+    fsSync.writeFileSync(
       FOLDERS_FILE,
       JSON.stringify(folderStructure, null, 2)
     );
@@ -604,9 +603,7 @@ app.get("/", async (req, res) => {
     };
     try {
       if (fsSync.existsSync(IMS_INDEX_FILE)) {
-        const imsData = JSON.parse(
-          await fsSync.readFile(IMS_INDEX_FILE, "utf8")
-        );
+        const imsData = JSON.parse(fsSync.readFileSync(IMS_INDEX_FILE, "utf8"));
         // Calculate IMS stats from data
         let linkedCount = 0;
         let totalImsCount = 0;
@@ -647,9 +644,7 @@ app.get("/", async (req, res) => {
     };
     try {
       if (fsSync.existsSync(ISN_INDEX_FILE)) {
-        const isnData = JSON.parse(
-          await fsSync.readFile(ISN_INDEX_FILE, "utf8")
-        );
+        const isnData = JSON.parse(fsSync.readFileSync(ISN_INDEX_FILE, "utf8"));
         // Calculate ISN stats similar to IMS
         let linkedCount = 0;
         let totalIsnCount = 0;
@@ -989,7 +984,7 @@ app.get("/api/mandatory-records", async (req, res) => {
     let mandatoryRecords = {};
 
     if (fsSync.existsSync(MANDATORY_RECORDS_FILE)) {
-      const data = await fsSync.readFile(MANDATORY_RECORDS_FILE, "utf8");
+      const data = fsSync.readFileSync(MANDATORY_RECORDS_FILE, "utf8");
       mandatoryRecords = JSON.parse(data);
     }
 
@@ -1012,7 +1007,7 @@ app.get("/api/isn-mandatory-records", async (req, res) => {
     let mandatoryRecords = {};
 
     if (fsSync.existsSync(ISN_MANDATORY_RECORDS_FILE)) {
-      const data = await fsSync.readFile(ISN_MANDATORY_RECORDS_FILE, "utf8");
+      const data = fsSync.readFileSync(ISN_MANDATORY_RECORDS_FILE, "utf8");
       mandatoryRecords = JSON.parse(data);
     }
 
@@ -1584,11 +1579,11 @@ async function buildDocumentIndex() {
 
     async function scanDirectory(dirPath, relativePath = "") {
       try {
-        const items = await fsSync.readdir(dirPath);
+        const items = fsSync.readdirSync(dirPath);
 
         for (const item of items) {
           const fullPath = path.join(dirPath, item);
-          const stats = await fsSync.stat(fullPath);
+          const stats = fsSync.statSync(fullPath);
 
           if (stats.isDirectory()) {
             const newRelativePath = relativePath
@@ -1648,13 +1643,13 @@ async function buildFolderStructure() {
 
     async function scanFolders(dirPath, relativePath = "", level = 0) {
       try {
-        const items = await fsSync.readdir(dirPath);
+        const items = fsSync.readdirSync(dirPath);
         const folders = [];
         const documents = [];
 
         for (const item of items) {
           const fullPath = path.join(dirPath, item);
-          const stats = await fsSync.stat(fullPath);
+          const stats = fsSync.statSync(fullPath);
 
           if (stats.isDirectory()) {
             const newRelativePath = relativePath
