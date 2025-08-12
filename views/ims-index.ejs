@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Dashboard styling consistency */
+        /* Your existing styles remain exactly the same */
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -133,6 +133,30 @@
             color: #6c757d;
             font-size: 1.1rem;
         }
+
+        /* Enhanced status indicators */
+        .learning-indicator {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin-left: 8px;
+        }
+        
+        .learning-indicator.ai-linked {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .learning-indicator.manual-linked {
+            background: #cce7ff;
+            color: #004085;
+        }
+        
+        .learning-indicator.pattern-match {
+            background: #fff3cd;
+            color: #856404;
+        }
     </style>
 </head>
 <body>
@@ -236,18 +260,24 @@
             </div>
         </div>
 
-        <!-- Action Buttons -->
+        <!-- Action Buttons - ENHANCED WITH LEARNING OPTIONS -->
         <div class="dashboard-card p-3 mb-4">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <button onclick="rebuildIndex()" class="btn btn-primary btn-modern me-2">
                         <i class="fas fa-sync-alt me-1"></i> Rebuild Index
                     </button>
-                    <button onclick="autoLinkDocuments()" class="btn btn-success btn-modern">
+                    <button onclick="autoLinkDocuments()" class="btn btn-success btn-modern me-2">
                         <i class="fas fa-magic me-1"></i> Auto-Link Documents
                     </button>
+                    <button onclick="autoLinkWithLearning()" class="btn btn-success btn-modern me-2" style="background: linear-gradient(45deg, #28a745, #20c997); border: none;">
+                        <i class="fas fa-brain me-1"></i> Auto-Link with Learning
+                    </button>
+                    <button onclick="showLearningStats()" class="btn btn-info btn-modern">
+                        <i class="fas fa-chart-line me-1"></i> Learning Stats
+                    </button>
                 </div>
-                <div class="col-md-6 text-end">
+                <div class="col-md-4 text-end">
                     <button class="btn btn-info btn-modern me-2" onclick="exportIndex()">
                         <i class="fas fa-download me-1"></i> Export Index
                     </button>
@@ -255,6 +285,17 @@
                         <i class="fas fa-clipboard-check me-1"></i> Mandatory Records
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Learning Stats Section -->
+        <div id="learning-stats-section" class="dashboard-card p-4 mb-4" style="display: none;">
+            <h5>
+                <i class="fas fa-brain me-2 text-primary"></i>
+                Learning System Statistics
+            </h5>
+            <div id="learning-stats-content">
+                <!-- Content loaded via JavaScript -->
             </div>
         </div>
 
@@ -305,7 +346,7 @@
                                 <div class="col-md-6 mb-2">
                                     <% 
                                     // Find if this child has an enriched version
-                                    const enrichedChild = category.enrichedChildren.find(ec => ec.name === child);
+                                    const enrichedChild = category.enrichedChildren && category.enrichedChildren.find(ec => ec.name === child);
                                     %>
                                     <div class="document-item rounded">
                                         <div class="d-flex justify-content-between align-items-center">
@@ -316,6 +357,18 @@
                                                     <i class="fas fa-file text-muted me-2"></i>
                                                 <% } %>
                                                 <%= child %>
+                                                <!-- Learning indicators -->
+                                                <% if (enrichedChild) { %>
+                                                    <% if (enrichedChild.autoLinked) { %>
+                                                        <span class="learning-indicator ai-linked">AI Linked</span>
+                                                    <% } %>
+                                                    <% if (enrichedChild.manuallyLinked) { %>
+                                                        <span class="learning-indicator manual-linked">Manual</span>
+                                                    <% } %>
+                                                    <% if (enrichedChild.usedLearning) { %>
+                                                        <span class="learning-indicator pattern-match">Pattern</span>
+                                                    <% } %>
+                                                <% } %>
                                             </span>
                                             <% if (enrichedChild && enrichedChild.found) { %>
                                                 <span class="badge bg-success badge-status">Linked</span>
@@ -326,6 +379,9 @@
                                         <% if (enrichedChild && enrichedChild.document) { %>
                                         <small class="text-muted d-block mt-1">
                                             File: <%= enrichedChild.document.name %>
+                                            <% if (enrichedChild.linkedAt) { %>
+                                                <br>Linked: <%= new Date(enrichedChild.linkedAt).toLocaleDateString() %>
+                                            <% } %>
                                         </small>
                                         <% } %>
                                     </div>
@@ -365,11 +421,14 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Scripts - CRITICAL: jQuery MUST come first -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" 
+            integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" 
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/ims-index.js"></script>
     <script>
-        // Enhanced functions with modern styling
+        // Enhanced functions with modern styling AND learning capabilities
         function rebuildIndex() {
             const btn = event.target;
             const originalText = btn.innerHTML;
@@ -380,12 +439,14 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        console.log('Index rebuilt:', data);
                         location.reload();
                     } else {
-                        throw new Error(data.error || 'Rebuild failed');
+                        throw new Error(data.message || 'Rebuild failed');
                     }
                 })
                 .catch(error => {
+                    console.error('Rebuild error:', error);
                     alert('Error rebuilding index: ' + error.message);
                 })
                 .finally(() => {
@@ -400,22 +461,153 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Linking...';
             btn.disabled = true;
             
-            fetch('/api/auto-link-documents', { method: 'POST' })
+            fetch('/api/auto-link-documents', { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ checkRevisions: true })
+            })
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Auto-link result:', data);
                     if (data.success) {
+                        alert(`Successfully linked ${data.linked || data.linkedCount || 0} documents!`);
                         location.reload();
                     } else {
-                        throw new Error(data.error || 'Auto-linking failed');
+                        throw new Error(data.message || 'Auto-linking failed');
                     }
                 })
                 .catch(error => {
+                    console.error('Auto-link error:', error);
                     alert('Error auto-linking documents: ' + error.message);
                 })
                 .finally(() => {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 });
+        }
+
+        // NEW: Enhanced auto-linking with learning
+        function autoLinkWithLearning() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Learning & Linking...';
+            btn.disabled = true;
+            
+            console.log('Starting enhanced auto-link with learning...');
+            
+            fetch('/api/auto-link-documents-with-learning', { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ checkRevisions: true })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Enhanced auto-link result:', data);
+                    if (data.success) {
+                        const message = `Success! Linked ${data.linked || 0} documents total.\n` +
+                                       `${data.learnedMatches || 0} used learned patterns for improved accuracy!`;
+                        alert(message);
+                        location.reload();
+                    } else {
+                        throw new Error(data.message || 'Enhanced auto-linking failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Enhanced auto-link error:', error);
+                    alert('Error in enhanced auto-linking: ' + error.message);
+                })
+                .finally(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        }
+
+        // NEW: Show learning statistics
+        function showLearningStats() {
+            const section = document.getElementById('learning-stats-section');
+            const content = document.getElementById('learning-stats-content');
+            
+            if (section.style.display === 'none') {
+                content.innerHTML = '<div class="text-center"><span class="spinner-border"></span> Loading learning statistics...</div>';
+                section.style.display = 'block';
+                
+                fetch('/api/learning-stats')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Learning stats:', data);
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        
+                        let html = '<div class="row">';
+                        
+                        // Basic stats
+                        html += `
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <h4 class="text-primary">${data.totalPatterns || 0}</h4>
+                                    <small>Learned Patterns</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 bg-light rounded">
+                                    <h4 class="text-success">${data.totalCorrections || 0}</h4>
+                                    <small>Manual Corrections</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded">
+                                    <h6>Last Updated</h6>
+                                    <small>${data.lastUpdated ? new Date(data.lastUpdated).toLocaleString() : 'Never'}</small>
+                                </div>
+                            </div>
+                        `;
+                        
+                        html += '</div>';
+                        
+                        // Top keywords
+                        if (data.topKeywords && data.topKeywords.length > 0) {
+                            html += '<h6 class="mt-3">Top Learning Keywords</h6><div class="row">';
+                            data.topKeywords.slice(0, 10).forEach(keyword => {
+                                html += `
+                                    <div class="col-md-6 mb-1">
+                                        <span class="badge bg-info me-2">${keyword.keyword}</span>
+                                        <small>Score: ${keyword.score} (${keyword.uses} uses)</small>
+                                    </div>
+                                `;
+                            });
+                            html += '</div>';
+                        }
+                        
+                        // Recent corrections
+                        if (data.recentCorrections && data.recentCorrections.length > 0) {
+                            html += '<h6 class="mt-3">Recent Learning Activity</h6>';
+                            data.recentCorrections.forEach(correction => {
+                                html += `
+                                    <div class="document-item rounded mb-1">
+                                        <small>
+                                            <strong>"${correction.searchTerm}"</strong> → 
+                                            <span class="text-success">${correction.foundDocument}</span>
+                                            <span class="text-muted">(${new Date(correction.timestamp).toLocaleDateString()})</span>
+                                        </small>
+                                    </div>
+                                `;
+                            });
+                        }
+                        
+                        content.innerHTML = html;
+                    })
+                    .catch(error => {
+                        console.error('Learning stats error:', error);
+                        content.innerHTML = `<div class="alert alert-warning">Error loading learning statistics: ${error.message}</div>`;
+                    });
+            } else {
+                section.style.display = 'none';
+            }
         }
         
         function exportIndex() {
@@ -433,7 +625,35 @@
                 fetch('/api/mandatory-records')
                     .then(response => response.json())
                     .then(data => {
-                        if (Array.isArray(data) && data.length > 0) {
+                        console.log('Mandatory records data:', data);
+                        
+                        if (data.success && data.mandatoryRecords) {
+                            const records = data.mandatoryRecords;
+                            let html = '';
+                            
+                            Object.keys(records).forEach(recordType => {
+                                const record = records[recordType];
+                                const linkedCount = record.enrichedDocuments ? 
+                                    record.enrichedDocuments.filter(d => d.manuallyLinked || d.autoDetected).length : 0;
+                                
+                                html += `
+                                    <div class="document-item rounded mb-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i class="fas fa-clipboard-check text-primary me-2"></i>
+                                                <strong>${recordType}</strong>
+                                                <br><small class="text-muted">${record.description || ''}</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge ${linkedCount > 0 ? 'bg-success' : 'bg-warning'}">${linkedCount} linked</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            
+                            content.innerHTML = html || '<p class="text-muted">No mandatory records configured.</p>';
+                        } else if (Array.isArray(data) && data.length > 0) {
                             content.innerHTML = data.map(record => 
                                 `<div class="document-item rounded mb-2">
                                     <i class="fas fa-clipboard-check text-primary me-2"></i>
@@ -445,12 +665,23 @@
                         }
                     })
                     .catch(error => {
+                        console.error('Mandatory records error:', error);
                         content.innerHTML = '<p class="text-danger">Error loading mandatory records: ' + error.message + '</p>';
                     });
             } else {
                 section.style.display = 'none';
             }
         }
+
+        // Console debugging for learning system
+        console.log('IMS Index page loaded - Enhanced learning system ready');
+        console.log('jQuery loaded:', typeof $ !== 'undefined');
+        console.log('Available functions:', {
+            rebuildIndex: typeof rebuildIndex,
+            autoLinkDocuments: typeof autoLinkDocuments,
+            autoLinkWithLearning: typeof autoLinkWithLearning,
+            showLearningStats: typeof showLearningStats
+        });
     </script>
 </body>
 </html>

@@ -150,11 +150,11 @@ function loadLearningPatterns() {
   }
 
   return {
-    documentPatterns: {},
-    categoryPatterns: {},
-    keywordWeights: {},
-    manualCorrections: [],
-    negativePatterns: [],
+    documentPatterns: {}, // Document name -> actual document mappings
+    categoryPatterns: {}, // Category -> document type patterns
+    keywordWeights: {}, // Keyword effectiveness scores
+    manualCorrections: [], // History of manual corrections
+    negativePatterns: [], // Documents to avoid (THIS WAS MISSING)
     lastUpdated: null,
   };
 }
@@ -177,6 +177,8 @@ function learnFromManualLink(
   recordType = null
 ) {
   const patterns = loadLearningPatterns();
+
+  // Extract learning signals - MORE SOPHISTICATED ANALYSIS
   const searchTerms = originalSearch.toLowerCase().split(/[\s\-_]+/);
   const actualName = actualDocument.name.toLowerCase();
   const actualPath = actualDocument.path.toLowerCase();
@@ -185,7 +187,7 @@ function learnFromManualLink(
     `Learning from correction: "${originalSearch}" -> "${actualDocument.name}"`
   );
 
-  // Document name patterns
+  // 1. Document name patterns - ENHANCED STORAGE
   if (!patterns.documentPatterns[originalSearch.toLowerCase()]) {
     patterns.documentPatterns[originalSearch.toLowerCase()] = [];
   }
@@ -196,31 +198,124 @@ function learnFromManualLink(
     path: actualDocument.path,
     category: category,
     recordType: recordType,
-    confidence: 1.0,
+    confidence: 1.0, // Full confidence for manual links
     learnedAt: new Date().toISOString(),
+    searchPattern: searchTerms, // Store the pattern for better matching
+    pathPattern: actualDocument.folder.toLowerCase(), // Store folder patterns
   });
 
-  // Extract successful keywords
+  // 2. Extract successful keywords - ENHANCED ANALYSIS
   const successfulKeywords = [];
+
+  // More sophisticated keyword extraction
   searchTerms.forEach((term) => {
-    if (
-      term.length > 2 &&
-      (actualName.includes(term) || actualPath.includes(term))
-    ) {
-      successfulKeywords.push(term);
+    if (term.length > 2) {
+      // Check various matching patterns
+      if (actualName.includes(term) || actualPath.includes(term)) {
+        successfulKeywords.push({
+          keyword: term,
+          matchType: actualName.includes(term) ? "name" : "path",
+          position: actualName.indexOf(term),
+          context: category,
+        });
+      }
+
+      // Fuzzy matching for close matches
+      if (term.length > 3) {
+        const fuzzyMatch = findFuzzyMatch(term, actualName);
+        if (fuzzyMatch.score > 0.8) {
+          successfulKeywords.push({
+            keyword: term,
+            matchType: "fuzzy",
+            fuzzyScore: fuzzyMatch.score,
+            actualMatch: fuzzyMatch.match,
+            context: category,
+          });
+        }
+      }
     }
   });
 
-  // Update keyword weights
-  successfulKeywords.forEach((keyword) => {
+  // 3. Update keyword weights - ENHANCED SCORING
+  successfulKeywords.forEach((keywordData) => {
+    const keyword = keywordData.keyword;
     if (!patterns.keywordWeights[keyword]) {
-      patterns.keywordWeights[keyword] = { score: 0, uses: 0 };
+      patterns.keywordWeights[keyword] = {
+        score: 0,
+        uses: 0,
+        contexts: {},
+        matchTypes: {},
+      };
     }
-    patterns.keywordWeights[keyword].score += 1;
+
+    // Weight by match type
+    let weight = 1;
+    switch (keywordData.matchType) {
+      case "name":
+        weight = 3;
+        break;
+      case "path":
+        weight = 2;
+        break;
+      case "fuzzy":
+        weight = keywordData.fuzzyScore * 2;
+        break;
+    }
+
+    patterns.keywordWeights[keyword].score += weight;
     patterns.keywordWeights[keyword].uses += 1;
+
+    // Track contexts and match types
+    if (!patterns.keywordWeights[keyword].contexts[category]) {
+      patterns.keywordWeights[keyword].contexts[category] = 0;
+    }
+    patterns.keywordWeights[keyword].contexts[category] += 1;
+
+    if (!patterns.keywordWeights[keyword].matchTypes[keywordData.matchType]) {
+      patterns.keywordWeights[keyword].matchTypes[keywordData.matchType] = 0;
+    }
+    patterns.keywordWeights[keyword].matchTypes[keywordData.matchType] += 1;
   });
 
-  // Store manual correction
+  // 4. Category patterns - ENHANCED TRACKING
+  if (category) {
+    if (!patterns.categoryPatterns[category]) {
+      patterns.categoryPatterns[category] = {
+        documents: {},
+        folders: {},
+        extensions: {},
+        commonWords: {},
+      };
+    }
+
+    const fileExtension = path.extname(actualDocument.name).toLowerCase();
+    const folderPattern = actualDocument.folder.toLowerCase();
+
+    // Track folder patterns
+    if (!patterns.categoryPatterns[category].folders[folderPattern]) {
+      patterns.categoryPatterns[category].folders[folderPattern] = 0;
+    }
+    patterns.categoryPatterns[category].folders[folderPattern] += 1;
+
+    // Track file extensions
+    if (!patterns.categoryPatterns[category].extensions[fileExtension]) {
+      patterns.categoryPatterns[category].extensions[fileExtension] = 0;
+    }
+    patterns.categoryPatterns[category].extensions[fileExtension] += 1;
+
+    // Track common words in successful matches
+    const words = actualDocument.name.toLowerCase().split(/[\s\-_]+/);
+    words.forEach((word) => {
+      if (word.length > 3) {
+        if (!patterns.categoryPatterns[category].commonWords[word]) {
+          patterns.categoryPatterns[category].commonWords[word] = 0;
+        }
+        patterns.categoryPatterns[category].commonWords[word] += 1;
+      }
+    });
+  }
+
+  // 5. Store manual correction for analysis - ENHANCED METADATA
   patterns.manualCorrections.push({
     searchTerm: originalSearch,
     foundDocument: actualDocument.name,
@@ -228,15 +323,311 @@ function learnFromManualLink(
     recordType: recordType,
     successfulKeywords: successfulKeywords,
     timestamp: new Date().toISOString(),
+    documentPath: actualDocument.path,
+    folderPattern: actualDocument.folder,
+    searchComplexity: searchTerms.length,
+    documentComplexity: actualDocument.name.split(/[\s\-_]+/).length,
+    matchScore: calculateMatchScore(searchTerms, actualDocument),
   });
 
+  // Keep only last 1000 corrections to prevent file bloat
   if (patterns.manualCorrections.length > 1000) {
     patterns.manualCorrections = patterns.manualCorrections.slice(-1000);
   }
 
   saveLearningPatterns(patterns);
+  console.log(
+    `Learned ${successfulKeywords.length} successful keywords:`,
+    successfulKeywords.map((k) => k.keyword)
+  );
 }
 
+// SOPHISTICATED document finding using learned patterns - RESTORED COMPLEXITY
+function findDocumentByNameWithLearning(docName, includeArchived = false) {
+  const patterns = loadLearningPatterns();
+
+  console.log(`Enhanced search for: "${docName}"`);
+
+  // 1. Check negative patterns first (documents to avoid)
+  const negativeMatches = (patterns.negativePatterns || []).filter(
+    (negative) => negative.searchTerm === docName.toLowerCase()
+  );
+
+  const avoidDocumentIds = negativeMatches.map(
+    (negative) => negative.avoidDocumentId
+  );
+
+  if (avoidDocumentIds.length > 0) {
+    console.log(
+      `Found ${avoidDocumentIds.length} documents to avoid for "${docName}"`
+    );
+  }
+
+  // 2. First try exact pattern match from learning - ENHANCED CONFIDENCE
+  const exactMatch = patterns.documentPatterns[docName.toLowerCase()];
+  if (exactMatch && exactMatch.length > 0) {
+    // Sort by confidence and recency
+    const bestMatch = exactMatch.sort((a, b) => {
+      const confidenceDiff = b.confidence - a.confidence;
+      if (confidenceDiff !== 0) return confidenceDiff;
+      return new Date(b.learnedAt) - new Date(a.learnedAt);
+    })[0];
+
+    const foundDoc = documentIndex.find(
+      (doc) => doc.id === bestMatch.documentId
+    );
+
+    if (
+      foundDoc &&
+      (includeArchived || !foundDoc.isArchived) &&
+      !avoidDocumentIds.includes(foundDoc.id)
+    ) {
+      console.log(
+        `Found document using learned pattern: ${foundDoc.name} (confidence: ${bestMatch.confidence})`
+      );
+      return foundDoc;
+    }
+  }
+
+  // 3. SOPHISTICATED keyword matching using learned weights and context
+  const searchTerms = docName.toLowerCase().split(/[\s\-_]+/);
+  const candidates = documentIndex.filter((doc) => {
+    // Skip archived if not requested
+    if (!includeArchived && doc.isArchived) return false;
+
+    // Skip archived/old documents
+    if (isArchivedDocument(doc.path) || isOldDocument(doc.path)) {
+      return false;
+    }
+
+    // Skip documents in avoid list
+    if (avoidDocumentIds.includes(doc.id)) return false;
+
+    // Skip contractor documents if learned to avoid
+    if (isContractorDocument(doc.path)) {
+      const hasContractorAvoidance = negativeMatches.some(
+        (negative) => negative.reason === "contractor_document"
+      );
+      if (hasContractorAvoidance) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  // ENHANCED SCORING ALGORITHM
+  const scoredCandidates = candidates.map((doc) => {
+    let score = 0;
+    const docText = (
+      doc.name +
+      " " +
+      doc.folder +
+      " " +
+      doc.relativePath
+    ).toLowerCase();
+
+    // 1. Basic term matching with learned weights
+    searchTerms.forEach((term) => {
+      if (term.length > 2 && docText.includes(term)) {
+        const weight = patterns.keywordWeights[term];
+        let termScore = weight ? weight.score : 1;
+
+        // Boost score based on match type history
+        if (weight && weight.matchTypes) {
+          if (weight.matchTypes.name && doc.name.toLowerCase().includes(term)) {
+            termScore *= 2; // Name matches are more valuable
+          }
+          if (weight.matchTypes.fuzzy) {
+            termScore *= 1.5; // Fuzzy matches add flexibility
+          }
+        }
+
+        score += termScore;
+      }
+    });
+
+    // 2. Exact name match bonus - MAJOR BOOST
+    if (doc.name.toLowerCase() === docName.toLowerCase()) {
+      score += 100;
+    }
+
+    // 3. Partial name match bonus - ENHANCED
+    if (doc.name.toLowerCase().includes(docName.toLowerCase())) {
+      score += 50;
+    }
+
+    // 4. Reverse partial match (document name in search)
+    if (
+      docName
+        .toLowerCase()
+        .includes(doc.name.toLowerCase().replace(/\.[^/.]+$/, ""))
+    ) {
+      score += 30;
+    }
+
+    // 5. Folder pattern bonus - NEW ENHANCEMENT
+    const folderBonus = calculateFolderBonus(
+      doc.folder,
+      patterns.categoryPatterns
+    );
+    score += folderBonus;
+
+    // 6. Extension pattern bonus
+    const extensionBonus = calculateExtensionBonus(
+      doc.name,
+      patterns.categoryPatterns
+    );
+    score += extensionBonus;
+
+    // 7. PENALTIES for problematic documents
+    if (isContractorDocument(doc.path)) {
+      score -= 25;
+    }
+
+    if (isArchivedDocument(doc.path) || doc.isArchived) {
+      score -= 100;
+    }
+
+    // 8. Age penalty - newer files preferred
+    const ageInDays =
+      (Date.now() - new Date(doc.modified)) / (1000 * 60 * 60 * 24);
+    if (ageInDays > 365) {
+      score -= Math.min((ageInDays / 365) * 5, 20); // Max 20 point penalty
+    }
+
+    return {
+      doc,
+      score,
+      breakdown: { termScore: score, folderBonus, extensionBonus },
+    };
+  });
+
+  // Return best match if score is good enough
+  const bestCandidate = scoredCandidates.sort((a, b) => b.score - a.score)[0];
+
+  if (bestCandidate && bestCandidate.score > 5) {
+    // Raised threshold
+    console.log(
+      `Found document with enhanced score ${bestCandidate.score}: ${bestCandidate.doc.name}`
+    );
+    console.log(`Score breakdown:`, bestCandidate.breakdown);
+    return bestCandidate.doc;
+  }
+
+  // 4. Fallback to original method with enhanced filtering
+  console.log(`No high-confidence match found, trying fallback search`);
+  const fallbackDoc = findDocumentByName(docName, includeArchived);
+  if (
+    fallbackDoc &&
+    !avoidDocumentIds.includes(fallbackDoc.id) &&
+    !isContractorDocument(fallbackDoc.path) &&
+    !isArchivedDocument(fallbackDoc.path) &&
+    !fallbackDoc.isArchived
+  ) {
+    console.log(`Fallback found: ${fallbackDoc.name}`);
+    return fallbackDoc;
+  }
+
+  console.log(`No match found for: "${docName}"`);
+  return null;
+}
+
+// HELPER FUNCTIONS FOR ENHANCED MATCHING
+
+function findFuzzyMatch(searchTerm, text) {
+  // Simple fuzzy matching algorithm
+  const words = text.split(/[\s\-_]+/);
+  let bestScore = 0;
+  let bestMatch = "";
+
+  words.forEach((word) => {
+    const score = calculateLevenshteinSimilarity(searchTerm, word);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = word;
+    }
+  });
+
+  return { score: bestScore, match: bestMatch };
+}
+
+function calculateLevenshteinSimilarity(str1, str2) {
+  const maxLength = Math.max(str1.length, str2.length);
+  if (maxLength === 0) return 1;
+
+  const distance = calculateLevenshteinDistance(str1, str2);
+  return (maxLength - distance) / maxLength;
+}
+
+function calculateLevenshteinDistance(str1, str2) {
+  const matrix = [];
+
+  for (let i = 0; i <= str2.length; i++) {
+    matrix[i] = [i];
+  }
+
+  for (let j = 0; j <= str1.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= str2.length; i++) {
+    for (let j = 1; j <= str1.length; j++) {
+      if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+
+  return matrix[str2.length][str1.length];
+}
+
+function calculateMatchScore(searchTerms, document) {
+  let score = 0;
+  const docName = document.name.toLowerCase();
+  const docPath = document.path.toLowerCase();
+
+  searchTerms.forEach((term) => {
+    if (docName.includes(term)) score += 3;
+    else if (docPath.includes(term)) score += 1;
+  });
+
+  return score;
+}
+
+function calculateFolderBonus(folder, categoryPatterns) {
+  let bonus = 0;
+  const folderLower = folder.toLowerCase();
+
+  Object.values(categoryPatterns).forEach((category) => {
+    if (category.folders && category.folders[folderLower]) {
+      bonus += category.folders[folderLower] * 2; // 2 points per historical match
+    }
+  });
+
+  return Math.min(bonus, 15); // Cap at 15 points
+}
+
+function calculateExtensionBonus(filename, categoryPatterns) {
+  let bonus = 0;
+  const extension = path.extname(filename).toLowerCase();
+
+  Object.values(categoryPatterns).forEach((category) => {
+    if (category.extensions && category.extensions[extension]) {
+      bonus += category.extensions[extension]; // 1 point per historical match
+    }
+  });
+
+  return Math.min(bonus, 5); // Cap at 5 points
+}
+
+// Enhanced negative pattern recording
 function recordNegativeLearningPattern(
   searchTerm,
   avoidDocument,
@@ -246,15 +637,11 @@ function recordNegativeLearningPattern(
   try {
     const patterns = loadLearningPatterns();
 
-    // Initialize negative patterns if they don't exist
     if (!patterns.negativePatterns) {
       patterns.negativePatterns = [];
     }
 
-    // Check if this document is in a contractor folder
     const isContractorDoc = isContractorDocument(avoidDocument.path);
-
-    // Check if this document is in an archive folder
     const isArchiveDoc = isArchivedDocument(avoidDocument.path);
 
     const negativePattern = {
@@ -272,18 +659,22 @@ function recordNegativeLearningPattern(
         ? "contractor_document"
         : "manual_unlink",
       timestamp: new Date().toISOString(),
+      confidence: 1.0, // Full confidence for manual unlinks
+      folderPattern: avoidDocument.folder
+        ? avoidDocument.folder.toLowerCase()
+        : null,
     };
 
     patterns.negativePatterns.push(negativePattern);
 
-    // Keep only last 500 negative patterns to prevent file bloat
+    // Keep only last 500 negative patterns
     if (patterns.negativePatterns.length > 500) {
       patterns.negativePatterns = patterns.negativePatterns.slice(-500);
     }
 
     saveLearningPatterns(patterns);
 
-    let reasonText = isArchiveDoc
+    const reasonText = isArchiveDoc
       ? "archived"
       : isContractorDoc
       ? "contractor"
@@ -295,6 +686,7 @@ function recordNegativeLearningPattern(
     console.error("Error recording negative learning pattern:", error);
   }
 }
+
 // ========================================
 // DOCUMENT DETECTION FUNCTIONS
 // ========================================
@@ -375,694 +767,14 @@ function findDocumentByName(docName, includeArchived = false) {
   });
 }
 
-function findDocumentByNameWithLearning(docName, includeArchived = false) {
-  const patterns = loadLearningPatterns();
-
-  // Check negative patterns first
-  const negativeMatches = (patterns.negativePatterns || []).filter(
-    (negative) => negative.searchTerm === docName.toLowerCase()
-  );
-  const avoidDocumentIds = negativeMatches.map(
-    (negative) => negative.avoidDocumentId
-  );
-
-  // Try exact pattern match from learning
-  const exactMatch = patterns.documentPatterns[docName.toLowerCase()];
-  if (exactMatch && exactMatch.length > 0) {
-    const bestMatch = exactMatch.sort((a, b) => b.confidence - a.confidence)[0];
-    const foundDoc = documentIndex.find(
-      (doc) => doc.id === bestMatch.documentId
-    );
-
-    if (foundDoc && (includeArchived || !foundDoc.isArchived)) {
-      console.log(`Found document using learned pattern: ${foundDoc.name}`);
-      return foundDoc;
-    }
-  }
-
-  // Enhanced keyword matching using learned weights
-  const searchTerms = docName.toLowerCase().split(/[\s\-_]+/);
-  const candidates = documentIndex.filter((doc) => {
-    if (!includeArchived && doc.isArchived) return false;
-    if (isArchivedDocument(doc.path) || isContractorDocument(doc.path))
-      return false;
-    if (avoidDocumentIds.includes(doc.id)) return false;
-    return true;
-  });
-
-  const scoredCandidates = candidates.map((doc) => {
-    let score = 0;
-    const docText = (
-      doc.name +
-      " " +
-      doc.folder +
-      " " +
-      doc.relativePath
-    ).toLowerCase();
-
-    searchTerms.forEach((term) => {
-      if (term.length > 2 && docText.includes(term)) {
-        const weight = patterns.keywordWeights[term];
-        score += weight ? weight.score : 1;
-      }
-    });
-
-    if (doc.name.toLowerCase() === docName.toLowerCase()) score += 100;
-    if (doc.name.toLowerCase().includes(docName.toLowerCase())) score += 50;
-    if (isContractorDocument(doc.path)) score -= 25;
-    if (isArchivedDocument(doc.path) || doc.isArchived) score -= 100;
-
-    return { doc, score };
-  });
-
-  const bestCandidate = scoredCandidates.sort((a, b) => b.score - a.score)[0];
-  if (bestCandidate && bestCandidate.score > 0) {
-    return bestCandidate.doc;
-  }
-
-  return findDocumentByName(docName, includeArchived);
-}
-
 // ========================================
 // ENHANCED LEARNING SYSTEM FUNCTIONS (Replace the basic ones in app.js)
 // ========================================
 
-function loadLearningPatterns() {
-  try {
-    if (fsSync.existsSync(LEARNING_DATA_PATH)) {
-      return JSON.parse(fsSync.readFileSync(LEARNING_DATA_PATH, "utf8"));
-    }
-  } catch (err) {
-    console.error("Error loading learning patterns:", err);
-  }
-
-  return {
-    documentPatterns: {}, // Document name -> actual document mappings
-    categoryPatterns: {}, // Category -> document type patterns
-    keywordWeights: {}, // Keyword effectiveness scores
-    manualCorrections: [], // History of manual corrections
-    negativePatterns: [], // Documents to avoid
-    lastUpdated: null,
-  };
-}
-
-function saveLearningPatterns(patterns) {
-  try {
-    patterns.lastUpdated = new Date().toISOString();
-    fsSync.writeFileSync(LEARNING_DATA_PATH, JSON.stringify(patterns, null, 2));
-    return true;
-  } catch (err) {
-    console.error("Error saving learning patterns:", err);
-    return false;
-  }
-}
-
-// Enhanced learning from manual document linking
-function learnFromManualLink(
-  originalSearch,
-  actualDocument,
-  category,
-  recordType = null
-) {
-  const patterns = loadLearningPatterns();
-
-  // Extract learning signals
-  const searchTerms = originalSearch.toLowerCase().split(/[\s\-_]+/);
-  const actualName = actualDocument.name.toLowerCase();
-  const actualPath = actualDocument.path.toLowerCase();
-
-  console.log(
-    `Learning from correction: "${originalSearch}" -> "${actualDocument.name}"`
-  );
-
-  // 1. Document name patterns
-  if (!patterns.documentPatterns[originalSearch.toLowerCase()]) {
-    patterns.documentPatterns[originalSearch.toLowerCase()] = [];
-  }
-
-  patterns.documentPatterns[originalSearch.toLowerCase()].push({
-    documentId: actualDocument.id,
-    documentName: actualDocument.name,
-    path: actualDocument.path,
-    category: category,
-    recordType: recordType,
-    confidence: 1.0,
-    learnedAt: new Date().toISOString(),
-  });
-
-  // 2. Extract successful keywords from the actual document
-  const successfulKeywords = [];
-
-  // Find which search terms actually appear in the document name/path
-  searchTerms.forEach((term) => {
-    if (
-      term.length > 2 &&
-      (actualName.includes(term) || actualPath.includes(term))
-    ) {
-      successfulKeywords.push(term);
-    }
-  });
-
-  // 3. Update keyword weights
-  successfulKeywords.forEach((keyword) => {
-    if (!patterns.keywordWeights[keyword]) {
-      patterns.keywordWeights[keyword] = { score: 0, uses: 0 };
-    }
-    patterns.keywordWeights[keyword].score += 1;
-    patterns.keywordWeights[keyword].uses += 1;
-  });
-
-  // 4. Category patterns
-  if (category) {
-    if (!patterns.categoryPatterns[category]) {
-      patterns.categoryPatterns[category] = {};
-    }
-
-    const fileExtension = path.extname(actualDocument.name).toLowerCase();
-    const folderPattern = actualDocument.folder.toLowerCase();
-
-    if (!patterns.categoryPatterns[category][folderPattern]) {
-      patterns.categoryPatterns[category][folderPattern] = 0;
-    }
-    patterns.categoryPatterns[category][folderPattern] += 1;
-  }
-
-  // 5. Store manual correction for analysis
-  patterns.manualCorrections.push({
-    searchTerm: originalSearch,
-    foundDocument: actualDocument.name,
-    category: category,
-    recordType: recordType,
-    successfulKeywords: successfulKeywords,
-    timestamp: new Date().toISOString(),
-  });
-
-  // Keep only last 1000 corrections to prevent file bloat
-  if (patterns.manualCorrections.length > 1000) {
-    patterns.manualCorrections = patterns.manualCorrections.slice(-1000);
-  }
-
-  saveLearningPatterns(patterns);
-  console.log(
-    `Learned ${successfulKeywords.length} successful keywords:`,
-    successfulKeywords
-  );
-}
-
-// Enhanced document finding using learned patterns - THE SOPHISTICATED VERSION
-function findDocumentByNameWithLearning(docName, includeArchived = false) {
-  const patterns = loadLearningPatterns();
-
-  // 1. First check negative patterns (documents to avoid) - MOVED UP
-  const negativeMatches = (patterns.negativePatterns || []).filter(
-    (negative) => negative.searchTerm === docName.toLowerCase()
-  );
-
-  const avoidDocumentIds = negativeMatches.map(
-    (negative) => negative.avoidDocumentId
-  );
-  console.log(
-    `Found ${avoidDocumentIds.length} documents to avoid for "${docName}"`
-  );
-
-  // 2. First try exact pattern match from learning
-  const exactMatch = patterns.documentPatterns[docName.toLowerCase()];
-  if (exactMatch && exactMatch.length > 0) {
-    // Get the most recent/confident match
-    const bestMatch = exactMatch.sort((a, b) => b.confidence - a.confidence)[0];
-    const foundDoc = documentIndex.find(
-      (doc) => doc.id === bestMatch.documentId
-    );
-
-    if (foundDoc && (includeArchived || !foundDoc.isArchived)) {
-      console.log(`Found document using learned pattern: ${foundDoc.name}`);
-      return foundDoc;
-    }
-  }
-
-  // 3. Enhanced keyword matching using learned weights
-  const searchTerms = docName.toLowerCase().split(/[\s\-_]+/);
-  const candidates = documentIndex.filter((doc) => {
-    // Skip archived if not requested
-    if (!includeArchived && doc.isArchived) return false;
-
-    if (isArchivedDocument(doc.path) || isOldDocument(doc.path)) {
-      console.log(`Skipping archived/old document: ${doc.name}`);
-      return false;
-    }
-
-    // Skip documents in avoid list
-    if (avoidDocumentIds.includes(doc.id)) return false;
-
-    // Skip contractor documents based on learned patterns
-    if (isContractorDocument(doc.path)) {
-      const hasContractorAvoidance = negativeMatches.some(
-        (negative) => negative.reason === "contractor_document"
-      );
-      if (hasContractorAvoidance) {
-        console.log(`Skipping contractor document: ${doc.name}`);
-        return false;
-      }
-    }
-
-    return true;
-  });
-
-  const scoredCandidates = candidates.map((doc) => {
-    let score = 0;
-    const docText = (
-      doc.name +
-      " " +
-      doc.folder +
-      " " +
-      doc.relativePath
-    ).toLowerCase();
-
-    searchTerms.forEach((term) => {
-      if (term.length > 2 && docText.includes(term)) {
-        const weight = patterns.keywordWeights[term];
-        score += weight ? weight.score : 1; // Use learned weight or default
-      }
-    });
-
-    // Exact name match bonus
-    if (doc.name.toLowerCase() === docName.toLowerCase()) {
-      score += 100;
-    }
-
-    // Partial name match bonus
-    if (doc.name.toLowerCase().includes(docName.toLowerCase())) {
-      score += 50;
-    }
-
-    // Penalty for contractor documents (even if not explicitly avoided)
-    if (isContractorDocument(doc.path)) {
-      score -= 25;
-      console.log(`Applied contractor penalty to: ${doc.name}`);
-    }
-
-    // EXPLICIT: Heavy penalty for archived documents
-    if (isArchivedDocument(doc.path) || doc.isArchived) {
-      score -= 100;
-      console.log(`Applied archive penalty to: ${doc.name}`);
-    }
-
-    return { doc, score };
-  });
-
-  // Return best match if score is good enough
-  const bestCandidate = scoredCandidates.sort((a, b) => b.score - a.score)[0];
-  if (bestCandidate && bestCandidate.score > 0) {
-    console.log(
-      `Found document with learning-enhanced score ${bestCandidate.score}: ${bestCandidate.doc.name}`
-    );
-    return bestCandidate.doc;
-  }
-
-  // 4. Fallback to original method
-  const fallbackDoc = findDocumentByName(docName, includeArchived);
-  if (
-    fallbackDoc &&
-    !avoidDocumentIds.includes(fallbackDoc.id) &&
-    !isContractorDocument(fallbackDoc.path) &&
-    !isArchivedDocument(fallbackDoc.path) &&
-    !fallbackDoc.isArchived
-  ) {
-    return fallbackDoc;
-  }
-
-  return null;
-}
-
-// Add the missing isOldDocument function
-function isOldDocument(filePath) {
-  const pathLower = filePath.toLowerCase();
-  const fileName = path.basename(pathLower);
-
-  // Check for old years in the path or filename
-  const oldYearPattern = /(2019|2020|2021|2022|2023)/;
-  const currentYear = new Date().getFullYear();
-
-  // If the path or filename contains years older than 2024, consider it old
-  const yearMatches = pathLower.match(/\b(20\d{2})\b/g);
-  if (yearMatches) {
-    return yearMatches.some((year) => parseInt(year) < currentYear - 1);
-  }
-
-  // Check for date patterns that indicate old documents
-  const oldDatePatterns = [
-    /\b\d{1,2}[-\.]\d{1,2}[-\.](19|20)\d{2}\b/, // DD-MM-YYYY or DD.MM.YYYY
-    /\b(19|20)\d{2}[-\.]\d{1,2}[-\.]\d{1,2}\b/, // YYYY-MM-DD
-    /\b\d{1,2}[-\.](0[1-9]|1[0-2])[-\.](20)\d{2}\b/, // DD-MM-YYYY
-  ];
-
-  return oldDatePatterns.some((pattern) => pathLower.match(pattern));
-}
-
-// Enhanced isArchivedDocument function
-function isArchivedDocument(filePath) {
-  const pathParts = filePath.toLowerCase().split(/[\\\/]/);
-  const archiveKeywords = [
-    "archive",
-    "archives",
-    "archived",
-    "old",
-    "backup",
-    "previous",
-    "2020",
-    "2021",
-    "2022",
-    "2023", // Add years that should be considered archived
-    "historical",
-    "legacy",
-    "superseded",
-    "obsolete",
-    "replaced",
-  ];
-
-  return pathParts.some((part) => {
-    // Check if any path part contains archive keywords
-    return (
-      archiveKeywords.some((keyword) => part.includes(keyword)) ||
-      // Check for year patterns in folder names that might indicate old records
-      (part.match(/^\d{4}$/) &&
-        parseInt(part) < new Date().getFullYear() - 1) ||
-      // Check for date patterns that are old
-      part.match(/\d{2}-\d{2}/) || // MM-YY or DD-MM patterns
-      part.match(/\d{4}-\d{2}/) // YYYY-MM patterns
-    );
-  });
-}
-// ========================================
+//==============================
 // ENHANCED LEARNING SYSTEM FUNCTIONS (Replace the basic ones in app.js)
 // ========================================
 
-function loadLearningPatterns() {
-  try {
-    if (fsSync.existsSync(LEARNING_DATA_PATH)) {
-      return JSON.parse(fsSync.readFileSync(LEARNING_DATA_PATH, "utf8"));
-    }
-  } catch (err) {
-    console.error("Error loading learning patterns:", err);
-  }
-
-  return {
-    documentPatterns: {}, // Document name -> actual document mappings
-    categoryPatterns: {}, // Category -> document type patterns
-    keywordWeights: {}, // Keyword effectiveness scores
-    manualCorrections: [], // History of manual corrections
-    negativePatterns: [], // Documents to avoid
-    lastUpdated: null,
-  };
-}
-
-function saveLearningPatterns(patterns) {
-  try {
-    patterns.lastUpdated = new Date().toISOString();
-    fsSync.writeFileSync(LEARNING_DATA_PATH, JSON.stringify(patterns, null, 2));
-    return true;
-  } catch (err) {
-    console.error("Error saving learning patterns:", err);
-    return false;
-  }
-}
-
-// Enhanced learning from manual document linking
-function learnFromManualLink(
-  originalSearch,
-  actualDocument,
-  category,
-  recordType = null
-) {
-  const patterns = loadLearningPatterns();
-
-  // Extract learning signals
-  const searchTerms = originalSearch.toLowerCase().split(/[\s\-_]+/);
-  const actualName = actualDocument.name.toLowerCase();
-  const actualPath = actualDocument.path.toLowerCase();
-
-  console.log(
-    `Learning from correction: "${originalSearch}" -> "${actualDocument.name}"`
-  );
-
-  // 1. Document name patterns
-  if (!patterns.documentPatterns[originalSearch.toLowerCase()]) {
-    patterns.documentPatterns[originalSearch.toLowerCase()] = [];
-  }
-
-  patterns.documentPatterns[originalSearch.toLowerCase()].push({
-    documentId: actualDocument.id,
-    documentName: actualDocument.name,
-    path: actualDocument.path,
-    category: category,
-    recordType: recordType,
-    confidence: 1.0,
-    learnedAt: new Date().toISOString(),
-  });
-
-  // 2. Extract successful keywords from the actual document
-  const successfulKeywords = [];
-
-  // Find which search terms actually appear in the document name/path
-  searchTerms.forEach((term) => {
-    if (
-      term.length > 2 &&
-      (actualName.includes(term) || actualPath.includes(term))
-    ) {
-      successfulKeywords.push(term);
-    }
-  });
-
-  // 3. Update keyword weights
-  successfulKeywords.forEach((keyword) => {
-    if (!patterns.keywordWeights[keyword]) {
-      patterns.keywordWeights[keyword] = { score: 0, uses: 0 };
-    }
-    patterns.keywordWeights[keyword].score += 1;
-    patterns.keywordWeights[keyword].uses += 1;
-  });
-
-  // 4. Category patterns
-  if (category) {
-    if (!patterns.categoryPatterns[category]) {
-      patterns.categoryPatterns[category] = {};
-    }
-
-    const fileExtension = path.extname(actualDocument.name).toLowerCase();
-    const folderPattern = actualDocument.folder.toLowerCase();
-
-    if (!patterns.categoryPatterns[category][folderPattern]) {
-      patterns.categoryPatterns[category][folderPattern] = 0;
-    }
-    patterns.categoryPatterns[category][folderPattern] += 1;
-  }
-
-  // 5. Store manual correction for analysis
-  patterns.manualCorrections.push({
-    searchTerm: originalSearch,
-    foundDocument: actualDocument.name,
-    category: category,
-    recordType: recordType,
-    successfulKeywords: successfulKeywords,
-    timestamp: new Date().toISOString(),
-  });
-
-  // Keep only last 1000 corrections to prevent file bloat
-  if (patterns.manualCorrections.length > 1000) {
-    patterns.manualCorrections = patterns.manualCorrections.slice(-1000);
-  }
-
-  saveLearningPatterns(patterns);
-  console.log(
-    `Learned ${successfulKeywords.length} successful keywords:`,
-    successfulKeywords
-  );
-}
-
-// Enhanced document finding using learned patterns - THE SOPHISTICATED VERSION
-function findDocumentByNameWithLearning(docName, includeArchived = false) {
-  const patterns = loadLearningPatterns();
-
-  // 1. First check negative patterns (documents to avoid) - MOVED UP
-  const negativeMatches = (patterns.negativePatterns || []).filter(
-    (negative) => negative.searchTerm === docName.toLowerCase()
-  );
-
-  const avoidDocumentIds = negativeMatches.map(
-    (negative) => negative.avoidDocumentId
-  );
-  console.log(
-    `Found ${avoidDocumentIds.length} documents to avoid for "${docName}"`
-  );
-
-  // 2. First try exact pattern match from learning
-  const exactMatch = patterns.documentPatterns[docName.toLowerCase()];
-  if (exactMatch && exactMatch.length > 0) {
-    // Get the most recent/confident match
-    const bestMatch = exactMatch.sort((a, b) => b.confidence - a.confidence)[0];
-    const foundDoc = documentIndex.find(
-      (doc) => doc.id === bestMatch.documentId
-    );
-
-    if (foundDoc && (includeArchived || !foundDoc.isArchived)) {
-      console.log(`Found document using learned pattern: ${foundDoc.name}`);
-      return foundDoc;
-    }
-  }
-
-  // 3. Enhanced keyword matching using learned weights
-  const searchTerms = docName.toLowerCase().split(/[\s\-_]+/);
-  const candidates = documentIndex.filter((doc) => {
-    // Skip archived if not requested
-    if (!includeArchived && doc.isArchived) return false;
-
-    if (isArchivedDocument(doc.path) || isOldDocument(doc.path)) {
-      console.log(`Skipping archived/old document: ${doc.name}`);
-      return false;
-    }
-
-    // Skip documents in avoid list
-    if (avoidDocumentIds.includes(doc.id)) return false;
-
-    // Skip contractor documents based on learned patterns
-    if (isContractorDocument(doc.path)) {
-      const hasContractorAvoidance = negativeMatches.some(
-        (negative) => negative.reason === "contractor_document"
-      );
-      if (hasContractorAvoidance) {
-        console.log(`Skipping contractor document: ${doc.name}`);
-        return false;
-      }
-    }
-
-    return true;
-  });
-
-  const scoredCandidates = candidates.map((doc) => {
-    let score = 0;
-    const docText = (
-      doc.name +
-      " " +
-      doc.folder +
-      " " +
-      doc.relativePath
-    ).toLowerCase();
-
-    searchTerms.forEach((term) => {
-      if (term.length > 2 && docText.includes(term)) {
-        const weight = patterns.keywordWeights[term];
-        score += weight ? weight.score : 1; // Use learned weight or default
-      }
-    });
-
-    // Exact name match bonus
-    if (doc.name.toLowerCase() === docName.toLowerCase()) {
-      score += 100;
-    }
-
-    // Partial name match bonus
-    if (doc.name.toLowerCase().includes(docName.toLowerCase())) {
-      score += 50;
-    }
-
-    // Penalty for contractor documents (even if not explicitly avoided)
-    if (isContractorDocument(doc.path)) {
-      score -= 25;
-      console.log(`Applied contractor penalty to: ${doc.name}`);
-    }
-
-    // EXPLICIT: Heavy penalty for archived documents
-    if (isArchivedDocument(doc.path) || doc.isArchived) {
-      score -= 100;
-      console.log(`Applied archive penalty to: ${doc.name}`);
-    }
-
-    return { doc, score };
-  });
-
-  // Return best match if score is good enough
-  const bestCandidate = scoredCandidates.sort((a, b) => b.score - a.score)[0];
-  if (bestCandidate && bestCandidate.score > 0) {
-    console.log(
-      `Found document with learning-enhanced score ${bestCandidate.score}: ${bestCandidate.doc.name}`
-    );
-    return bestCandidate.doc;
-  }
-
-  // 4. Fallback to original method
-  const fallbackDoc = findDocumentByName(docName, includeArchived);
-  if (
-    fallbackDoc &&
-    !avoidDocumentIds.includes(fallbackDoc.id) &&
-    !isContractorDocument(fallbackDoc.path) &&
-    !isArchivedDocument(fallbackDoc.path) &&
-    !fallbackDoc.isArchived
-  ) {
-    return fallbackDoc;
-  }
-
-  return null;
-}
-
-// Add the missing isOldDocument function
-function isOldDocument(filePath) {
-  const pathLower = filePath.toLowerCase();
-  const fileName = path.basename(pathLower);
-
-  // Check for old years in the path or filename
-  const oldYearPattern = /(2019|2020|2021|2022|2023)/;
-  const currentYear = new Date().getFullYear();
-
-  // If the path or filename contains years older than 2024, consider it old
-  const yearMatches = pathLower.match(/\b(20\d{2})\b/g);
-  if (yearMatches) {
-    return yearMatches.some((year) => parseInt(year) < currentYear - 1);
-  }
-
-  // Check for date patterns that indicate old documents
-  const oldDatePatterns = [
-    /\b\d{1,2}[-\.]\d{1,2}[-\.](19|20)\d{2}\b/, // DD-MM-YYYY or DD.MM.YYYY
-    /\b(19|20)\d{2}[-\.]\d{1,2}[-\.]\d{1,2}\b/, // YYYY-MM-DD
-    /\b\d{1,2}[-\.](0[1-9]|1[0-2])[-\.](20)\d{2}\b/, // DD-MM-YYYY
-  ];
-
-  return oldDatePatterns.some((pattern) => pathLower.match(pattern));
-}
-
-// Enhanced isArchivedDocument function
-function isArchivedDocument(filePath) {
-  const pathParts = filePath.toLowerCase().split(/[\\\/]/);
-  const archiveKeywords = [
-    "archive",
-    "archives",
-    "archived",
-    "old",
-    "backup",
-    "previous",
-    "2020",
-    "2021",
-    "2022",
-    "2023", // Add years that should be considered archived
-    "historical",
-    "legacy",
-    "superseded",
-    "obsolete",
-    "replaced",
-  ];
-
-  return pathParts.some((part) => {
-    // Check if any path part contains archive keywords
-    return (
-      archiveKeywords.some((keyword) => part.includes(keyword)) ||
-      // Check for year patterns in folder names that might indicate old records
-      (part.match(/^\d{4}$/) &&
-        parseInt(part) < new Date().getFullYear() - 1) ||
-      // Check for date patterns that are old
-      part.match(/\d{2}-\d{2}/) || // MM-YY or DD-MM patterns
-      part.match(/\d{4}-\d{2}/) // YYYY-MM patterns
-    );
-  });
-}
 // ========================================
 // IMS FUNCTIONS
 // ========================================
