@@ -41,6 +41,83 @@
         },
         "found": true,
         "unlinkedAt": "2025-07-17T03:39:41.106Z"
+      },
+      {
+        "name": "Environmental Policy",
+        "document": {
+          "id": "02f9399e-0ee3-43ef-b8ae-676b66fbb57d",
+          "name": "GMK - Environmental Policy.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 01B IMS Policies\\GMK - Environmental Policy.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.957Z"
+      },
+      {
+        "name": "Vision, Mission and Values Policy",
+        "document": {
+          "id": "c0a8d82d-6ef2-43bd-b3cc-6573b3bed20e",
+          "name": "GMK - Vision, Mission and Values Policy.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 01B IMS Policies\\GMK - Vision, Mission and Values Policy.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.957Z"
+      },
+      {
+        "name": "Company Vehicle Policy",
+        "document": {
+          "id": "286ff485-0fc7-4fd8-bee5-b1df001875d3",
+          "name": "GMK - Company Vehicle Policy.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 01B IMS Policies\\GMK - Company Vehicle Policy.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.957Z"
+      },
+      {
+        "name": "Plant & Equipment Policy",
+        "document": {
+          "id": "940a3d6c-6f03-4ef3-a478-2c86aabc6a7d",
+          "name": "Plant & Equipment Policy.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 01B IMS Policies\\Archive 2023 copies\\Plant & Equipment Policy.pdf",
+          "isArchived": true
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.957Z"
+      },
+      {
+        "name": "Fatigue Management Policy",
+        "document": {
+          "id": "23548b47-7eb9-4fc4-9dd4-e832ec225042",
+          "name": "Fatigue Management Policy.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 01B IMS Policies\\Archive 2023 copies\\Fatigue Management Policy.pdf",
+          "isArchived": true
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.957Z"
+      },
+      {
+        "name": "Rehabilitation and Return to Work Policy",
+        "document": {
+          "id": "baf74b0e-8cdd-4bc1-bede-e125d9de6007",
+          "name": "GMK - Rehabilitation and Return to Work Policy.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 01B IMS Policies\\GMK - Rehabilitation and Return to Work Policy.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.957Z"
+      },
+      {
+        "name": "Fitness for Duty Policy",
+        "document": {
+          "id": "a632fbdd-67f6-4116-b1bc-ec780041d3cd",
+          "name": "Fitness for Duty Policy 2025 v1.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 01B IMS Policies\\Fitness for Duty Policy 2025 v1.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.957Z"
       }
     ]
   },
@@ -78,6 +155,50 @@
           "isArchived": false
         },
         "found": true
+      },
+      {
+        "name": "P28 Health surveillance",
+        "document": {
+          "id": "6a190914-7ce3-4d3a-9bb5-db6cc772a5c8",
+          "name": "SP28 Health surveillance.doc",
+          "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP28 Health surveillance.doc",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.966Z"
+      },
+      {
+        "name": "SP10 Hazardous Manual Handling",
+        "document": {
+          "id": "ed4357f1-a916-48e8-ad21-d22b73196636",
+          "name": "SP10 Hazardous Manual Handling.doc",
+          "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP10 Hazardous Manual Handling.doc",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.966Z"
+      },
+      {
+        "name": "SP23 Managing PPE",
+        "document": {
+          "id": "dc918cce-87e8-4f0c-824a-03e5098e66e3",
+          "name": "SP23 Managing PPE.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP23 Managing PPE.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.966Z"
+      },
+      {
+        "name": "SP41 Drug and Alcohol Impairment Testing",
+        "document": {
+          "id": "4416709e-ecb4-46c7-ab41-28111ad9d14c",
+          "name": "SP41 Drug and Alcohol Impairment Testing.doc",
+          "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP41 Drug and Alcohol Impairment Testing.doc",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.966Z"
       }
     ]
   },
@@ -110,13 +231,37 @@
           "isArchived": false
         },
         "found": true
+      },
+      {
+        "name": "SP33 Issue resolution",
+        "document": {
+          "id": "44877f04-0436-49ce-9769-5e5dd24abfc2",
+          "name": "SP33 Issue resolution.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP33 Issue resolution.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.978Z"
+      },
+      {
+        "name": "SP05 Training Competency",
+        "document": {
+          "id": "565f56e2-2bb2-4ad4-a874-71c5a6c68c26",
+          "name": "SP05 Training  Competency.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP05 Training  Competency.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:47.224Z"
       }
     ]
   },
   "Risk Management": {
     "type": "category",
     "level": 2,
-    "documentId": null,
+    "documentId": "f09101ec-36b0-4c8a-90da-b4bd18409cad",
     "children": [
       "SP07 Purchasing",
       "SP22 Risk Assessment Procedure",
@@ -125,7 +270,76 @@
       "SP36 Managing Haz Sub and DG",
       "SP37 Managing Plant and Equipment"
     ],
-    "enrichedChildren": []
+    "enrichedChildren": [
+      {
+        "name": "SP07 Purchasing",
+        "document": {
+          "id": "3458a66f-064d-4825-8143-b3a63437a2e0",
+          "name": "SP07 Purchasing.doc",
+          "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP07 Purchasing.doc",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.978Z"
+      },
+      {
+        "name": "SP29 Preparing Procedure & Work method statements",
+        "document": {
+          "id": "b76b80d2-0bdf-4dd8-8824-2e2a8d635252",
+          "name": "SP29 Preparing Procedure & Work method statements.doc",
+          "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP29 Preparing Procedure & Work method statements.doc",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.982Z"
+      },
+      {
+        "name": "SP31 Working at Height",
+        "document": {
+          "id": "6a1814ee-d43d-4d54-a8a4-2f3445a7e1e5",
+          "name": "SP31 Working at Height.doc",
+          "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP31 Working at Height.doc",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.982Z"
+      },
+      {
+        "name": "SP36 Managing Haz Sub and DG",
+        "document": {
+          "id": "dd5de339-4daa-471b-8480-2ad8cd2303d2",
+          "name": "SP36 Managing Haz Sub and DG.doc",
+          "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP36 Managing Haz Sub and DG.doc",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.982Z"
+      },
+      {
+        "name": "SP37 Managing Plant and Equipment",
+        "document": {
+          "id": "a87ff7ff-6b1e-404f-a7aa-a05fc65be0dc",
+          "name": "SP37 Managing Plant and Equipment.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\2021\\Audits Acted On\\SP37 Managing Plant and Equipment.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:58.983Z"
+      },
+      {
+        "name": "SP22 Risk Assessment Procedure",
+        "document": {
+          "id": "cd2ab06f-452a-4051-9797-e257182f5650",
+          "name": "SP22  Risk  Assessment  Procedure.doc",
+          "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP22  Risk  Assessment  Procedure.doc",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:47.618Z"
+      }
+    ]
   },
   "Work Instructions": {
     "type": "category",
@@ -196,6 +410,399 @@
           "path": "I:\\IMS\\Intergrated Management System\\Section 04B Work Instructions\\~$cavated Soil  - WI 025.docx"
         },
         "found": true
+      },
+      {
+        "name": "Energisation of new or modified electrical circuits and equipment WI 047",
+        "document": {
+          "id": "d393a17b-77f1-495a-a8a5-25fe5bda8359",
+          "name": "Energisation of new or modified electrical circuits and equipment WI 047_backup_2025-07-09_09-57-30.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Archive\\Energisation of new or modified electrical circuits and equipment WI 047_backup_2025-07-09_09-57-30.docx",
+          "isArchived": true
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.018Z"
+      },
+      {
+        "name": "Installation General Light and Power -WI 034",
+        "document": {
+          "id": "b14b7c1a-bc3b-40ea-a0bf-b9ac40e61ed6",
+          "name": "Installation General Light and Power -WI 034.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Installation General Light and Power -WI 034.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.041Z"
+      },
+      {
+        "name": "Installation General Public Lighting WI 041",
+        "document": {
+          "id": "71be7e8e-d6d3-418c-90c6-c804171f5428",
+          "name": "Installation General Public Lighting WI 041.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Installation General Public Lighting WI 041.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.041Z"
+      },
+      {
+        "name": "Portable Electrical Equipment -WI 005",
+        "document": {
+          "id": "e5dba4e6-312d-42a2-a5af-d9740011b1e4",
+          "name": "Portable Electrical Equipment.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\~~Archived\\2012-2013\\2013 March\\Portable Electrical Equipment.pdf",
+          "isArchived": true
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.067Z"
+      },
+      {
+        "name": "Solar Installations WI 045",
+        "document": {
+          "id": "fd5678d7-77f6-4541-84af-72135b906652",
+          "name": "Solar Installations WI 045.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Solar Installations WI 045.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.075Z"
+      },
+      {
+        "name": "Air pollution -WI 028",
+        "document": {
+          "id": "2215a168-9a53-486e-8c9a-c9332b35d4ee",
+          "name": "Air pollution - WI 028.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Air pollution - WI 028.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:47.902Z"
+      },
+      {
+        "name": "Hand Tool Safety -WI 050",
+        "document": {
+          "id": "654e3cb9-b123-4b93-89d2-b1462331e565",
+          "name": "Hand Tool Safety - WI 050 2025.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Hand Tool Safety - WI 050 2025.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:48.111Z"
+      },
+      {
+        "name": "Asbestos Containing Material -WI 013",
+        "document": {
+          "id": "86ab3279-c800-4918-952e-486ee36313a0",
+          "name": "Asbestos Containing Material - WI 013.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Asbestos Containing Material - WI 013.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:48.250Z"
+      },
+      {
+        "name": "Calibration -Certification Documentation via Seaward -WI 048",
+        "document": {
+          "id": "95e22252-2cb4-492d-8910-f167ea88ea6a",
+          "name": "Calibration - Certification Documentation via Seaward - WI 048.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Calibration - Certification Documentation via Seaward - WI 048.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:48.527Z"
+      },
+      {
+        "name": "Checking of substation transformer -WI 033",
+        "document": {
+          "id": "b48d763a-c5cc-46a7-9164-56d824db0f62",
+          "name": "Checking of substation transformer -  WI 033.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Checking of substation transformer -  WI 033.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:48.856Z"
+      },
+      {
+        "name": "Confirming Electrical Isolation -WI 020",
+        "document": {
+          "id": "27f26371-8f37-4285-bc34-c157c3c5106a",
+          "name": "Confirming Electrical Isolation - WI 020.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Confirming Electrical Isolation - WI 020.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:49.331Z"
+      },
+      {
+        "name": "Control Panel Manufacture -WI 038",
+        "document": {
+          "id": "9a21e7be-b40c-4fc1-b158-a81a35c616da",
+          "name": "Control Panel Manufacture - WI 038.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Control Panel Manufacture - WI 038.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:49.827Z"
+      },
+      {
+        "name": "Elevated Work Platforms -WI 023",
+        "document": {
+          "id": "51e313c1-c2cb-4d51-a0bc-b464b66a43f0",
+          "name": "Elevated Work Platforms - WI 023.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Elevated Work Platforms - WI 023.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:50.438Z"
+      },
+      {
+        "name": "Event Set Up -WI 040",
+        "document": {
+          "id": "080a58b6-0e6d-483f-a571-3bcac012f1b7",
+          "name": "Event Set Up -  WI 040.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Event Set Up -  WI 040.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:51.010Z"
+      },
+      {
+        "name": "Fault Finding and Maintenance -WI 036",
+        "document": {
+          "id": "4842f44e-06e4-4eab-880d-7808960909de",
+          "name": "Fault Finding and Maintenance - WI 036.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Fault Finding and Maintenance - WI 036.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:51.222Z"
+      },
+      {
+        "name": "Hot Works -WI 007",
+        "document": {
+          "id": "4241b7cc-c54a-4983-a83c-3a886b1dec95",
+          "name": "Hot Works - WI 007.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Hot Works - WI 007.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:51.423Z"
+      },
+      {
+        "name": "Installation Industrial Light and Power -WI 035",
+        "document": {
+          "id": "3e0e4981-7ac6-4842-9eb4-c1c94f076bd2",
+          "name": "Installation Industrial Light and Power - WI 035.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Installation Industrial Light and Power - WI 035.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:51.692Z"
+      },
+      {
+        "name": "Installation Traffic Lights -WI 042",
+        "document": {
+          "id": "0d687de5-7147-408b-b911-7fb820e1aff7",
+          "name": "Installation Traffic Lights - WI 042.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Installation Traffic Lights - WI 042.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:52.193Z"
+      },
+      {
+        "name": "Job Set Up -WI 012",
+        "document": {
+          "id": "bf3dc401-9851-4037-b4b2-0adcb345ef66",
+          "name": "Job Set Up - WI 012.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Job Set Up - WI 012.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:52.540Z"
+      },
+      {
+        "name": "Lone and Isolated Workers -WI 006",
+        "document": {
+          "id": "2837a2c3-da4f-4953-9503-45c8ab87fb23",
+          "name": "Lone and Isolated Workers - WI 006.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Lone and Isolated Workers - WI 006.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:53.050Z"
+      },
+      {
+        "name": "Mobile Plant and Equipment -WI 008",
+        "document": {
+          "id": "f9db9c75-1aab-4d06-9f1b-cd633a155152",
+          "name": "Mobile Plant and Equipment - WI 008.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Mobile Plant and Equipment - WI 008.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:53.349Z"
+      },
+      {
+        "name": "Noise -WI 027",
+        "document": {
+          "id": "b15c8582-caa5-4a67-b671-dc207a4cf3b5",
+          "name": "Noise - WI 027 .docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Noise - WI 027 .docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:53.603Z"
+      },
+      {
+        "name": "PCBs (Polychlorinated biphenyls) -WI 017",
+        "document": {
+          "id": "d94566e5-8ebc-403b-974d-739877648034",
+          "name": "PCBs (Polychlorinated biphenyls) - WI 017.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\PCBs (Polychlorinated biphenyls) - WI 017.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:53.789Z"
+      },
+      {
+        "name": "PPE -WI 001",
+        "document": {
+          "id": "93934071-99aa-46c8-a2f9-5fca2e899302",
+          "name": "PPE WI 001.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\PPE WI 001.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:53.973Z"
+      },
+      {
+        "name": "Rescue for EWP -WI 022A",
+        "document": {
+          "id": "58ab7fa6-29fd-4803-931d-a037ce0c8b34",
+          "name": "Rescue for EWP - WI 022A.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Rescue for EWP - WI 022A.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:54.270Z"
+      },
+      {
+        "name": "Spill Management -WI 049",
+        "document": {
+          "id": "7ee974c9-7cde-4a08-8534-d98920a58f36",
+          "name": "Spill Management -  WI 049.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Spill Management -  WI 049.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:54.610Z"
+      },
+      {
+        "name": "Test &Tag with Seaward Prime Test 300 -WI 046",
+        "document": {
+          "id": "02bf0191-19eb-436d-80e8-907c5392a2a7",
+          "name": "Test &Tag with Seaward Prime Test 300 - WI 046.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Test &Tag with Seaward Prime Test 300 - WI 046.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:55.404Z"
+      },
+      {
+        "name": "Truck Mounted Boom Lift -WI 022",
+        "document": {
+          "id": "ebcf19bc-d7ea-4e46-8bb5-8cd5fb8d60ef",
+          "name": "Truck Mounted Boom Lift - WI 022.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Truck Mounted Boom Lift - WI 022.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:55.601Z"
+      },
+      {
+        "name": "Visual Impact -WI 029",
+        "document": {
+          "id": "7f4f15e1-e309-449c-9f96-0c2f03f61df4",
+          "name": "Visual Impact - WI 029.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Visual Impact - WI 029.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:55.785Z"
+      },
+      {
+        "name": "Waste Minimisation -WI 030",
+        "document": {
+          "id": "66112d3f-a1e6-4e90-889b-772eb789742d",
+          "name": "Waste Minimisation - WI 030.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Waste Minimisation - WI 030.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:55.952Z"
+      },
+      {
+        "name": "Work in hot environments -WI 009",
+        "document": {
+          "id": "5a8cd0ef-00f8-4aaf-af34-3b5e1424294f",
+          "name": "Work in hot environments - WI 009.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Work in hot environments - WI 009.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:56.074Z"
       }
     ]
   },
@@ -229,13 +836,170 @@
           "path": "I:\\IMS\\Intergrated Management System\\Section 04 SWMS\\Loading from mezanine floor  - SWMS 032.docx"
         },
         "found": true
+      },
+      {
+        "name": "Hot Works -SWMS 007",
+        "document": {
+          "id": "63907f75-9125-4957-b2d8-fab11bcd1408",
+          "name": "Hot Works -SWMS 007.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 10 Document Change and Archived Records\\Archive\\SWMS (SWI & EWI)\\~~Swms Prior to formating chnage Jul 2015\\Hot Works -SWMS 007.docx",
+          "isArchived": true
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.118Z"
+      },
+      {
+        "name": "Isolation and Earthing of Plant and Equipment -SWMS 004",
+        "document": {
+          "id": "041b226e-ac77-4bc0-a720-29e3dcde4550",
+          "name": "Isolation and Earthing of Plant and Equipment -SWMS 004.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Isolation and Earthing of Plant and Equipment -SWMS 004.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.118Z"
+      },
+      {
+        "name": "Live Low Voltage-SWMS 002",
+        "document": {
+          "id": "d24909f3-aa6a-4210-b1da-584aaf5b5984",
+          "name": "Live Low Voltage-SWMS 002 - issue 5.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 10 Document Change and Archived Records\\Archive\\SWMS (SWI & EWI)\\SWMS 02 Live Low Voltage\\Live Low Voltage-SWMS 002 - issue 5.docx",
+          "isArchived": true
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.122Z"
+      },
+      {
+        "name": "Operating Truck mounted Crane Fassi 25A -SWMS 019",
+        "document": {
+          "id": "bfbb4423-f50d-494a-bea8-72b941baf4ba",
+          "name": "Operating Truck mounted Crane Fassi 25A -SWMS 019.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Operating Truck mounted Crane Fassi 25A -SWMS 019.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.129Z"
+      },
+      {
+        "name": "Trenching -SWMS 014",
+        "document": {
+          "id": "d1d4ea75-9eb8-4d57-a01c-bdb6962ad36c",
+          "name": "Trenching -SWMS 014.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Trenching -SWMS 014.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.136Z"
+      },
+      {
+        "name": "Working at Height -SWMS 016",
+        "document": {
+          "id": "c57869ac-3994-470f-8002-2fd09618650b",
+          "name": "Working at Height -SWMS 016.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 10 Document Change and Archived Records\\Archive\\SWMS (SWI & EWI)\\~~Swms Prior to formating chnage Jul 2015\\Working at Height -SWMS 016.docx",
+          "isArchived": true
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.140Z"
+      },
+      {
+        "name": "Cable Installation Using Mechanical Aid and Manual Installation -SWMS 018",
+        "document": {
+          "id": "56bbf347-fdc5-4278-8ce1-f7a09a27ab7c",
+          "name": "Cable Installation Using Mechanical Aid and Manual Installation - SWMS 018.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Cable Installation Using Mechanical Aid and Manual Installation - SWMS 018.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:56.449Z"
+      },
+      {
+        "name": "Checking of the low voltage system -SWMS 039",
+        "document": {
+          "id": "a4f3b36f-45a7-4706-86d8-efcbf012bede",
+          "name": "Checking of the low voltage system -  SWMS 039.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Checking of the low voltage system -  SWMS 039.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:56.565Z"
+      },
+      {
+        "name": "Confined spaces -SWMS 011",
+        "document": {
+          "id": "94a20112-0516-4fe9-8dfb-5ebd79ae10b1",
+          "name": "Confined spaces - SWMS 011.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Confined spaces - SWMS 011.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:56.692Z"
+      },
+      {
+        "name": "Demolition -SWMS 037",
+        "document": {
+          "id": "ccf8bfa1-1b15-484f-8c97-4a2330eeaf92",
+          "name": "Demolition - SWMS 037.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Demolition - SWMS 037.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:56.818Z"
+      },
+      {
+        "name": "Manual Handling -SWMS 010",
+        "document": {
+          "id": "62bb5a08-0bdb-4ac2-b949-938b0b305510",
+          "name": "Manual Handling - SWMS 010.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Manual Handling - SWMS 010.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:56.943Z"
+      },
+      {
+        "name": "Removal of Light Poles -SWMS 031",
+        "document": {
+          "id": "2d88889b-8ff6-4de4-b04c-7abf1cf3a121",
+          "name": "Removal of Light Poles - SWMS 031.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Removal of Light Poles - SWMS 031.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:57.071Z"
+      },
+      {
+        "name": "Repairs to Switch boards containing Asbestos -SWMS 043",
+        "document": {
+          "id": "0c229ffc-a600-46d0-8a6a-9c3a8be786a8",
+          "name": "Repairs to Switch boards containing Asbestos  - SWMS 043.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Repairs to Switch boards containing Asbestos  - SWMS 043.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-25T04:34:57.180Z"
       }
     ]
   },
   "FORMS": {
     "type": "category",
     "level": 2,
-    "documentId": null,
+    "documentId": "51e313c1-c2cb-4d51-a0bc-b464b66a43f0",
     "children": [
       "FORM 55 Site Audits",
       "Incident Report Form",
@@ -245,6 +1009,51 @@
       "RTW Form",
       "Take 5"
     ],
-    "enrichedChildren": []
+    "enrichedChildren": [
+      {
+        "name": "Incident Report Form",
+        "document": {
+          "id": "eb80d61f-bac8-4c6d-ac97-af5ac928e5c7",
+          "name": "Work Safe ACT Notifiable Incident Report Form - 197.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 03 Proforma Docs\\Work Safe, Work Cover, Return to work forms\\Work Safe ACT Notifiable Incident Report Form - 197.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.147Z"
+      },
+      {
+        "name": "JSEA",
+        "document": {
+          "id": "edaf45cf-6dc2-4d5f-aebd-cada5f44cf68",
+          "name": "JSEA Sheet 030 issue 1.doc",
+          "path": "I:\\IMS\\Integrated Management System\\Section 03 Proforma Docs\\induction\\JSEA Sheet 030 issue 1.doc",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.148Z"
+      },
+      {
+        "name": "Toolbox Minutes",
+        "document": {
+          "id": "98610ca3-9aa5-4ac8-a8c8-697d8ee73c47",
+          "name": "Manual handling toolbox minutes 16-06-15.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 15 Marketing Material\\Awards\\NECA Excellence Awards\\2016 Viva Energy PEDR\\Attachments\\Manual handling toolbox minutes 16-06-15.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.151Z"
+      },
+      {
+        "name": "Take 5",
+        "document": {
+          "id": "67a6223f-52d5-40da-98cf-a1b8eb47d455",
+          "name": "Insight Engineering - Take 5.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 03 Proforma Docs\\induction\\Insight Engineering - Take 5.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "linkedAt": "2025-08-12T04:58:59.161Z"
+      }
+    ]
   }
 }

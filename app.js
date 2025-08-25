@@ -137,6 +137,128 @@ const LEARNING_DATA_PATH = path.join(__dirname, "learning-patterns.json");
 const REVISION_LOG_PATH = path.join(__dirname, "data", "revision-log.json");
 
 // ========================================
+// MISSING HELPER FUNCTIONS - Add these to your app.js
+// ========================================
+
+// Add this function near your other helper functions (before learning functions)
+function isOldDocument(filePath) {
+  const pathLower = filePath.toLowerCase();
+  const fileName = path.basename(pathLower);
+
+  // Check for old years in the path or filename
+  const oldYearPattern = /(2019|2020|2021|2022|2023)/;
+  const currentYear = new Date().getFullYear();
+
+  // If the path or filename contains years older than 2024, consider it old
+  const yearMatches = pathLower.match(/\b(20\d{2})\b/g);
+  if (yearMatches) {
+    return yearMatches.some((year) => parseInt(year) < currentYear - 1);
+  }
+
+  // Check for date patterns that indicate old documents
+  const oldDatePatterns = [
+    /\b\d{1,2}[-\.]\d{1,2}[-\.](19|20)\d{2}\b/, // DD-MM-YYYY or DD.MM.YYYY
+    /\b(19|20)\d{2}[-\.]\d{1,2}[-\.]\d{1,2}\b/, // YYYY-MM-DD
+    /\b\d{1,2}[-\.](0[1-9]|1[0-2])[-\.](20)\d{2}\b/, // DD-MM-YYYY
+  ];
+
+  return oldDatePatterns.some((pattern) => pathLower.match(pattern));
+}
+
+// Also add these helper functions for the enhanced matching
+function findFuzzyMatch(searchTerm, text) {
+  // Simple fuzzy matching algorithm
+  const words = text.split(/[\s\-_]+/);
+  let bestScore = 0;
+  let bestMatch = "";
+
+  words.forEach((word) => {
+    const score = calculateLevenshteinSimilarity(searchTerm, word);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = word;
+    }
+  });
+
+  return { score: bestScore, match: bestMatch };
+}
+
+function calculateLevenshteinSimilarity(str1, str2) {
+  const maxLength = Math.max(str1.length, str2.length);
+  if (maxLength === 0) return 1;
+
+  const distance = calculateLevenshteinDistance(str1, str2);
+  return (maxLength - distance) / maxLength;
+}
+
+function calculateLevenshteinDistance(str1, str2) {
+  const matrix = [];
+
+  for (let i = 0; i <= str2.length; i++) {
+    matrix[i] = [i];
+  }
+
+  for (let j = 0; j <= str1.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= str2.length; i++) {
+    for (let j = 1; j <= str1.length; j++) {
+      if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+
+  return matrix[str2.length][str1.length];
+}
+
+function calculateMatchScore(searchTerms, document) {
+  let score = 0;
+  const docName = document.name.toLowerCase();
+  const docPath = document.path.toLowerCase();
+
+  searchTerms.forEach((term) => {
+    if (docName.includes(term)) score += 3;
+    else if (docPath.includes(term)) score += 1;
+  });
+
+  return score;
+}
+
+function calculateFolderBonus(folder, categoryPatterns) {
+  let bonus = 0;
+  const folderLower = folder.toLowerCase();
+
+  Object.values(categoryPatterns).forEach((category) => {
+    if (category.folders && category.folders[folderLower]) {
+      bonus += category.folders[folderLower] * 2; // 2 points per historical match
+    }
+  });
+
+  return Math.min(bonus, 15); // Cap at 15 points
+}
+
+function calculateExtensionBonus(filename, categoryPatterns) {
+  let bonus = 0;
+  const extension = path.extname(filename).toLowerCase();
+
+  Object.values(categoryPatterns).forEach((category) => {
+    if (category.extensions && category.extensions[extension]) {
+      bonus += category.extensions[extension]; // 1 point per historical match
+    }
+  });
+
+  return Math.min(bonus, 5); // Cap at 5 points
+}
+
+// ========================================
 // LEARNING SYSTEM FUNCTIONS
 // ========================================
 
@@ -506,8 +628,8 @@ function findDocumentByNameWithLearning(docName, includeArchived = false) {
   // Return best match if score is good enough
   const bestCandidate = scoredCandidates.sort((a, b) => b.score - a.score)[0];
 
-  if (bestCandidate && bestCandidate.score > 5) {
-    // Raised threshold
+  if (bestCandidate && bestCandidate.score > 3) {
+    // lowered threshold
     console.log(
       `Found document with enhanced score ${bestCandidate.score}: ${bestCandidate.doc.name}`
     );
@@ -1576,6 +1698,300 @@ app.post("/api/auto-link-isn-documents", (req, res) => {
     });
   }
 });
+// ========================================
+// MISSING API ENDPOINT - Add this to your app.js API ROUTES section
+// ========================================
+
+// Enhanced auto-link API using learning patterns
+app.post("/api/auto-link-documents-with-learning", async (req, res) => {
+  try {
+    const { checkRevisions } = req.body;
+    console.log("Starting enhanced auto-link with learning...");
+
+    // Load current IMS structure
+    const imsIndexPath = path.join(__dirname, "ims-document-index.json");
+    const documentIndexPath = path.join(__dirname, "document-index.json");
+
+    if (!fsSync.existsSync(imsIndexPath)) {
+      return res.status(404).json({
+        success: false,
+        error: "IMS document index not found",
+      });
+    }
+
+    if (!fsSync.existsSync(documentIndexPath)) {
+      return res.status(404).json({
+        success: false,
+        error: "Document index not found",
+      });
+    }
+
+    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
+    const documentIndex = JSON.parse(
+      fsSync.readFileSync(documentIndexPath, "utf8")
+    );
+
+    let linkedCount = 0;
+    let learnedMatches = 0;
+    let skippedArchived = 0;
+
+    // Process each category
+    Object.keys(imsIndex).forEach((categoryName) => {
+      const category = imsIndex[categoryName];
+
+      // Auto-link category document with learning
+      if (!category.document && !category.documentId) {
+        console.log(`Searching for category document: ${categoryName}`);
+        const foundDoc = findDocumentByNameWithLearning(categoryName, false);
+        if (foundDoc) {
+          if (foundDoc.isArchived) {
+            skippedArchived++;
+            console.log(
+              `Skipped archived document for category: ${categoryName}`
+            );
+          } else {
+            category.documentId = foundDoc.id;
+            linkedCount++;
+            learnedMatches++;
+            console.log(
+              `✅ Linked category: ${categoryName} -> ${foundDoc.name}`
+            );
+          }
+        } else {
+          console.log(`❌ No match found for category: ${categoryName}`);
+        }
+      }
+
+      // Auto-link child documents with learning
+      if (category.children && category.children.length > 0) {
+        if (!category.enrichedChildren) {
+          category.enrichedChildren = [];
+        }
+
+        category.children.forEach((childName) => {
+          // Check if already linked
+          const existingChild = category.enrichedChildren.find(
+            (child) => child.name === childName
+          );
+
+          if (!existingChild || !existingChild.document) {
+            console.log(`Searching for child document: ${childName}`);
+            const foundDoc = findDocumentByNameWithLearning(childName, false);
+
+            if (foundDoc) {
+              if (foundDoc.isArchived) {
+                skippedArchived++;
+                console.log(
+                  `Skipped archived document for child: ${childName}`
+                );
+              } else {
+                // Check for revisions if requested
+                let revisionInfo = null;
+                if (checkRevisions) {
+                  try {
+                    const revisions = getRevisionHistory
+                      ? getRevisionHistory(foundDoc.id)
+                      : [];
+                    if (revisions && revisions.length > 0) {
+                      revisionInfo = {
+                        revisionCount: revisions.length,
+                        lastRevision: revisions[revisions.length - 1],
+                      };
+                      console.log(
+                        `Found ${revisions.length} revisions for: ${childName}`
+                      );
+                    }
+                  } catch (revError) {
+                    console.log(
+                      `Note: Could not check revisions for ${childName}`
+                    );
+                  }
+                }
+
+                // Create enriched child data
+                const childData = {
+                  name: childName,
+                  document: {
+                    id: foundDoc.id,
+                    name: foundDoc.name,
+                    path: foundDoc.path,
+                    isArchived: foundDoc.isArchived || false,
+                  },
+                  found: true,
+                  autoLinked: true,
+                  usedLearning: true,
+                  linkedAt: new Date().toISOString(),
+                };
+
+                // Add revision info if available
+                if (revisionInfo) {
+                  childData.revisionInfo = revisionInfo;
+                }
+
+                // Update or add to enrichedChildren
+                const childIndex = category.enrichedChildren.findIndex(
+                  (child) => child.name === childName
+                );
+
+                if (childIndex >= 0) {
+                  category.enrichedChildren[childIndex] = childData;
+                } else {
+                  category.enrichedChildren.push(childData);
+                }
+
+                linkedCount++;
+                learnedMatches++;
+                console.log(
+                  `✅ Linked child: ${childName} -> ${foundDoc.name} (enhanced matching)`
+                );
+              }
+            } else {
+              console.log(`❌ No enhanced match found for: ${childName}`);
+            }
+          } else {
+            console.log(`⏭️ Already linked: ${childName}`);
+          }
+        });
+      }
+    });
+
+    // Save updated IMS structure
+    fsSync.writeFileSync(imsIndexPath, JSON.stringify(imsIndex, null, 2));
+    console.log(
+      `Enhanced auto-link completed: ${linkedCount} total, ${learnedMatches} using learning`
+    );
+
+    res.json({
+      success: true,
+      linked: linkedCount,
+      learnedMatches: learnedMatches,
+      skippedArchived: skippedArchived,
+      message: `Successfully linked ${linkedCount} documents (${learnedMatches} using learned patterns)`,
+      details: {
+        totalProcessed: Object.keys(imsIndex).length,
+        enhancedMatching: true,
+        learningSystemActive: true,
+      },
+    });
+  } catch (error) {
+    console.error("Error in enhanced auto-linking:", error);
+    res.status(500).json({
+      success: false,
+      error: "Enhanced auto-linking failed: " + error.message,
+      message: "Error in enhanced auto-linking: " + error.message,
+    });
+  }
+});
+
+// Also enhance the existing auto-link endpoint to use learning
+app.post("/api/auto-link-documents", async (req, res) => {
+  try {
+    const { checkRevisions } = req.body;
+    console.log("Starting standard auto-link process...");
+
+    const imsIndexPath = path.join(__dirname, "ims-document-index.json");
+    const documentIndexPath = path.join(__dirname, "document-index.json");
+
+    if (!fsSync.existsSync(imsIndexPath)) {
+      return res.status(404).json({ error: "IMS document index not found" });
+    }
+
+    if (!fsSync.existsSync(documentIndexPath)) {
+      return res.status(404).json({ error: "Document index not found" });
+    }
+
+    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
+    const documentIndex = JSON.parse(
+      fsSync.readFileSync(documentIndexPath, "utf8")
+    );
+
+    let linkedCount = 0;
+    let totalProcessed = 0;
+
+    // Process each category - using BASIC matching (not learning)
+    Object.keys(imsIndex).forEach((categoryName) => {
+      const category = imsIndex[categoryName];
+      if (category.children && Array.isArray(category.children)) {
+        category.children.forEach((childName) => {
+          totalProcessed++;
+
+          // Try to find matching document using BASIC method
+          const matchingDoc = documentIndex.find((doc) => {
+            const docName = doc.name.toLowerCase();
+            const childNameLower = childName.toLowerCase();
+
+            // Basic matching strategies
+            return (
+              docName.includes(childNameLower) ||
+              childNameLower.includes(docName.replace(/\.[^/.]+$/, "")) ||
+              docName.replace(/\.[^/.]+$/, "").includes(childNameLower)
+            );
+          });
+
+          if (matchingDoc) {
+            // Add to enriched children if not already there
+            if (!category.enrichedChildren) {
+              category.enrichedChildren = [];
+            }
+
+            const existingEnriched = category.enrichedChildren.find(
+              (ec) => ec.name === childName
+            );
+            if (!existingEnriched) {
+              category.enrichedChildren.push({
+                name: childName,
+                document: {
+                  id: matchingDoc.id,
+                  name: matchingDoc.name,
+                  path: matchingDoc.path,
+                  isArchived: matchingDoc.isArchived || false,
+                },
+                found: true,
+                autoLinked: true,
+                usedLearning: false,
+                linkedAt: new Date().toISOString(),
+              });
+              linkedCount++;
+            } else if (!existingEnriched.found) {
+              existingEnriched.found = true;
+              existingEnriched.document = {
+                id: matchingDoc.id,
+                name: matchingDoc.name,
+                path: matchingDoc.path,
+                isArchived: matchingDoc.isArchived || false,
+              };
+              existingEnriched.linkedAt = new Date().toISOString();
+              existingEnriched.autoLinked = true;
+              existingEnriched.usedLearning = false;
+              linkedCount++;
+            }
+          }
+        });
+      }
+    });
+
+    // Save updated index
+    fsSync.writeFileSync(imsIndexPath, JSON.stringify(imsIndex, null, 2));
+
+    console.log(
+      `Standard auto-link completed: ${linkedCount} documents linked out of ${totalProcessed} processed`
+    );
+
+    res.json({
+      success: true,
+      message: `Auto-linked ${linkedCount} documents`,
+      linkedCount: linkedCount,
+      totalProcessed: totalProcessed,
+      enhancedMatching: false,
+    });
+  } catch (error) {
+    console.error("Error in standard auto-link:", error);
+    res.status(500).json({
+      error: "Auto-link failed: " + error.message,
+      success: false,
+    });
+  }
+});
 
 app.get("/api/ims-statistics", (req, res) => {
   try {
@@ -2175,3 +2591,267 @@ process.on("SIGINT", async () => {
   }
   process.exit(0);
 });
+
+// ========================================
+// SAFETYSYNC PRO DIAGNOSTIC SCRIPT
+// Add this to the END of your app.js to diagnose issues
+// ========================================
+
+// Diagnostic function to check app health
+function runDiagnostics() {
+  console.log("\n" + "=".repeat(50));
+  console.log("🔍 SAFETYSYNC PRO DIAGNOSTICS");
+  console.log("=".repeat(50));
+
+  const diagnostics = {
+    timestamp: new Date().toISOString(),
+    documentIndexSize: documentIndex ? documentIndex.length : 0,
+    folderStructureSize: folderStructure ? folderStructure.length : 0,
+    issues: [],
+    recommendations: [],
+  };
+
+  // 1. Check document index
+  console.log("📊 Document Index Status:");
+  console.log(`   - Total documents: ${diagnostics.documentIndexSize}`);
+  if (diagnostics.documentIndexSize === 0) {
+    diagnostics.issues.push("Document index is empty");
+    diagnostics.recommendations.push("Run 'Rebuild Index' button");
+  }
+
+  // 2. Check learning patterns file
+  console.log("🧠 Learning System Status:");
+  try {
+    const patterns = loadLearningPatterns();
+    const patternsCount = Object.keys(patterns.documentPatterns || {}).length;
+    const correctionsCount = patterns.manualCorrections
+      ? patterns.manualCorrections.length
+      : 0;
+    const keywordsCount = Object.keys(patterns.keywordWeights || {}).length;
+
+    console.log(`   - Learned patterns: ${patternsCount}`);
+    console.log(`   - Manual corrections: ${correctionsCount}`);
+    console.log(`   - Keyword weights: ${keywordsCount}`);
+
+    if (patternsCount === 0) {
+      diagnostics.issues.push("No learning patterns found");
+      diagnostics.recommendations.push(
+        "Manually link a few documents to train the system"
+      );
+    }
+
+    diagnostics.learningStats = {
+      patterns: patternsCount,
+      corrections: correctionsCount,
+      keywords: keywordsCount,
+    };
+  } catch (error) {
+    console.log(`   - ERROR: ${error.message}`);
+    diagnostics.issues.push("Learning system error: " + error.message);
+  }
+
+  // 3. Check for duplicate functions
+  console.log("🔧 Function Definitions Check:");
+  const functionNames = [
+    "loadLearningPatterns",
+    "saveLearningPatterns",
+    "learnFromManualLink",
+    "findDocumentByNameWithLearning",
+    "recordNegativeLearningPattern",
+  ];
+
+  functionNames.forEach((funcName) => {
+    if (typeof eval(funcName) === "function") {
+      console.log(`   ✅ ${funcName}: defined`);
+    } else {
+      console.log(`   ❌ ${funcName}: missing`);
+      diagnostics.issues.push(`Function ${funcName} is not defined`);
+    }
+  });
+
+  // 4. Check file paths
+  console.log("📁 File System Status:");
+  console.log(`   - Learning data path: ${LEARNING_DATA_PATH}`);
+  console.log(
+    `   - Learning file exists: ${fsSync.existsSync(LEARNING_DATA_PATH)}`
+  );
+  console.log(`   - IMS index exists: ${fsSync.existsSync(IMS_INDEX_FILE)}`);
+  console.log(`   - Document root: ${DOCUMENTS_DIR}`);
+  console.log(`   - Document root exists: ${fsSync.existsSync(DOCUMENTS_DIR)}`);
+
+  // 5. Check IMS data
+  console.log("📋 IMS Index Status:");
+  try {
+    const imsIndex = loadIMSIndex();
+    const categories = Object.keys(imsIndex).length;
+    let totalChildren = 0;
+    let linkedChildren = 0;
+
+    Object.values(imsIndex).forEach((category) => {
+      if (category.children) {
+        totalChildren += category.children.length;
+      }
+      if (category.enrichedChildren) {
+        linkedChildren += category.enrichedChildren.filter(
+          (c) => c.found || c.document
+        ).length;
+      }
+    });
+
+    console.log(`   - Categories: ${categories}`);
+    console.log(`   - Total child documents: ${totalChildren}`);
+    console.log(`   - Linked documents: ${linkedChildren}`);
+    console.log(
+      `   - Link rate: ${
+        totalChildren > 0
+          ? Math.round((linkedChildren / totalChildren) * 100)
+          : 0
+      }%`
+    );
+
+    diagnostics.imsStats = {
+      categories,
+      totalChildren,
+      linkedChildren,
+      linkRate:
+        totalChildren > 0
+          ? Math.round((linkedChildren / totalChildren) * 100)
+          : 0,
+    };
+  } catch (error) {
+    console.log(`   - ERROR: ${error.message}`);
+    diagnostics.issues.push("IMS index error: " + error.message);
+  }
+
+  // 6. Test enhanced learning function
+  console.log("🎯 Enhanced Learning Test:");
+  try {
+    // Test with a common document name
+    const testResult = findDocumentByNameWithLearning("safety policy", false);
+    console.log(
+      `   - Test search result: ${testResult ? testResult.name : "none found"}`
+    );
+
+    if (!testResult) {
+      diagnostics.recommendations.push(
+        "Try manual linking to improve auto-detection"
+      );
+    }
+  } catch (error) {
+    console.log(`   - ERROR: ${error.message}`);
+    diagnostics.issues.push(
+      "Enhanced learning function error: " + error.message
+    );
+    diagnostics.recommendations.push(
+      "Check for duplicate function definitions in app.js"
+    );
+  }
+
+  // 7. Summary
+  console.log("\n📋 DIAGNOSTIC SUMMARY:");
+  if (diagnostics.issues.length === 0) {
+    console.log("✅ No critical issues found!");
+  } else {
+    console.log(`❌ Found ${diagnostics.issues.length} issue(s):`);
+    diagnostics.issues.forEach((issue, i) => {
+      console.log(`   ${i + 1}. ${issue}`);
+    });
+  }
+
+  if (diagnostics.recommendations.length > 0) {
+    console.log("\n💡 RECOMMENDATIONS:");
+    diagnostics.recommendations.forEach((rec, i) => {
+      console.log(`   ${i + 1}. ${rec}`);
+    });
+  }
+
+  console.log("\n" + "=".repeat(50));
+  console.log("Diagnostics complete. Check the output above for issues.");
+  console.log("=".repeat(50) + "\n");
+
+  return diagnostics;
+}
+
+// Test a specific document search with detailed logging
+function testEnhancedSearch(searchTerm = "safety policy") {
+  console.log(`\n🔍 TESTING ENHANCED SEARCH FOR: "${searchTerm}"`);
+  console.log("-".repeat(40));
+
+  try {
+    const result = findDocumentByNameWithLearning(searchTerm, false);
+
+    if (result) {
+      console.log(`✅ FOUND: ${result.name}`);
+      console.log(`   Path: ${result.path}`);
+      console.log(`   Archived: ${result.isArchived || false}`);
+    } else {
+      console.log(`❌ NO MATCH FOUND for "${searchTerm}"`);
+      console.log("Try these troubleshooting steps:");
+      console.log("1. Check if documents exist in the index");
+      console.log("2. Try a manual link to teach the system");
+      console.log("3. Check for duplicate function definitions");
+    }
+  } catch (error) {
+    console.log(`❌ ERROR in enhanced search: ${error.message}`);
+    console.log(
+      "This suggests duplicate function definitions or syntax errors"
+    );
+  }
+
+  console.log("-".repeat(40));
+}
+
+// Quick check for duplicate functions
+function checkForDuplicates() {
+  console.log("\n🔍 CHECKING FOR DUPLICATE FUNCTION DEFINITIONS");
+  console.log("-".repeat(50));
+
+  // This is a simple check - in reality, you need to manually inspect app.js
+  const appjsContent = require("fs").readFileSync(__filename, "utf8");
+
+  const criticalFunctions = [
+    "function loadLearningPatterns",
+    "function saveLearningPatterns",
+    "function learnFromManualLink",
+    "function findDocumentByNameWithLearning",
+    "function recordNegativeLearningPattern",
+  ];
+
+  criticalFunctions.forEach((funcDef) => {
+    const matches = (appjsContent.match(new RegExp(funcDef, "g")) || []).length;
+    console.log(`${funcDef}: found ${matches} time(s)`);
+
+    if (matches > 1) {
+      console.log(
+        `   ⚠️ DUPLICATE DETECTED! This function is defined ${matches} times`
+      );
+      console.log(
+        `   ➡️ Search your app.js for "${funcDef}" and remove duplicates`
+      );
+    } else if (matches === 1) {
+      console.log(`   ✅ OK - single definition`);
+    } else {
+      console.log(`   ❌ NOT FOUND - function may be missing`);
+    }
+  });
+
+  console.log("-".repeat(50));
+}
+
+// Auto-run diagnostics on startup (with delay to ensure everything is loaded)
+setTimeout(() => {
+  console.log("🚀 SafetySync Pro starting diagnostics...");
+  runDiagnostics();
+  testEnhancedSearch("safety policy");
+  checkForDuplicates();
+}, 5000); // Wait 5 seconds after startup
+
+// Make diagnostic functions available globally for manual testing
+global.runDiagnostics = runDiagnostics;
+global.testEnhancedSearch = testEnhancedSearch;
+global.checkForDuplicates = checkForDuplicates;
+
+console.log("🔧 Diagnostic functions loaded. You can run:");
+console.log("   - runDiagnostics() - Full system check");
+console.log("   - testEnhancedSearch('document name') - Test search");
+console.log("   - checkForDuplicates() - Check for duplicate functions");
