@@ -259,6 +259,75 @@ function calculateExtensionBonus(filename, categoryPatterns) {
 }
 
 // ========================================
+// DOCUMENT ACCESS HELPER FUNCTIONS
+// ========================================
+
+// Log document access for audit trail
+function logDocumentAccess(document, userIP) {
+  try {
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      documentId: document.id,
+      documentName: document.name,
+      documentPath: document.path,
+      userIP: userIP,
+      action: "opened",
+    };
+
+    const logPath = path.join(__dirname, "data", "access-log.json");
+    let accessLog = [];
+
+    if (fsSync.existsSync(logPath)) {
+      try {
+        accessLog = JSON.parse(fsSync.readFileSync(logPath, "utf8"));
+      } catch (e) {
+        accessLog = [];
+      }
+    }
+
+    accessLog.push(logEntry);
+
+    // Keep only last 1000 entries
+    if (accessLog.length > 1000) {
+      accessLog = accessLog.slice(-1000);
+    }
+
+    fsSync.writeFileSync(logPath, JSON.stringify(accessLog, null, 2));
+  } catch (error) {
+    console.error("Error logging document access:", error);
+  }
+}
+
+// Check if file can be previewed
+function canPreviewFile(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const previewableExtensions = [".txt", ".md", ".json", ".csv", ".xml"];
+  return previewableExtensions.includes(ext);
+}
+
+// Format file size (enhance existing if needed)
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + " KB";
+  else if (bytes < 1073741824) return (bytes / 1048576).toFixed(2) + " MB";
+  else return (bytes / 1073741824).toFixed(2) + " GB";
+}
+
+// Get revision history (you already have saveRevisionLog)
+function getRevisionHistory(documentId) {
+  try {
+    const logPath = path.join(__dirname, "data", "revision-log.json");
+    if (fsSync.existsSync(logPath)) {
+      const revisionLog = JSON.parse(fsSync.readFileSync(logPath, "utf8"));
+      return revisionLog[documentId] || [];
+    }
+    return [];
+  } catch (error) {
+    console.error("Error loading revision history:", error);
+    return [];
+  }
+}
+// ========================================
 // LEARNING SYSTEM FUNCTIONS
 // ========================================
 
@@ -1162,6 +1231,7 @@ app.get("/", async (req, res) => {
 });
 
 // IMS Index route - Fixed to match existing template expectations
+// IMS Index route - Fixed to match existing template expectations
 app.get("/ims-index", (req, res) => {
   try {
     // Load the IMS document index
@@ -1194,48 +1264,56 @@ app.get("/ims-index", (req, res) => {
         enrichedChildren: category.enrichedChildren || [],
         totalDocuments: (category.enrichedChildren || []).length,
         linkedDocuments: (category.enrichedChildren || []).filter(
-          (child) => child.found
+          (child) => child.found || child.document
         ).length,
       };
     });
 
-    // Calculate statistics
+    // Calculate statistics - FIXED CALCULATION
+    const totalDocuments = categories.reduce(
+      (sum, cat) => sum + (cat.children ? cat.children.length : 0),
+      0
+    );
+    const linkedDocuments = categories.reduce(
+      (sum, cat) => sum + cat.linkedDocuments,
+      0
+    );
+
     const stats = {
       totalCategories: categories.length,
-      totalDocuments: categories.reduce(
-        (sum, cat) => sum + cat.totalDocuments,
-        0
-      ),
-      linkedDocuments: categories.reduce(
-        (sum, cat) => sum + cat.linkedDocuments,
-        0
-      ),
-      completionRate: 0,
+      totalDocuments: totalDocuments,
+      linkedDocuments: linkedDocuments,
+      completionRate:
+        totalDocuments > 0
+          ? Math.round((linkedDocuments / totalDocuments) * 100)
+          : 0,
     };
-    stats.completionRate =
-      stats.totalDocuments > 0
-        ? Math.round((stats.linkedDocuments / stats.totalDocuments) * 100)
-        : 0;
+
+    console.log("IMS Stats calculated:", stats); // Debug log
 
     res.render("ims-index", {
       categories: categories,
       mandatoryRecords: mandatoryRecords,
-      stats: stats,
+      stats: stats, // Make sure this is passed
       title: "IMS Document Index",
     });
   } catch (error) {
     console.error("Error loading IMS index:", error);
+
+    // Provide fallback stats to prevent template errors
+    const fallbackStats = {
+      totalCategories: 0,
+      totalDocuments: 0,
+      linkedDocuments: 0,
+      completionRate: 0,
+    };
+
     res.render("ims-index", {
       categories: [],
       mandatoryRecords: [],
-      stats: {
-        totalCategories: 0,
-        totalDocuments: 0,
-        linkedDocuments: 0,
-        completionRate: 0,
-      },
+      stats: fallbackStats, // Fallback stats
       title: "IMS Document Index",
-      error: "Could not load IMS data",
+      error: "Could not load IMS data: " + error.message,
     });
   }
 });
@@ -1426,6 +1504,272 @@ app.get("/search", async (req, res) => {
 // ========================================
 // API ROUTES
 // ========================================
+
+// ========================================
+// DOCUMENT ACCESS ROUTES
+// ========================================
+
+// Open document directly
+app.get("/open/:id", (req, res) => {
+  try {
+    const document = documentIndex.find((doc) => doc.id === req.params.id);
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    // Cross-platform file opening
+    const platform = process.platform;
+    let command;
+
+    switch (platform) {
+      case "win32":
+        command = `start "" "${document.path}"`;
+        break;
+      case "darwin":
+        command = `open "${document.path}"`;
+        break;
+      case "linux":
+        command = `xdg-open "${document.path}"`;
+        break;
+      default:
+        return res.status(500).json({
+          success: false,
+          message: "Unsupported platform",
+        });
+    }
+
+    const { exec } = require("child_process");
+    exec(command, (error) => {
+      if (error) {
+        console.error("Error opening document:", error);
+        return res.status(500).json({
+          success: false,
+          message: "Error opening document",
+        });
+      }
+
+      console.log(`Document accessed: ${document.name}`);
+      logDocumentAccess(document, req.ip);
+
+      res.json({
+        success: true,
+        message: "Document opened successfully",
+      });
+    });
+  } catch (err) {
+    console.error("Error in open route:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+// Show document location in file explorer - IMPROVED VERSION
+app.get("/api/document/show-location/:id", (req, res) => {
+  try {
+    const document = documentIndex.find((doc) => doc.id === req.params.id);
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    if (!fsSync.existsSync(document.path)) {
+      return res.status(404).json({
+        success: false,
+        message: "File not found on disk",
+      });
+    }
+
+    const platform = process.platform;
+    let command;
+
+    switch (platform) {
+      case "win32":
+        // For Windows, use proper escaping and try multiple methods
+        const windowsPath = document.path.replace(/\//g, "\\");
+
+        // Method 1: Try explorer with proper quoting
+        command = `explorer /select,"${windowsPath}"`;
+
+        // If that fails, we'll try alternatives
+        break;
+
+      case "darwin": // macOS
+        command = `open -R "${document.path}"`;
+        break;
+
+      case "linux":
+        const folderPath = path.dirname(document.path);
+        command = `xdg-open "${folderPath}"`;
+        break;
+
+      default:
+        return res.status(500).json({
+          success: false,
+          message: "Unsupported platform",
+        });
+    }
+
+    console.log(`Executing command: ${command}`);
+
+    const { exec } = require("child_process");
+    exec(command, { windowsHide: true }, (error, stdout, stderr) => {
+      if (error) {
+        console.error("Primary command failed:", error.message);
+
+        // For Windows, try alternative methods
+        if (platform === "win32") {
+          console.log("Trying alternative Windows command...");
+
+          // Alternative 1: Just open the folder
+          const folderPath = path.dirname(document.path);
+          const altCommand = `explorer "${folderPath}"`;
+
+          exec(
+            altCommand,
+            { windowsHide: true },
+            (altError, altStdout, altStderr) => {
+              if (altError) {
+                console.error(
+                  "Alternative command also failed:",
+                  altError.message
+                );
+
+                // Alternative 2: Use start command
+                const startCommand = `start "" "${folderPath}"`;
+                exec(startCommand, { windowsHide: true }, (startError) => {
+                  if (startError) {
+                    console.error(
+                      "Start command failed too:",
+                      startError.message
+                    );
+                    return res.json({
+                      success: false,
+                      message:
+                        "Could not open file location. All methods failed.",
+                    });
+                  }
+
+                  console.log(
+                    `Folder opened with start command: ${document.name}`
+                  );
+                  res.json({
+                    success: true,
+                    message: "Folder opened successfully (using start command)",
+                  });
+                });
+              } else {
+                console.log(`Folder opened successfully: ${document.name}`);
+                res.json({
+                  success: true,
+                  message: "Folder opened successfully",
+                });
+              }
+            }
+          );
+        } else {
+          // Non-Windows error
+          return res.status(500).json({
+            success: false,
+            message: "Error showing document location: " + error.message,
+          });
+        }
+      } else {
+        console.log(`Document location shown successfully: ${document.name}`);
+        res.json({
+          success: true,
+          message: "Document location opened successfully",
+        });
+      }
+    });
+  } catch (error) {
+    console.error("Error in show-location route:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error: " + error.message,
+    });
+  }
+});
+
+// Get document metadata
+app.get("/api/document/metadata/:id", (req, res) => {
+  try {
+    const document = documentIndex.find((doc) => doc.id === req.params.id);
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    const stats = fsSync.statSync(document.path);
+    const metadata = {
+      id: document.id,
+      name: document.name,
+      path: document.path,
+      folder: document.folder,
+      extension: document.extension,
+      size: formatFileSize(stats.size),
+      sizeBytes: stats.size,
+      created: stats.birthtime,
+      modified: stats.mtime,
+      accessed: stats.atime,
+      isArchived: document.isArchived || isArchivedDocument(document.path),
+      canPreview: canPreviewFile(document.path),
+      fileExists: fsSync.existsSync(document.path),
+      revisions: getRevisionHistory(document.id),
+    };
+
+    res.json({
+      success: true,
+      metadata,
+    });
+  } catch (error) {
+    console.error("Error getting document metadata:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving document metadata",
+    });
+  }
+});
+
+// Get document access log
+app.get("/api/document-access-log/:id?", (req, res) => {
+  try {
+    const documentId = req.params.id;
+    const logPath = path.join(__dirname, "data", "access-log.json");
+
+    if (!fsSync.existsSync(logPath)) {
+      return res.json({ success: true, accessLog: [] });
+    }
+
+    let accessLog = JSON.parse(fsSync.readFileSync(logPath, "utf8"));
+
+    if (documentId) {
+      accessLog = accessLog.filter((entry) => entry.documentId === documentId);
+    }
+
+    res.json({
+      success: true,
+      accessLog: accessLog.slice(-100), // Last 100 entries
+    });
+  } catch (error) {
+    console.error("Error getting access log:", error);
+    res.json({
+      success: false,
+      message: "Error retrieving access log",
+    });
+  }
+});
 
 // Get available documents for linking
 app.get("/api/available-documents", async (req, res) => {

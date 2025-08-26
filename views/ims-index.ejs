@@ -288,6 +288,49 @@
             </div>
         </div>
 
+        <!-- Document Access Tools -->
+        <div class="dashboard-card p-3 mb-4">
+            <h6 class="mb-3">
+                <i class="fas fa-tools me-2 text-primary"></i>
+                Document Access Tools
+            </h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center p-2 bg-light rounded">
+                        <i class="fas fa-folder-open fa-2x text-primary me-3"></i>
+                        <div>
+                            <small class="text-muted">Quick Access</small>
+                            <br>
+                            <strong>Open Documents</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center p-2 bg-light rounded">
+                        <i class="fas fa-map-marker-alt fa-2x text-secondary me-3"></i>
+                        <div>
+                            <small class="text-muted">File Explorer</small>
+                            <br>
+                            <strong>Show Locations</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center p-2 bg-light rounded">
+                        <i class="fas fa-info-circle fa-2x text-info me-3"></i>
+                        <div>
+                            <small class="text-muted">Metadata</small>
+                            <br>
+                            <strong>Document Info</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-muted mt-2 mb-0">
+                <small>📂 = Open file | 📍 = Show in explorer | ℹ️ = View metadata</small>
+            </p>
+        </div>
+
         <!-- Learning Stats Section -->
         <div id="learning-stats-section" class="dashboard-card p-4 mb-4" style="display: none;">
             <h5>
@@ -348,43 +391,80 @@
                                     // Find if this child has an enriched version
                                     const enrichedChild = category.enrichedChildren && category.enrichedChildren.find(ec => ec.name === child);
                                     %>
-                                    <div class="document-item rounded">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span>
-                                                <% if (enrichedChild && enrichedChild.found) { %>
-                                                    <i class="fas fa-file-check text-success me-2"></i>
-                                                <% } else { %>
-                                                    <i class="fas fa-file text-muted me-2"></i>
-                                                <% } %>
-                                                <%= child %>
-                                                <!-- Learning indicators -->
-                                                <% if (enrichedChild) { %>
-                                                    <% if (enrichedChild.autoLinked) { %>
-                                                        <span class="learning-indicator ai-linked">AI Linked</span>
-                                                    <% } %>
-                                                    <% if (enrichedChild.manuallyLinked) { %>
-                                                        <span class="learning-indicator manual-linked">Manual</span>
-                                                    <% } %>
-                                                    <% if (enrichedChild.usedLearning) { %>
-                                                        <span class="learning-indicator pattern-match">Pattern</span>
-                                                    <% } %>
-                                                <% } %>
-                                            </span>
+                                    <!-- REPLACE your current button section with this improved version -->
+                            <div class="document-item rounded">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <!-- Document name and indicators -->
+                                        <div class="d-flex align-items-center mb-1">
                                             <% if (enrichedChild && enrichedChild.found) { %>
-                                                <span class="badge bg-success badge-status">Linked</span>
+                                                <i class="fas fa-file-check text-success me-2"></i>
                                             <% } else { %>
-                                                <span class="badge bg-warning badge-status">Unlinked</span>
+                                                <i class="fas fa-file text-muted me-2"></i>
+                                            <% } %>
+                                            <span class="fw-medium"><%= child %></span>
+                                            
+                                            <!-- Learning indicators -->
+                                            <% if (enrichedChild) { %>
+                                                <% if (enrichedChild.autoLinked) { %>
+                                                    <span class="learning-indicator ai-linked ms-2">AI Linked</span>
+                                                <% } %>
+                                                <% if (enrichedChild.manuallyLinked) { %>
+                                                    <span class="learning-indicator manual-linked ms-2">Manual</span>
+                                                <% } %>
+                                                <% if (enrichedChild.usedLearning) { %>
+                                                    <span class="learning-indicator pattern-match ms-2">Pattern</span>
+                                                <% } %>
                                             <% } %>
                                         </div>
+                                        
+                                        <!-- File info if linked -->
                                         <% if (enrichedChild && enrichedChild.document) { %>
-                                        <small class="text-muted d-block mt-1">
+                                        <div class="text-muted small">
+                                            <i class="fas fa-file-alt me-1"></i>
                                             File: <%= enrichedChild.document.name %>
                                             <% if (enrichedChild.linkedAt) { %>
-                                                <br>Linked: <%= new Date(enrichedChild.linkedAt).toLocaleDateString() %>
+                                                <span class="ms-2">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    Linked: <%= new Date(enrichedChild.linkedAt).toLocaleDateString() %>
+                                                </span>
                                             <% } %>
-                                        </small>
+                                        </div>
                                         <% } %>
                                     </div>
+                                    
+                                    <!-- Status and Action Buttons -->
+                                    <div class="d-flex align-items-center gap-2">
+                                        <!-- Document Access Buttons - Only show if document is linked -->
+                                        <% if (enrichedChild && enrichedChild.found && enrichedChild.document) { %>
+                                            <div class="btn-group btn-group-sm" role="group" aria-label="Document actions">
+                                                <button onclick="openDocument('<%= enrichedChild.document.id %>')" 
+                                                        class="btn btn-outline-primary" 
+                                                        title="Open Document">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </button>
+                                                <button onclick="showDocumentLocation('<%= enrichedChild.document.id %>')" 
+                                                        class="btn btn-outline-secondary" 
+                                                        title="Show Location">
+                                                    <i class="fas fa-folder-open"></i>
+                                                </button>
+                                                <button onclick="getDocumentInfo('<%= enrichedChild.document.id %>')" 
+                                                        class="btn btn-outline-info" 
+                                                        title="Document Info">
+                                                    <i class="fas fa-info-circle"></i>
+                                                </button>
+                                            </div>
+                                        <% } %>
+                                        
+                                        <!-- Status Badge -->
+                                        <% if (enrichedChild && enrichedChild.found) { %>
+                                            <span class="badge bg-success badge-status">Linked</span>
+                                        <% } else { %>
+                                            <span class="badge bg-warning badge-status">Missing</span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
                                 </div>
                                 <% }); %>
                             </div>
@@ -428,6 +508,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/ims-index.js"></script>
     <script>
+
+        
+        
         // Enhanced functions with modern styling AND learning capabilities
         function rebuildIndex() {
             const btn = event.target;
@@ -672,6 +755,220 @@
                 section.style.display = 'none';
             }
         }
+        // ========================================
+            // DOCUMENT ACCESS FUNCTIONS - Add these to your script section
+            // ========================================
+
+            // Open document directly
+            function openDocument(documentId) {
+                console.log('Opening document:', documentId);
+                
+                if (!documentId) {
+                    alert('No document ID provided');
+                    return;
+                }
+
+                fetch(`/open/${documentId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Open document response:', data);
+                        if (data.success) {
+                            showNotification('Document opened successfully', 'success');
+                        } else {
+                            showNotification('Error opening document: ' + data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error opening document:', error);
+                        showNotification('Error opening document: ' + error.message, 'error');
+                    });
+            }
+
+            // Show document location in file explorer
+            function showDocumentLocation(documentId) {
+            console.log('Showing location for document:', documentId);
+            
+            if (!documentId) {
+                alert('No document ID provided');
+                return;
+            }
+
+            // Show loading state
+            const button = event.target;
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            button.disabled = true;
+
+            fetch(`/api/document/show-location/${documentId}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Show location response:', data);
+                    
+                    if (data.success) {
+                        console.log('✅ File location opened successfully');
+                        // Brief success feedback
+                        button.innerHTML = '<i class="fas fa-check text-success"></i>';
+                        setTimeout(() => {
+                            button.innerHTML = originalHTML;
+                            button.disabled = false;
+                        }, 1500);
+                    } else {
+                        console.warn('Show location failed:', data.message);
+                        showNotification('Could not open file location: ' + data.message, 'error');
+                        button.innerHTML = originalHTML;
+                        button.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error showing document location:', error);
+                    showNotification('Network error opening file location', 'error');
+                    button.innerHTML = originalHTML;
+                    button.disabled = false;
+                });
+        }
+
+            // Get and display document information
+            function getDocumentInfo(documentId) {
+                console.log('Getting info for document:', documentId);
+                
+                if (!documentId) {
+                    alert('No document ID provided');
+                    return;
+                }
+
+                fetch(`/api/document/metadata/${documentId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Document metadata response:', data);
+                        if (data.success) {
+                            const info = data.metadata;
+                            
+                            // Create a formatted info display
+                            const infoText = `Document Information:
+                            
+            Name: ${info.name}
+            Size: ${info.size}
+            Extension: ${info.extension || 'Unknown'}
+            Modified: ${new Date(info.modified).toLocaleString()}
+            Created: ${new Date(info.created).toLocaleString()}
+            Folder: ${info.folder || 'Root'}
+            File Exists: ${info.fileExists ? 'Yes' : 'No'}
+            Archived: ${info.isArchived ? 'Yes' : 'No'}
+            Can Preview: ${info.canPreview ? 'Yes' : 'No'}
+            Revisions: ${info.revisions ? info.revisions.length : 0}`;
+
+                            alert(infoText);
+                        } else {
+                            showNotification('Error getting document info: ' + data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error getting document info:', error);
+                        showNotification('Error getting document info: ' + error.message, 'error');
+                    });
+            }
+
+            // Simple notification function (enhance this based on your preferences)
+            function showNotification(message, type) {
+                console.log(`${type.toUpperCase()}: ${message}`);
+                
+                // Simple alert for now - you can enhance this later with toast notifications
+                if (type === 'success') {
+                    // You could use a green toast notification here
+                    console.log('✅ Success:', message);
+                } else if (type === 'error') {
+                    // You could use a red toast notification here
+                    console.error('❌ Error:', message);
+                    alert(message); // Show errors to user
+                }
+                
+                // Optional: Create a temporary status message on the page
+                createTempMessage(message, type);
+            }
+
+            // Create a temporary message on the page (optional enhancement)
+            function createTempMessage(message, type) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+                messageDiv.style.cssText = `
+                    top: 20px; 
+                    right: 20px; 
+                    z-index: 9999; 
+                    min-width: 300px;
+                    animation: slideIn 0.3s ease;
+                `;
+                messageDiv.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+                `;
+                
+                document.body.appendChild(messageDiv);
+                
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    if (messageDiv.parentElement) {
+                        messageDiv.remove();
+                    }
+                }, 5000);
+            }
+
+            // Debug function to test document access
+            function testDocumentAccess() {
+                console.log('Testing document access functions...');
+                console.log('Available functions:', {
+                    openDocument: typeof openDocument,
+                    showDocumentLocation: typeof showDocumentLocation,
+                    getDocumentInfo: typeof getDocumentInfo,
+                    showNotification: typeof showNotification
+                });
+                
+                // Test with a fake ID
+                console.log('Testing with fake document ID...');
+                // getDocumentInfo('test-id'); // Uncomment to test
+            }
+
+            // Add CSS for animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                
+                .document-access-buttons {
+                    display: flex;
+                    gap: 2px;
+                    align-items: center;
+                }
+                
+                .document-access-buttons .btn {
+                    padding: 2px 6px;
+                    font-size: 0.7rem;
+                    min-width: 24px;
+                    line-height: 1.2;
+                }
+                
+                @media (max-width: 768px) {
+                    .document-access-buttons {
+                        flex-direction: column;
+                        gap: 1px;
+                    }
+                    
+                    .document-access-buttons .btn {
+                        font-size: 0.6rem;
+                        padding: 1px 4px;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Log that document access functions are ready
+            console.log('📂 Document access functions loaded:', {
+                openDocument: typeof openDocument,
+                showDocumentLocation: typeof showDocumentLocation,
+                getDocumentInfo: typeof getDocumentInfo
+            });
 
         // Console debugging for learning system
         console.log('IMS Index page loaded - Enhanced learning system ready');

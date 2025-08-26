@@ -582,7 +582,7 @@
     "name": "Section 02 System Procedures",
     "path": "Integrated Management System\\Section 02 System Procedures",
     "level": 2,
-    "documentCount": 75,
+    "documentCount": 76,
     "documents": [
       {
         "name": "SP01 Document Control.doc",
@@ -768,6 +768,11 @@
         "name": "SP42 Managing Works within Cultural and Heritage Areas.doc",
         "size": 722944,
         "modified": "2024-05-23T23:48:41.102Z"
+      },
+      {
+        "name": "SP43 Workplace Violence and Agression v1.1.pdf",
+        "size": 149530,
+        "modified": "2025-08-25T23:47:42.114Z"
       },
       {
         "name": "SP43 Workplace Violence and Agression.pdf",
@@ -34267,7 +34272,7 @@
     "name": "Labour Hire Licence",
     "path": "Integrated Management System\\Section 09 Records\\Insurances & licences\\Labour Hire Licence",
     "level": 4,
-    "documentCount": 3,
+    "documentCount": 4,
     "documents": [
       {
         "name": "Labour Hire Organisation Licence Certificate - VICLHL04559.pdf",
@@ -34278,6 +34283,11 @@
         "name": "Notice - licence renewed - VICLHL04559.pdf",
         "size": 203813,
         "modified": "2023-08-25T01:12:20.851Z"
+      },
+      {
+        "name": "Receipt - INV-109375-M2T6H9.pdf",
+        "size": 101297,
+        "modified": "2025-08-26T01:19:10.873Z"
       },
       {
         "name": "Receipt - INV-16706-G7L5N0.pdf",

@@ -3,7 +3,24 @@
     "type": "policy",
     "level": 1,
     "documentId": "56",
-    "children": []
+    "children": [
+      "OHS Policy"
+    ],
+    "enrichedChildren": [
+      {
+        "name": "OHS Policy",
+        "document": {
+          "id": "47afeb46-b4cf-445b-b712-2a2c2fe89750",
+          "name": "SPO-06 OHS Policy.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Approved Supplier's and Sub-Contractors\\Sub Contractor Information\\AA-Active\\DIRECTBOR\\Policies\\SPO-06 OHS Policy.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "usedLearning": true,
+        "linkedAt": "2025-08-26T03:01:31.155Z"
+      }
+    ]
   },
   "Core Policies": {
     "type": "category",
