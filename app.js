@@ -84,6 +84,15 @@ async function loadDocumentIndex() {
     if (fsSync.existsSync(INDEX_FILE)) {
       const data = fsSync.readFileSync(INDEX_FILE, "utf8");
       documentIndex = JSON.parse(data);
+
+      // ADD THIS LINE:
+      if (typeof app !== "undefined" && app.locals) {
+        app.locals.documentIndex = documentIndex;
+        console.log(
+          `✅ Loaded app.locals.documentIndex with ${documentIndex.length} documents`
+        );
+      }
+
       console.log(
         `Index loaded from file. ${documentIndex.length} documents in index.`
       );
@@ -1105,23 +1114,55 @@ function saveRevisionLog(documentId, revisionData) {
 // IMPORT ROUTE MODULES
 // ========================================
 
-// Import route modules - check if they exist first
-let imsRoutes, isnRoutes;
+// IMPORT ROUTE MODULES - Add this section to your app.js
+// (Replace the existing route import section around line 1300)
+// ========================================
 
+// Import and mount document access routes (at root level)
+let imsRoutes, isnRoutes, documentRoutes;
+
+// Import and mount document access routes (at root level)
 try {
-  imsRoutes = require("./routes/ims-routes");
-  app.use("/ims", imsRoutes);
-  console.log("IMS routes loaded successfully");
+  documentRoutes = require("./routes/document-routes");
+  app.use("/", documentRoutes);
+  console.log("✅ Document routes loaded successfully");
+
+  // List the routes that were loaded
+  if (documentRoutes.stack) {
+    console.log("Document routes registered:");
+    documentRoutes.stack.forEach((route) => {
+      if (route.route) {
+        console.log(
+          `  ${Object.keys(route.route.methods)} ${route.route.path}`
+        );
+      }
+    });
+  }
 } catch (error) {
-  console.log("IMS routes not found, loading basic routes");
+  console.log("❌ Document routes failed to load:");
+  console.log("Error:", error.message);
+  console.log("Stack:", error.stack);
 }
 
+// Import and mount IMS-specific routes
+try {
+  imsRoutes = require("./routes/ims-routes");
+  app.use("/", imsRoutes);
+  console.log("✅ IMS routes loaded successfully");
+} catch (error) {
+  console.log("❌ IMS routes failed to load:");
+  console.log("Error:", error.message);
+  console.log("Stack:", error.stack);
+}
+
+// Import and mount ISN-specific routes (at root level for API compatibility)
 try {
   isnRoutes = require("./routes/isn-routes");
-  app.use("/isn", isnRoutes);
+  app.use("/", isnRoutes); // Mount at root level for /api/isn-* routes
   console.log("ISN routes loaded successfully");
 } catch (error) {
   console.log("ISN routes not found, loading basic routes");
+  console.log("Error:", error.message);
 }
 
 // ========================================
@@ -1230,8 +1271,6 @@ app.get("/", async (req, res) => {
   }
 });
 
-// IMS Index route - Fixed to match existing template expectations
-// IMS Index route - Fixed to match existing template expectations
 app.get("/ims-index", (req, res) => {
   try {
     // Load the IMS document index
@@ -1501,6 +1540,24 @@ app.get("/search", async (req, res) => {
   }
 });
 
+// Add this AFTER your route imports in app.js (around line 750)
+app.use((req, res, next) => {
+  if (
+    req.path.includes("/api/document/metadata/") ||
+    req.path.includes("/open/")
+  ) {
+    console.log(`🔍 Route hit: ${req.method} ${req.path}`);
+    console.log(
+      `📊 documentIndex available: ${
+        req.app.locals.documentIndex
+          ? req.app.locals.documentIndex.length
+          : "undefined"
+      } docs`
+    );
+    console.log(`🎯 Looking for document with ID: ${req.params.id}`);
+  }
+  next();
+});
 // ========================================
 // API ROUTES
 // ========================================
@@ -1510,1172 +1567,71 @@ app.get("/search", async (req, res) => {
 // ========================================
 
 // Open document directly
-app.get("/open/:id", (req, res) => {
-  try {
-    const document = documentIndex.find((doc) => doc.id === req.params.id);
+// Add these routes to your app.js API section:
 
-    if (!document) {
-      return res.status(404).json({
-        success: false,
-        message: "Document not found",
-      });
-    }
-
-    // Cross-platform file opening
-    const platform = process.platform;
-    let command;
-
-    switch (platform) {
-      case "win32":
-        command = `start "" "${document.path}"`;
-        break;
-      case "darwin":
-        command = `open "${document.path}"`;
-        break;
-      case "linux":
-        command = `xdg-open "${document.path}"`;
-        break;
-      default:
-        return res.status(500).json({
-          success: false,
-          message: "Unsupported platform",
-        });
-    }
-
-    const { exec } = require("child_process");
-    exec(command, (error) => {
-      if (error) {
-        console.error("Error opening document:", error);
-        return res.status(500).json({
-          success: false,
-          message: "Error opening document",
-        });
-      }
-
-      console.log(`Document accessed: ${document.name}`);
-      logDocumentAccess(document, req.ip);
-
-      res.json({
-        success: true,
-        message: "Document opened successfully",
-      });
-    });
-  } catch (err) {
-    console.error("Error in open route:", err);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
-  }
-});
+// Add formatFileSize function if missing:
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + " KB";
+  else if (bytes < 1073741824) return (bytes / 1048576).toFixed(2) + " MB";
+  else return (bytes / 1073741824).toFixed(2) + " GB";
+}
 
 // Show document location in file explorer - IMPROVED VERSION
-app.get("/api/document/show-location/:id", (req, res) => {
-  try {
-    const document = documentIndex.find((doc) => doc.id === req.params.id);
-
-    if (!document) {
-      return res.status(404).json({
-        success: false,
-        message: "Document not found",
-      });
-    }
-
-    if (!fsSync.existsSync(document.path)) {
-      return res.status(404).json({
-        success: false,
-        message: "File not found on disk",
-      });
-    }
-
-    const platform = process.platform;
-    let command;
-
-    switch (platform) {
-      case "win32":
-        // For Windows, use proper escaping and try multiple methods
-        const windowsPath = document.path.replace(/\//g, "\\");
-
-        // Method 1: Try explorer with proper quoting
-        command = `explorer /select,"${windowsPath}"`;
-
-        // If that fails, we'll try alternatives
-        break;
-
-      case "darwin": // macOS
-        command = `open -R "${document.path}"`;
-        break;
-
-      case "linux":
-        const folderPath = path.dirname(document.path);
-        command = `xdg-open "${folderPath}"`;
-        break;
-
-      default:
-        return res.status(500).json({
-          success: false,
-          message: "Unsupported platform",
-        });
-    }
-
-    console.log(`Executing command: ${command}`);
-
-    const { exec } = require("child_process");
-    exec(command, { windowsHide: true }, (error, stdout, stderr) => {
-      if (error) {
-        console.error("Primary command failed:", error.message);
-
-        // For Windows, try alternative methods
-        if (platform === "win32") {
-          console.log("Trying alternative Windows command...");
-
-          // Alternative 1: Just open the folder
-          const folderPath = path.dirname(document.path);
-          const altCommand = `explorer "${folderPath}"`;
-
-          exec(
-            altCommand,
-            { windowsHide: true },
-            (altError, altStdout, altStderr) => {
-              if (altError) {
-                console.error(
-                  "Alternative command also failed:",
-                  altError.message
-                );
-
-                // Alternative 2: Use start command
-                const startCommand = `start "" "${folderPath}"`;
-                exec(startCommand, { windowsHide: true }, (startError) => {
-                  if (startError) {
-                    console.error(
-                      "Start command failed too:",
-                      startError.message
-                    );
-                    return res.json({
-                      success: false,
-                      message:
-                        "Could not open file location. All methods failed.",
-                    });
-                  }
-
-                  console.log(
-                    `Folder opened with start command: ${document.name}`
-                  );
-                  res.json({
-                    success: true,
-                    message: "Folder opened successfully (using start command)",
-                  });
-                });
-              } else {
-                console.log(`Folder opened successfully: ${document.name}`);
-                res.json({
-                  success: true,
-                  message: "Folder opened successfully",
-                });
-              }
-            }
-          );
-        } else {
-          // Non-Windows error
-          return res.status(500).json({
-            success: false,
-            message: "Error showing document location: " + error.message,
-          });
-        }
-      } else {
-        console.log(`Document location shown successfully: ${document.name}`);
-        res.json({
-          success: true,
-          message: "Document location opened successfully",
-        });
-      }
-    });
-  } catch (error) {
-    console.error("Error in show-location route:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error: " + error.message,
-    });
-  }
-});
-
-// Get document metadata
-app.get("/api/document/metadata/:id", (req, res) => {
-  try {
-    const document = documentIndex.find((doc) => doc.id === req.params.id);
-
-    if (!document) {
-      return res.status(404).json({
-        success: false,
-        message: "Document not found",
-      });
-    }
-
-    const stats = fsSync.statSync(document.path);
-    const metadata = {
-      id: document.id,
-      name: document.name,
-      path: document.path,
-      folder: document.folder,
-      extension: document.extension,
-      size: formatFileSize(stats.size),
-      sizeBytes: stats.size,
-      created: stats.birthtime,
-      modified: stats.mtime,
-      accessed: stats.atime,
-      isArchived: document.isArchived || isArchivedDocument(document.path),
-      canPreview: canPreviewFile(document.path),
-      fileExists: fsSync.existsSync(document.path),
-      revisions: getRevisionHistory(document.id),
-    };
-
-    res.json({
-      success: true,
-      metadata,
-    });
-  } catch (error) {
-    console.error("Error getting document metadata:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error retrieving document metadata",
-    });
-  }
-});
-
-// Get document access log
-app.get("/api/document-access-log/:id?", (req, res) => {
-  try {
-    const documentId = req.params.id;
-    const logPath = path.join(__dirname, "data", "access-log.json");
-
-    if (!fsSync.existsSync(logPath)) {
-      return res.json({ success: true, accessLog: [] });
-    }
-
-    let accessLog = JSON.parse(fsSync.readFileSync(logPath, "utf8"));
-
-    if (documentId) {
-      accessLog = accessLog.filter((entry) => entry.documentId === documentId);
-    }
-
-    res.json({
-      success: true,
-      accessLog: accessLog.slice(-100), // Last 100 entries
-    });
-  } catch (error) {
-    console.error("Error getting access log:", error);
-    res.json({
-      success: false,
-      message: "Error retrieving access log",
-    });
-  }
-});
-
-// Get available documents for linking
-app.get("/api/available-documents", async (req, res) => {
-  try {
-    const searchTerm = req.query.search || "";
-    let filteredDocuments = documentIndex;
-
-    if (searchTerm) {
-      filteredDocuments = documentIndex.filter(
-        (doc) =>
-          doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (doc.folder &&
-            doc.folder.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
-
-    res.json(filteredDocuments);
-  } catch (error) {
-    console.error("Error getting available documents:", error);
-    res.status(500).json({ error: "Failed to get available documents" });
-  }
-});
 
 // Mandatory records API - Fixed to use correct file
-app.get("/api/mandatory-records", async (req, res) => {
-  try {
-    let mandatoryRecords = {};
+// app.get("/api/mandatory-records", async (req, res) => {
+//   try {
+//     let mandatoryRecords = {};
 
-    if (fsSync.existsSync(MANDATORY_RECORDS_FILE)) {
-      const data = fsSync.readFileSync(MANDATORY_RECORDS_FILE, "utf8");
-      mandatoryRecords = JSON.parse(data);
-    }
+//     if (fsSync.existsSync(MANDATORY_RECORDS_FILE)) {
+//       const data = fsSync.readFileSync(MANDATORY_RECORDS_FILE, "utf8");
+//       mandatoryRecords = JSON.parse(data);
+//     }
 
-    res.json({
-      success: true,
-      mandatoryRecords: mandatoryRecords,
-    });
-  } catch (error) {
-    console.error("Error loading mandatory records:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to load mandatory records",
-    });
-  }
-});
+//     res.json({
+//       success: true,
+//       mandatoryRecords: mandatoryRecords,
+//     });
+//   } catch (error) {
+//     console.error("Error loading mandatory records:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to load mandatory records",
+//     });
+//   }
+// });
 
-// ISN Mandatory records API
-app.get("/api/isn-mandatory-records", async (req, res) => {
-  try {
-    let mandatoryRecords = {};
+// // ISN Mandatory records API
+// app.get("/api/isn-mandatory-records", async (req, res) => {
+//   try {
+//     let mandatoryRecords = {};
 
-    if (fsSync.existsSync(ISN_MANDATORY_RECORDS_FILE)) {
-      const data = fsSync.readFileSync(ISN_MANDATORY_RECORDS_FILE, "utf8");
-      mandatoryRecords = JSON.parse(data);
-    }
+//     if (fsSync.existsSync(ISN_MANDATORY_RECORDS_FILE)) {
+//       const data = fsSync.readFileSync(ISN_MANDATORY_RECORDS_FILE, "utf8");
+//       mandatoryRecords = JSON.parse(data);
+//     }
 
-    res.json({
-      success: true,
-      mandatoryRecords: mandatoryRecords,
-    });
-  } catch (error) {
-    console.error("Error loading ISN mandatory records:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to load ISN mandatory records",
-    });
-  }
-});
+//     res.json({
+//       success: true,
+//       mandatoryRecords: mandatoryRecords,
+//     });
+//   } catch (error) {
+//     console.error("Error loading ISN mandatory records:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to load ISN mandatory records",
+//     });
+//   }
+// });
 
 // Auto-link documents API
-app.post("/api/auto-link-documents", (req, res) => {
-  try {
-    console.log("Starting IMS auto-link process...");
 
-    // Load current IMS index
-    const imsIndexPath = path.join(__dirname, "ims-document-index.json");
-    const documentIndexPath = path.join(__dirname, "document-index.json");
-
-    if (!fsSync.existsSync(imsIndexPath)) {
-      return res.status(404).json({ error: "IMS document index not found" });
-    }
-
-    if (!fsSync.existsSync(documentIndexPath)) {
-      return res.status(404).json({ error: "Document index not found" });
-    }
-
-    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
-    const documentIndex = JSON.parse(
-      fsSync.readFileSync(documentIndexPath, "utf8")
-    );
-
-    let linkedCount = 0;
-    let totalProcessed = 0;
-
-    // Process each category
-    Object.keys(imsIndex).forEach((categoryName) => {
-      const category = imsIndex[categoryName];
-      if (category.children && Array.isArray(category.children)) {
-        category.children.forEach((childName) => {
-          totalProcessed++;
-
-          // Try to find matching document
-          const matchingDoc = documentIndex.find((doc) => {
-            const docName = doc.name.toLowerCase();
-            const childNameLower = childName.toLowerCase();
-
-            // Try various matching strategies
-            return (
-              docName.includes(childNameLower) ||
-              childNameLower.includes(docName.replace(/\.[^/.]+$/, "")) ||
-              docName.replace(/\.[^/.]+$/, "").includes(childNameLower)
-            );
-          });
-
-          if (matchingDoc) {
-            // Add to enriched children if not already there
-            if (!category.enrichedChildren) {
-              category.enrichedChildren = [];
-            }
-
-            const existingEnriched = category.enrichedChildren.find(
-              (ec) => ec.name === childName
-            );
-            if (!existingEnriched) {
-              category.enrichedChildren.push({
-                name: childName,
-                document: {
-                  id: matchingDoc.id,
-                  name: matchingDoc.name,
-                  path: matchingDoc.path,
-                  isArchived: matchingDoc.isArchived || false,
-                },
-                found: true,
-                linkedAt: new Date().toISOString(),
-              });
-              linkedCount++;
-            } else if (!existingEnriched.found) {
-              existingEnriched.found = true;
-              existingEnriched.document = {
-                id: matchingDoc.id,
-                name: matchingDoc.name,
-                path: matchingDoc.path,
-                isArchived: matchingDoc.isArchived || false,
-              };
-              existingEnriched.linkedAt = new Date().toISOString();
-              linkedCount++;
-            }
-          }
-        });
-      }
-    });
-
-    // Save updated index
-    fsSync.writeFileSync(imsIndexPath, JSON.stringify(imsIndex, null, 2));
-
-    console.log(
-      `IMS Auto-link completed: ${linkedCount} documents linked out of ${totalProcessed} processed`
-    );
-
-    res.json({
-      success: true,
-      message: `Auto-linked ${linkedCount} documents`,
-      linkedCount: linkedCount,
-      totalProcessed: totalProcessed,
-    });
-  } catch (error) {
-    console.error("Error in IMS auto-link:", error);
-    res.status(500).json({
-      error: "Auto-link failed: " + error.message,
-      success: false,
-    });
-  }
-});
-app.post("/api/auto-link-isn-documents", (req, res) => {
-  try {
-    console.log("Starting ISN auto-link process...");
-
-    const isnIndexPath = path.join(__dirname, "isn-index.json");
-    const documentIndexPath = path.join(__dirname, "document-index.json");
-
-    if (!fsSync.existsSync(isnIndexPath)) {
-      return res.status(404).json({ error: "ISN document index not found" });
-    }
-
-    if (!fsSync.existsSync(documentIndexPath)) {
-      return res.status(404).json({ error: "Document index not found" });
-    }
-
-    const isnIndex = JSON.parse(fsSync.readFileSync(isnIndexPath, "utf8"));
-    const documentIndex = JSON.parse(
-      fsSync.readFileSync(documentIndexPath, "utf8")
-    );
-
-    let linkedCount = 0;
-    let totalProcessed = 0;
-
-    // Process each category (same logic as IMS)
-    Object.keys(isnIndex).forEach((categoryName) => {
-      const category = isnIndex[categoryName];
-      if (category.children && Array.isArray(category.children)) {
-        category.children.forEach((childName) => {
-          totalProcessed++;
-
-          const matchingDoc = documentIndex.find((doc) => {
-            const docName = doc.name.toLowerCase();
-            const childNameLower = childName.toLowerCase();
-
-            return (
-              docName.includes(childNameLower) ||
-              childNameLower.includes(docName.replace(/\.[^/.]+$/, "")) ||
-              docName.replace(/\.[^/.]+$/, "").includes(childNameLower)
-            );
-          });
-
-          if (matchingDoc) {
-            if (!category.enrichedChildren) {
-              category.enrichedChildren = [];
-            }
-
-            const existingEnriched = category.enrichedChildren.find(
-              (ec) => ec.name === childName
-            );
-            if (!existingEnriched) {
-              category.enrichedChildren.push({
-                name: childName,
-                document: {
-                  id: matchingDoc.id,
-                  name: matchingDoc.name,
-                  path: matchingDoc.path,
-                  isArchived: matchingDoc.isArchived || false,
-                },
-                found: true,
-                linkedAt: new Date().toISOString(),
-              });
-              linkedCount++;
-            } else if (!existingEnriched.found) {
-              existingEnriched.found = true;
-              existingEnriched.document = {
-                id: matchingDoc.id,
-                name: matchingDoc.name,
-                path: matchingDoc.path,
-                isArchived: matchingDoc.isArchived || false,
-              };
-              existingEnriched.linkedAt = new Date().toISOString();
-              linkedCount++;
-            }
-          }
-        });
-      }
-    });
-
-    // Save updated ISN index
-    fsSync.writeFileSync(isnIndexPath, JSON.stringify(isnIndex, null, 2));
-
-    console.log(
-      `ISN Auto-link completed: ${linkedCount} documents linked out of ${totalProcessed} processed`
-    );
-
-    res.json({
-      success: true,
-      message: `Auto-linked ${linkedCount} ISN documents`,
-      linkedCount: linkedCount,
-      totalProcessed: totalProcessed,
-    });
-  } catch (error) {
-    console.error("Error in ISN auto-link:", error);
-    res.status(500).json({
-      error: "ISN auto-link failed: " + error.message,
-      success: false,
-    });
-  }
-});
 // ========================================
 // MISSING API ENDPOINT - Add this to your app.js API ROUTES section
 // ========================================
 
-// Enhanced auto-link API using learning patterns
-app.post("/api/auto-link-documents-with-learning", async (req, res) => {
-  try {
-    const { checkRevisions } = req.body;
-    console.log("Starting enhanced auto-link with learning...");
-
-    // Load current IMS structure
-    const imsIndexPath = path.join(__dirname, "ims-document-index.json");
-    const documentIndexPath = path.join(__dirname, "document-index.json");
-
-    if (!fsSync.existsSync(imsIndexPath)) {
-      return res.status(404).json({
-        success: false,
-        error: "IMS document index not found",
-      });
-    }
-
-    if (!fsSync.existsSync(documentIndexPath)) {
-      return res.status(404).json({
-        success: false,
-        error: "Document index not found",
-      });
-    }
-
-    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
-    const documentIndex = JSON.parse(
-      fsSync.readFileSync(documentIndexPath, "utf8")
-    );
-
-    let linkedCount = 0;
-    let learnedMatches = 0;
-    let skippedArchived = 0;
-
-    // Process each category
-    Object.keys(imsIndex).forEach((categoryName) => {
-      const category = imsIndex[categoryName];
-
-      // Auto-link category document with learning
-      if (!category.document && !category.documentId) {
-        console.log(`Searching for category document: ${categoryName}`);
-        const foundDoc = findDocumentByNameWithLearning(categoryName, false);
-        if (foundDoc) {
-          if (foundDoc.isArchived) {
-            skippedArchived++;
-            console.log(
-              `Skipped archived document for category: ${categoryName}`
-            );
-          } else {
-            category.documentId = foundDoc.id;
-            linkedCount++;
-            learnedMatches++;
-            console.log(
-              `✅ Linked category: ${categoryName} -> ${foundDoc.name}`
-            );
-          }
-        } else {
-          console.log(`❌ No match found for category: ${categoryName}`);
-        }
-      }
-
-      // Auto-link child documents with learning
-      if (category.children && category.children.length > 0) {
-        if (!category.enrichedChildren) {
-          category.enrichedChildren = [];
-        }
-
-        category.children.forEach((childName) => {
-          // Check if already linked
-          const existingChild = category.enrichedChildren.find(
-            (child) => child.name === childName
-          );
-
-          if (!existingChild || !existingChild.document) {
-            console.log(`Searching for child document: ${childName}`);
-            const foundDoc = findDocumentByNameWithLearning(childName, false);
-
-            if (foundDoc) {
-              if (foundDoc.isArchived) {
-                skippedArchived++;
-                console.log(
-                  `Skipped archived document for child: ${childName}`
-                );
-              } else {
-                // Check for revisions if requested
-                let revisionInfo = null;
-                if (checkRevisions) {
-                  try {
-                    const revisions = getRevisionHistory
-                      ? getRevisionHistory(foundDoc.id)
-                      : [];
-                    if (revisions && revisions.length > 0) {
-                      revisionInfo = {
-                        revisionCount: revisions.length,
-                        lastRevision: revisions[revisions.length - 1],
-                      };
-                      console.log(
-                        `Found ${revisions.length} revisions for: ${childName}`
-                      );
-                    }
-                  } catch (revError) {
-                    console.log(
-                      `Note: Could not check revisions for ${childName}`
-                    );
-                  }
-                }
-
-                // Create enriched child data
-                const childData = {
-                  name: childName,
-                  document: {
-                    id: foundDoc.id,
-                    name: foundDoc.name,
-                    path: foundDoc.path,
-                    isArchived: foundDoc.isArchived || false,
-                  },
-                  found: true,
-                  autoLinked: true,
-                  usedLearning: true,
-                  linkedAt: new Date().toISOString(),
-                };
-
-                // Add revision info if available
-                if (revisionInfo) {
-                  childData.revisionInfo = revisionInfo;
-                }
-
-                // Update or add to enrichedChildren
-                const childIndex = category.enrichedChildren.findIndex(
-                  (child) => child.name === childName
-                );
-
-                if (childIndex >= 0) {
-                  category.enrichedChildren[childIndex] = childData;
-                } else {
-                  category.enrichedChildren.push(childData);
-                }
-
-                linkedCount++;
-                learnedMatches++;
-                console.log(
-                  `✅ Linked child: ${childName} -> ${foundDoc.name} (enhanced matching)`
-                );
-              }
-            } else {
-              console.log(`❌ No enhanced match found for: ${childName}`);
-            }
-          } else {
-            console.log(`⏭️ Already linked: ${childName}`);
-          }
-        });
-      }
-    });
-
-    // Save updated IMS structure
-    fsSync.writeFileSync(imsIndexPath, JSON.stringify(imsIndex, null, 2));
-    console.log(
-      `Enhanced auto-link completed: ${linkedCount} total, ${learnedMatches} using learning`
-    );
-
-    res.json({
-      success: true,
-      linked: linkedCount,
-      learnedMatches: learnedMatches,
-      skippedArchived: skippedArchived,
-      message: `Successfully linked ${linkedCount} documents (${learnedMatches} using learned patterns)`,
-      details: {
-        totalProcessed: Object.keys(imsIndex).length,
-        enhancedMatching: true,
-        learningSystemActive: true,
-      },
-    });
-  } catch (error) {
-    console.error("Error in enhanced auto-linking:", error);
-    res.status(500).json({
-      success: false,
-      error: "Enhanced auto-linking failed: " + error.message,
-      message: "Error in enhanced auto-linking: " + error.message,
-    });
-  }
-});
-
-// Also enhance the existing auto-link endpoint to use learning
-app.post("/api/auto-link-documents", async (req, res) => {
-  try {
-    const { checkRevisions } = req.body;
-    console.log("Starting standard auto-link process...");
-
-    const imsIndexPath = path.join(__dirname, "ims-document-index.json");
-    const documentIndexPath = path.join(__dirname, "document-index.json");
-
-    if (!fsSync.existsSync(imsIndexPath)) {
-      return res.status(404).json({ error: "IMS document index not found" });
-    }
-
-    if (!fsSync.existsSync(documentIndexPath)) {
-      return res.status(404).json({ error: "Document index not found" });
-    }
-
-    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
-    const documentIndex = JSON.parse(
-      fsSync.readFileSync(documentIndexPath, "utf8")
-    );
-
-    let linkedCount = 0;
-    let totalProcessed = 0;
-
-    // Process each category - using BASIC matching (not learning)
-    Object.keys(imsIndex).forEach((categoryName) => {
-      const category = imsIndex[categoryName];
-      if (category.children && Array.isArray(category.children)) {
-        category.children.forEach((childName) => {
-          totalProcessed++;
-
-          // Try to find matching document using BASIC method
-          const matchingDoc = documentIndex.find((doc) => {
-            const docName = doc.name.toLowerCase();
-            const childNameLower = childName.toLowerCase();
-
-            // Basic matching strategies
-            return (
-              docName.includes(childNameLower) ||
-              childNameLower.includes(docName.replace(/\.[^/.]+$/, "")) ||
-              docName.replace(/\.[^/.]+$/, "").includes(childNameLower)
-            );
-          });
-
-          if (matchingDoc) {
-            // Add to enriched children if not already there
-            if (!category.enrichedChildren) {
-              category.enrichedChildren = [];
-            }
-
-            const existingEnriched = category.enrichedChildren.find(
-              (ec) => ec.name === childName
-            );
-            if (!existingEnriched) {
-              category.enrichedChildren.push({
-                name: childName,
-                document: {
-                  id: matchingDoc.id,
-                  name: matchingDoc.name,
-                  path: matchingDoc.path,
-                  isArchived: matchingDoc.isArchived || false,
-                },
-                found: true,
-                autoLinked: true,
-                usedLearning: false,
-                linkedAt: new Date().toISOString(),
-              });
-              linkedCount++;
-            } else if (!existingEnriched.found) {
-              existingEnriched.found = true;
-              existingEnriched.document = {
-                id: matchingDoc.id,
-                name: matchingDoc.name,
-                path: matchingDoc.path,
-                isArchived: matchingDoc.isArchived || false,
-              };
-              existingEnriched.linkedAt = new Date().toISOString();
-              existingEnriched.autoLinked = true;
-              existingEnriched.usedLearning = false;
-              linkedCount++;
-            }
-          }
-        });
-      }
-    });
-
-    // Save updated index
-    fsSync.writeFileSync(imsIndexPath, JSON.stringify(imsIndex, null, 2));
-
-    console.log(
-      `Standard auto-link completed: ${linkedCount} documents linked out of ${totalProcessed} processed`
-    );
-
-    res.json({
-      success: true,
-      message: `Auto-linked ${linkedCount} documents`,
-      linkedCount: linkedCount,
-      totalProcessed: totalProcessed,
-      enhancedMatching: false,
-    });
-  } catch (error) {
-    console.error("Error in standard auto-link:", error);
-    res.status(500).json({
-      error: "Auto-link failed: " + error.message,
-      success: false,
-    });
-  }
-});
-
-app.get("/api/ims-statistics", (req, res) => {
-  try {
-    const imsIndexPath = path.join(__dirname, "ims-document-index.json");
-
-    if (!fsSync.existsSync(imsIndexPath)) {
-      return res.json({
-        totalCategories: 0,
-        totalDocuments: 0,
-        linkedDocuments: 0,
-        completionRate: 0,
-      });
-    }
-
-    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
-
-    const stats = {
-      totalCategories: Object.keys(imsIndex).length,
-      totalDocuments: 0,
-      linkedDocuments: 0,
-      completionRate: 0,
-    };
-
-    Object.values(imsIndex).forEach((category) => {
-      if (category.children) {
-        stats.totalDocuments += category.children.length;
-      }
-      if (category.enrichedChildren) {
-        stats.linkedDocuments += category.enrichedChildren.filter(
-          (ec) => ec.found
-        ).length;
-      }
-    });
-
-    stats.completionRate =
-      stats.totalDocuments > 0
-        ? Math.round((stats.linkedDocuments / stats.totalDocuments) * 100)
-        : 0;
-
-    res.json(stats);
-  } catch (error) {
-    console.error("Error getting IMS statistics:", error);
-    res.status(500).json({ error: "Could not get statistics" });
-  }
-});
-
-app.get("/api/isn-statistics", (req, res) => {
-  try {
-    const isnIndexPath = path.join(__dirname, "isn-index.json");
-
-    if (!fsSync.existsSync(isnIndexPath)) {
-      return res.json({
-        totalCategories: 0,
-        totalDocuments: 0,
-        linkedDocuments: 0,
-        completionRate: 0,
-      });
-    }
-
-    const isnIndex = JSON.parse(fsSync.readFileSync(isnIndexPath, "utf8"));
-
-    const stats = {
-      totalCategories: Object.keys(isnIndex).length,
-      totalDocuments: 0,
-      linkedDocuments: 0,
-      completionRate: 0,
-    };
-
-    Object.values(isnIndex).forEach((category) => {
-      if (category.children) {
-        stats.totalDocuments += category.children.length;
-      }
-      if (category.enrichedChildren) {
-        stats.linkedDocuments += category.enrichedChildren.filter(
-          (ec) => ec.found
-        ).length;
-      }
-    });
-
-    stats.completionRate =
-      stats.totalDocuments > 0
-        ? Math.round((stats.linkedDocuments / stats.totalDocuments) * 100)
-        : 0;
-
-    res.json(stats);
-  } catch (error) {
-    console.error("Error getting ISN statistics:", error);
-    res.status(500).json({ error: "Could not get statistics" });
-  }
-});
-
-app.get("/api/export-ims-index", (req, res) => {
-  try {
-    const imsIndexPath = path.join(__dirname, "ims-document-index.json");
-
-    if (!fsSync.existsSync(imsIndexPath)) {
-      return res.status(404).json({ error: "IMS index not found" });
-    }
-
-    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
-
-    res.setHeader("Content-Type", "application/json");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="ims-index-${
-        new Date().toISOString().split("T")[0]
-      }.json"`
-    );
-    res.send(JSON.stringify(imsIndex, null, 2));
-  } catch (error) {
-    console.error("Error exporting IMS index:", error);
-    res.status(500).json({ error: "Export failed" });
-  }
-});
-
-app.get("/api/export-isn-index", (req, res) => {
-  try {
-    const isnIndexPath = path.join(__dirname, "isn-index.json");
-
-    if (!fsSync.existsSync(isnIndexPath)) {
-      return res.status(404).json({ error: "ISN index not found" });
-    }
-
-    const isnIndex = JSON.parse(fsSync.readFileSync(isnIndexPath, "utf8"));
-
-    res.setHeader("Content-Type", "application/json");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="isn-index-${
-        new Date().toISOString().split("T")[0]
-      }.json"`
-    );
-    res.send(JSON.stringify(isnIndex, null, 2));
-  } catch (error) {
-    console.error("Error exporting ISN index:", error);
-    res.status(500).json({ error: "Export failed" });
-  }
-});
-// Rebuild index API
-app.post("/api/rebuild-index", async (req, res) => {
-  try {
-    console.log("Rebuilding document index...");
-    await buildDocumentIndex();
-    await buildFolderStructure();
-
-    res.json({
-      success: true,
-      documentCount: documentIndex.length,
-      folderCount: folderStructure.length,
-    });
-  } catch (error) {
-    console.error("Error rebuilding index:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to rebuild index",
-    });
-  }
-});
-
-app.post("/api/link-ims-document", (req, res) => {
-  try {
-    const { category, document, id } = req.body;
-
-    const imsIndexPath = path.join(__dirname, "ims-document-index.json");
-    const documentIndexPath = path.join(__dirname, "document-index.json");
-
-    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
-    const documentIndex = JSON.parse(
-      fsSync.readFileSync(documentIndexPath, "utf8")
-    );
-
-    const targetCategory = imsIndex[category];
-    const targetDoc = documentIndex.find((doc) => doc.id === id);
-
-    if (!targetCategory || !targetDoc) {
-      return res.status(404).json({ error: "Category or document not found" });
-    }
-
-    if (!targetCategory.enrichedChildren) {
-      targetCategory.enrichedChildren = [];
-    }
-
-    const existingEnriched = targetCategory.enrichedChildren.find(
-      (ec) => ec.name === document
-    );
-    if (existingEnriched) {
-      existingEnriched.found = true;
-      existingEnriched.document = {
-        id: targetDoc.id,
-        name: targetDoc.name,
-        path: targetDoc.path,
-        isArchived: targetDoc.isArchived || false,
-      };
-      existingEnriched.linkedAt = new Date().toISOString();
-    } else {
-      targetCategory.enrichedChildren.push({
-        name: document,
-        document: {
-          id: targetDoc.id,
-          name: targetDoc.name,
-          path: targetDoc.path,
-          isArchived: targetDoc.isArchived || false,
-        },
-        found: true,
-        linkedAt: new Date().toISOString(),
-      });
-    }
-
-    fsSync.writeFileSync(imsIndexPath, JSON.stringify(imsIndex, null, 2));
-
-    res.json({ success: true, message: "Document linked successfully" });
-  } catch (error) {
-    console.error("Error linking IMS document:", error);
-    res.status(500).json({ error: "Link failed: " + error.message });
-  }
-});
-
-app.post("/api/link-isn-document", (req, res) => {
-  try {
-    const { category, document, id } = req.body;
-
-    const isnIndexPath = path.join(__dirname, "isn-index.json");
-    const documentIndexPath = path.join(__dirname, "document-index.json");
-
-    const isnIndex = JSON.parse(fsSync.readFileSync(isnIndexPath, "utf8"));
-    const documentIndex = JSON.parse(
-      fsSync.readFileSync(documentIndexPath, "utf8")
-    );
-
-    const targetCategory = isnIndex[category];
-    const targetDoc = documentIndex.find((doc) => doc.id === id);
-
-    if (!targetCategory || !targetDoc) {
-      return res.status(404).json({ error: "Category or document not found" });
-    }
-
-    if (!targetCategory.enrichedChildren) {
-      targetCategory.enrichedChildren = [];
-    }
-
-    const existingEnriched = targetCategory.enrichedChildren.find(
-      (ec) => ec.name === document
-    );
-    if (existingEnriched) {
-      existingEnriched.found = true;
-      existingEnriched.document = {
-        id: targetDoc.id,
-        name: targetDoc.name,
-        path: targetDoc.path,
-        isArchived: targetDoc.isArchived || false,
-      };
-      existingEnriched.linkedAt = new Date().toISOString();
-    } else {
-      targetCategory.enrichedChildren.push({
-        name: document,
-        document: {
-          id: targetDoc.id,
-          name: targetDoc.name,
-          path: targetDoc.path,
-          isArchived: targetDoc.isArchived || false,
-        },
-        found: true,
-        linkedAt: new Date().toISOString(),
-      });
-    }
-
-    fsSync.writeFileSync(isnIndexPath, JSON.stringify(isnIndex, null, 2));
-
-    res.json({ success: true, message: "ISN document linked successfully" });
-  } catch (error) {
-    console.error("Error linking ISN document:", error);
-    res.status(500).json({ error: "Link failed: " + error.message });
-  }
-});
-
 // Unlink IMS document
-app.post("/api/unlink-ims-document", (req, res) => {
-  try {
-    const { category, document } = req.body;
-
-    const imsIndexPath = path.join(__dirname, "ims-document-index.json");
-    const imsIndex = JSON.parse(fsSync.readFileSync(imsIndexPath, "utf8"));
-
-    const targetCategory = imsIndex[category];
-    if (!targetCategory || !targetCategory.enrichedChildren) {
-      return res
-        .status(404)
-        .json({ error: "Category or enriched children not found" });
-    }
-
-    const enrichedChild = targetCategory.enrichedChildren.find(
-      (ec) => ec.name === document
-    );
-    if (enrichedChild) {
-      enrichedChild.found = false;
-      enrichedChild.unlinkedAt = new Date().toISOString();
-      delete enrichedChild.document;
-    }
-
-    fsSync.writeFileSync(imsIndexPath, JSON.stringify(imsIndex, null, 2));
-
-    res.json({ success: true, message: "Document unlinked successfully" });
-  } catch (error) {
-    console.error("Error unlinking IMS document:", error);
-    res.status(500).json({ error: "Unlink failed: " + error.message });
-  }
-});
-
-// Unlink ISN document
-app.post("/api/unlink-isn-document", (req, res) => {
-  try {
-    const { category, document } = req.body;
-
-    const isnIndexPath = path.join(__dirname, "isn-index.json");
-    const isnIndex = JSON.parse(fsSync.readFileSync(isnIndexPath, "utf8"));
-
-    const targetCategory = isnIndex[category];
-    if (!targetCategory || !targetCategory.enrichedChildren) {
-      return res
-        .status(404)
-        .json({ error: "Category or enriched children not found" });
-    }
-
-    const enrichedChild = targetCategory.enrichedChildren.find(
-      (ec) => ec.name === document
-    );
-    if (enrichedChild) {
-      enrichedChild.found = false;
-      enrichedChild.unlinkedAt = new Date().toISOString();
-      delete enrichedChild.document;
-    }
-
-    fsSync.writeFileSync(isnIndexPath, JSON.stringify(isnIndex, null, 2));
-
-    res.json({ success: true, message: "ISN document unlinked successfully" });
-  } catch (error) {
-    console.error("Error unlinking ISN document:", error);
-    res.status(500).json({ error: "Unlink failed: " + error.message });
-  }
-});
 
 // ========================================
 // DOCUMENT INDEXING FUNCTIONS
@@ -2736,6 +1692,13 @@ async function buildDocumentIndex() {
 
     await scanDirectory(DOCUMENTS_DIR);
     await saveDocumentIndex();
+
+    if (typeof app !== "undefined" && app.locals) {
+      app.locals.documentIndex = documentIndex;
+      console.log(
+        `✅ Updated app.locals.documentIndex with ${documentIndex.length} documents`
+      );
+    }
 
     console.log(
       `Document index built successfully. ${documentIndex.length} documents indexed.`
@@ -2907,6 +1870,12 @@ async function initializeApplication() {
 // START SERVER
 // ========================================
 // Add this block right before app.listen() in your app.js:
+// ========================================
+// APP LOCALS SETUP - Replace the existing app.locals section in your app.js
+// (Around line 1650, before app.listen())
+// ========================================
+
+// Set up app.locals for route modules to access shared functions and data
 app.locals.documentIndex = documentIndex;
 app.locals.loadLearningPatterns = loadLearningPatterns;
 app.locals.saveLearningPatterns = saveLearningPatterns;
@@ -2919,6 +1888,16 @@ app.locals.saveIMSIndex = saveIMSIndex;
 app.locals.loadMandatoryRecords = loadMandatoryRecords;
 app.locals.saveRevisionLog = saveRevisionLog;
 app.locals.buildFileIndex = buildDocumentIndex;
+
+// ADD THESE MISSING HELPER FUNCTIONS:
+app.locals.logDocumentAccess = logDocumentAccess;
+app.locals.formatFileSize = formatFileSize;
+app.locals.canPreviewFile = canPreviewFile;
+app.locals.getRevisionHistory = getRevisionHistory;
+app.locals.isArchivedDocument = isArchivedDocument;
+app.locals.isContractorDocument = isContractorDocument;
+
+console.log("App.locals configured with all helper functions");
 
 app.listen(port, async () => {
   console.log(`IMS Document Management System running on port ${port}`);
