@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - SafetySync Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { background: linear-gradient(45deg, #343a40, #495057) !important; box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        .navbar-brand { font-weight: bold; color: white !important; }
+        .correction-card { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 1rem; transition: all 0.3s ease; }
+        .correction-card:hover { box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15); }
+        .suspicious-link { border-left: 4px solid #ffc107; }
+        .missing-item { border-left: 4px solid #dc3545; }
+        .contractor-indicator { background: #fff3cd; color: #856404; padding: 0.25rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; }
+        .missing-indicator { background: #f8d7da; color: #721c24; padding: 0.25rem 0.5rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; }
+        .path-display { font-family: 'Courier New', monospace; font-size: 0.8rem; background: #f8f9fa; padding: 0.5rem; border-radius: 0.375rem; word-break: break-all; }
+        .btn-correct { background: linear-gradient(45deg, #28a745, #20c997); border: none; color: white; }
+        .btn-ignore { background: #6c757d; border: none; color: white; }
+        .stats-header { background: linear-gradient(45deg, #007bff, #0056b3); color: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; }
+        .nav-tabs .nav-link.active { background-color: #007bff; border-color: #007bff; color: white; }
+        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-shield-alt me-2"></i>SafetySync Pro</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ims-index">IMS Index</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/isn-index">ISN Index</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/documents">Documents</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="stats-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3 class="mb-1"><i class="fas fa-tools me-2"></i>Document Link Corrections</h3>
+                    <p class="mb-0 opacity-75">Review suspicious links and find missing documents</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button onclick="scanForIssues(event)" class="btn btn-light me-2"><i class="fas fa-search me-1"></i> Scan for Issues</button>
+                    <button onclick="openManualReview()" class="btn btn-outline-light ms-1"><i class="fas fa-edit me-1"></i> Manual Fix Mode</button>
+                    <button onclick="goBack()" class="btn btn-outline-light"><i class="fas fa-arrow-left me-1"></i> Back to IMS</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-3"><div class="card correction-card bg-warning text-white"><div class="card-body text-center"><i class="fas fa-exclamation-triangle fa-2x mb-2"></i><h4 id="suspicious-count">0</h4><p class="mb-0">Suspicious Links</p></div></div></div>
+            <div class="col-md-3"><div class="card correction-card bg-danger text-white"><div class="card-body text-center"><i class="fas fa-times-circle fa-2x mb-2"></i><h4 id="missing-count">0</h4><p class="mb-0">Missing Items</p></div></div></div>
+            <div class="col-md-3"><div class="card correction-card bg-info text-white"><div class="card-body text-center"><i class="fas fa-list fa-2x mb-2"></i><h4 id="total-issues-count">0</h4><p class="mb-0">Total Issues</p></div></div></div>
+            <div class="col-md-3"><div class="card correction-card bg-success text-white"><div class="card-body text-center"><i class="fas fa-check-circle fa-2x mb-2"></i><h4 id="corrected-count">0</h4><p class="mb-0">Corrected</p></div></div></div>
+        </div>
+
+        <ul class="nav nav-tabs mb-3" id="issuesTabs" role="tablist">
+            <li class="nav-item" role="presentation"><button class="nav-link active" id="suspicious-tab" data-bs-toggle="tab" data-bs-target="#suspicious-panel" type="button" role="tab"><i class="fas fa-exclamation-triangle text-warning"></i> Suspicious Links <span class="badge bg-warning ms-1" id="suspicious-badge">0</span></button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" id="missing-tab" data-bs-toggle="tab" data-bs-target="#missing-panel" type="button" role="tab"><i class="fas fa-times-circle text-danger"></i> Missing Items <span class="badge bg-danger ms-1" id="missing-badge">0</span></button></li>
+        </ul>
+
+        <div class="tab-content" id="issuesTabContent">
+            <div class="tab-pane fade show active" id="suspicious-panel" role="tabpanel">
+                <div id="suspicious-container">
+                    <div class="text-center p-4">
+                        <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
+                        <p class="mt-2">Loading suspicious links...</p>
+                    </div>
+                </div>
+            </div>
+            <div id="manual-container" class="mt-3" style="display:none;">
+            <div class="card correction-card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div class="input-group w-50">
+                    <span class="input-group-text"><i class="fas fa-filter"></i></span>
+                    <input id="manual-filter" class="form-control" placeholder="Filter e.g. SWMS 044, Form 55, Rail">
+                  </div>
+                  <div>
+                    <button class="btn btn-secondary btn-sm" onclick="refreshManualReview()">
+                      <i class="fas fa-sync"></i> Refresh
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="closeManualReview()">
+                      <i class="fas fa-times"></i> Close
+                    </button>
+                  </div>
+                </div>
+                <div id="manual-list">
+                  <div class="text-center text-muted p-4">
+                    <i class="fas fa-info-circle me-1"></i> Click “Refresh” to load items.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+            <div class="tab-pane fade" id="missing-panel" role="tabpanel">
+                <div id="missing-container">
+                    <div class="text-center p-4">
+                        <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
+                        <p class="mt-2">Loading missing items...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="empty-state" class="card correction-card p-5 text-center" style="display: none;">
+            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+            <h4 class="text-success">No Issues Found!</h4>
+            <p class="text-muted">All automatic links appear to be correct and no documents are missing.</p>
+            <button onclick="goBack()" class="btn btn-primary"><i class="fas fa-arrow-left me-1"></i> Back to IMS Index</button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="searchModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Search Documents for: <span id="search-category"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-8"><input type="text" class="form-control" id="search-terms" placeholder="Enter search terms (e.g., safety policy, manual)"></div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-primary" id="search-btn"><i class="fas fa-search"></i> Search</button>
+                            <button type="button" class="btn btn-secondary ms-1" id="auto-search-btn"><i class="fas fa-magic"></i> Auto Search</button>
+                        </div>
+                    </div>
+                    <div id="search-results">
+                        <div class="text-muted text-center p-4">Enter search terms and click Search to find documents</div>
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.manualItems = window.manualItems || [];
+
+        let suspiciousLinks = [];
+        let missingItems = [];
+        let correctedCount = 0;
+
+        async function getJson(url, { timeoutMs = 15000, options = {} } = {}) {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+          try {
+            const res = await fetch(url, { ...options, signal: controller.signal });
+            const ct = res.headers.get('content-type') || '';
+            console.log(`[getJson] ${url} -> status=${res.status}, ok=${res.ok}, content-type="${ct}"`);
+            if (!res.ok) {
+              const bodyPreview = await res.text().catch(() => '');
+              throw new Error(`HTTP ${res.status} on ${url} — ${bodyPreview.slice(0,200)}`);
+            }
+            if (!ct.includes('application/json')) {
+              const text = await res.text();
+              try { return JSON.parse(text); }
+              catch { throw new Error(`Expected JSON from ${url} but got "${ct || 'unknown'}" — body: ${text.slice(0,200)}`); }
+            }
+            return await res.json();
+          } finally {
+            clearTimeout(timeoutId);
+          }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Corrections page initializing...');
+            const searchTermsEl = document.getElementById('search-terms');
+            if (searchTermsEl) {
+                searchTermsEl.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') { const btn = document.getElementById('search-btn'); if (btn) btn.click(); }
+                });
+            }
+            setTimeout(() => { scanForIssues(null); }, 100);
+        });
+
+        async function apiPost(url, body, timeoutMs = 15000) {
+          return await getJson(url, {
+            timeoutMs,
+            options: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) }
+          });
+        }
+
+        function removeSuspiciousAt(index) {
+          if (index >= 0) {
+            suspiciousLinks.splice(index, 1);
+            updateStatistics();
+            displaySuspiciousLinks();
+          }
+        }
+
+        function buildSearchTerms(categoryName = '') {
+          const type = /SWMS/i.test(categoryName) ? 'SWMS' :
+                       /FORM|FRM/i.test(categoryName) ? 'FORM' :
+                       /JSEA|JSA/i.test(categoryName) ? 'JSEA' :
+                       /RTW/i.test(categoryName) ? 'RTW' : null;
+          const codeMatch = categoryName.match(/\b(?:SWMS|FORM|FRM)\s*0*([0-9]{2,3})\b/i);
+          const code = codeMatch ? codeMatch[1] : null;
+          const base = categoryName.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t && !['document','policy','procedure','site','sheet'].includes(t)).join(' ');
+          return { type, code, terms: [base, type, code].filter(Boolean).join(' ') };
+        }
+
+        async function acceptSuggestion(index) {
+          const issue = suspiciousLinks[index];
+          const alt = issue?.suggestedAlternative;
+          if (!alt) { showNotification('No suggestion available for this item.', 'info'); return; }
+          try {
+            await apiPost('/api/replace-link', {
+              categoryKey: issue.searchTerm || issue.category || '',
+              newDocumentId: alt.id || null,
+              newDocumentName: alt.name || null,
+              newDocumentPath: alt.path || alt.folder || null
+            });
+            try { await apiPost('/api/corrections/learn', {
+              categoryKey: issue.searchTerm || issue.category || '',
+              chosenDocId: alt.id || null,
+              chosenDocName: alt.name || null
+            }); } catch {}
+            correctedCount++; removeSuspiciousAt(index);
+            showNotification('Suggestion applied.', 'success');
+          } catch (err) { showNotification(`Failed to apply suggestion: ${err?.message || err}`, 'error'); }
+        }
+
+        async function unlinkSuspicious(index) {
+          const issue = suspiciousLinks[index];
+          try {
+            await apiPost('/api/unlink-document', {
+              categoryKey: issue.searchTerm || issue.category || '',
+              currentDocumentId: issue?.currentDocument?.id || null,
+              currentDocumentName: issue?.currentDocument?.name || null,
+              currentDocumentPath: issue?.currentDocument?.path || null
+            });
+            correctedCount++; removeSuspiciousAt(index);
+            showNotification('Link removed.', 'success');
+          } catch (err) { showNotification(`Failed to unlink: ${err?.message || err}`, 'error'); }
+        }
+
+        function findAlternativeForSuspicious(index) {
+          const issue = suspiciousLinks[index];
+          const { terms } = buildSearchTerms(issue?.searchTerm || issue?.category || '');
+          window.currentSearchIsForSuspicious = true;
+          window.currentSuspiciousIndex = index;
+          window.currentSearchCategory = issue?.category || '';
+          window.currentSearchDocumentName = issue?.searchTerm || '';
+          window.currentSearchPath = issue?.currentDocument?.path || '';
+          document.getElementById('search-category').textContent = window.currentSearchDocumentName || 'Correction';
+          document.getElementById('search-terms').value = terms;
+          const modal = new bootstrap.Modal(document.getElementById('searchModal')); modal.show();
+          performMissingSearch(terms);
+        }
+
+        async function markAsCorrect(index) {
+          const issue = suspiciousLinks[index];
+          try {
+            try { await apiPost('/api/corrections/learn', {
+              categoryKey: issue.searchTerm || issue.category || '',
+              chosenDocId: issue?.currentDocument?.id || null,
+              chosenDocName: issue?.currentDocument?.name || null
+            }); } catch {}
+            correctedCount++; removeSuspiciousAt(index);
+            showNotification('Marked as correct.', 'success');
+          } catch (err) { showNotification(`Failed to mark as correct: ${err?.message || err}`, 'error'); }
+        }
+
+        function goBack() { window.location.href = '/ims-index'; }
+
+        async function scanForIssues(evt) {
+            console.log('=== FRONTEND SCAN STARTED ===');
+            let btn = null;
+            if (evt && evt.target) {
+                btn = evt.target;
+                btn.dataset._originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Scanning...';
+                btn.disabled = true;
+            }
+            suspiciousLinks = []; missingItems = []; console.log('Variables reset');
+            try {
+                console.log('/api/scan-suspicious-links -> fetch');
+                const susData = await getJson('/api/scan-suspicious-links');
+                console.log('Suspicious data parsed:', susData);
+                if (susData && susData.success && Array.isArray(susData.suspiciousLinks)) { suspiciousLinks = susData.suspiciousLinks; }
+                updateStatistics(); displaySuspiciousLinks();
+
+                console.log('/api/scan-missing-items -> fetch');
+                const missData = await getJson('/api/scan-missing-items');
+                console.log('Missing items data parsed:', missData);
+                if (missData && missData.success && Array.isArray(missData.missingItems)) { missingItems = missData.missingItems; }
+                updateStatistics(); displayMissingItems();
+
+                console.log('=== FRONTEND SCAN COMPLETED ===');
+            } catch (error) {
+                console.error('=== FRONTEND SCAN ERROR ===');
+                console.error('Error type:', error?.constructor?.name);
+                console.error('Error message:', error?.message);
+                console.error('Stack trace:', error?.stack);
+                showNotification('Error loading data: ' + (error?.message || error), 'error');
+                if (!suspiciousLinks.length && !missingItems.length) { fallbackMode(); }
+            } finally {
+                if (btn) { btn.innerHTML = btn.dataset._originalText || '<i class="fas fa-search me-1"></i> Scan for Issues'; btn.disabled = false; }
+            }
+        }
+       
+
+        function openManualReview() {
+          // make sure parent is visible (updateStatistics may have hidden it)
+          const issuesTabContent = document.getElementById('issuesTabContent');
+          if (issuesTabContent) issuesTabContent.style.display = 'block';
+
+          // hide tab header + both panes (but NOT the parent)
+          document.querySelector('.nav-tabs')?.classList.add('d-none');
+          document.getElementById('suspicious-panel')?.classList.add('d-none');
+          document.getElementById('missing-panel')?.classList.add('d-none'); // if present
+          document.getElementById('empty-state')?.classList.add('d-none');
+
+          // show manual
+          const wrap = document.getElementById('manual-container');
+          if (wrap) {
+            wrap.style.display = 'block';
+            // load + render
+            refreshManualReview().then(() => {
+              displayManualItems?.();
+              wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+          }
+        }
+
+        function closeManualReview() {
+          // hide manual
+          const wrap = document.getElementById('manual-container');
+          if (wrap) wrap.style.display = 'none';
+
+          // restore tab panes + header
+          document.querySelector('.nav-tabs')?.classList.remove('d-none');
+          document.getElementById('suspicious-panel')?.classList.remove('d-none');
+          document.getElementById('missing-panel')?.classList.remove('d-none'); // if present
+
+          // restore empty state if truly 0 issues
+          const emptyState = document.getElementById('empty-state');
+          if (emptyState) {
+            const totalIssues = (window.suspiciousLinks?.length || 0) + (window.missingItems?.length || 0);
+            emptyState.style.display = totalIssues === 0 ? 'block' : 'none';
+          }
+        }
+
+
+function displayManualItems() {
+  // Guarantee nodes exist (in case the container wasn't added in HTML)
+  ensureManualUI();
+
+  const list = document.getElementById('manual-list');
+  const filterEl = document.getElementById('manual-filter');
+  if (!list) {
+    console.warn('[ManualFix] manual-list not found; re-initializing container');
+    ensureManualUI();
+    return;
+  }
+
+  const items = window.manualItems || [];
+  const filter = (filterEl?.value || '').toLowerCase().trim();
+
+  const filtered = items.filter(i => {
+    if (!filter) return true;
+    const hay = `${i.category} ${i.childName} ${i.current?.name || ''} ${i.current?.path || ''}`.toLowerCase();
+    return hay.includes(filter);
+  });
+
+  console.log('[ManualFix] render items:', { total: items.length, filtered: filtered.length });
+
+  if (!filtered.length) {
+    list.innerHTML = `
+      <div class="text-center text-muted p-4">
+        <i class="fas fa-info-circle me-1"></i> No rows match your filter.
+      </div>`;
+    return;
+  }
+
+  // Render
+  let html = '';
+  filtered.forEach((item, idx) => {
+    const name = item.current?.name || '(not linked)';
+    const path = item.current?.path || '(no path)';
+    html += `
+      <div class="card correction-card ${item.current ? 'suspicious-link' : 'missing-item'}" data-manual-index="${idx}">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="d-flex align-items-center mb-2">
+                <i class="fas ${item.current ? 'fa-link text-warning' : 'fa-times-circle text-danger'} me-2"></i>
+                <strong>${item.category} &gt; ${item.childName}</strong>
+              </div>
+              <div class="mb-2">
+                <small class="text-muted">${item.current ? 'Currently linked to:' : 'Not linked'}</small>
+                ${item.current ? `
+                  <div class="fw-medium text-primary">${name}</div>
+                  <div class="path-display mt-1"><i class="fas fa-folder me-1"></i>${path}</div>` : ''}
+              </div>
+            </div>
+            <div class="col-md-4 text-end">
+              <div class="btn-group-vertical" role="group">
+                <button class="btn btn-outline-primary btn-sm mb-2" onclick="findAlternativeForManual(${idx})">
+                  <i class="fas fa-search me-1"></i> Find Alternative
+                </button>
+                <button class="btn btn-outline-danger btn-sm mb-2" onclick="unlinkManual(${idx})" ${item.current ? '' : 'disabled'}>
+                  <i class="fas fa-unlink me-1"></i> Unlink
+                </button>
+                <button class="btn btn-ignore btn-sm" onclick="markManualCorrect(${idx})" ${item.current ? '' : 'disabled'}>
+                  <i class="fas fa-check-circle me-1"></i> Mark OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  });
+
+  list.innerHTML = html;
+
+  // Wire live filter once
+  if (filterEl && !filterEl._bound) {
+    filterEl.addEventListener('input', displayManualItems);
+    filterEl._bound = true;
+  }
+}
+
+
+        async function refreshManualReview() {
+          const list = document.getElementById('manual-list');
+          list.innerHTML = `
+            <div class="text-center p-3">
+              <div class="spinner-border spinner-border-sm" role="status"></div>
+              <span class="ms-2">Loading…</span>
+            </div>`;
+
+          try {
+            const imsData = await getJson('/api/ims-structure');
+            const items = [];
+
+            // Build items from enrichedChildren (used in your fallback function)
+            Object.keys(imsData || {}).forEach(categoryName => {
+              const category = imsData[categoryName] || {};
+              if (Array.isArray(category.enrichedChildren)) {
+                category.enrichedChildren.forEach(ec => {
+                  const current = ec?.document || null;
+                  items.push({
+                    category: categoryName,
+                    childName: ec?.name || '',
+                    current: current ? {
+                      id: current.id || null,
+                      name: current.name || current.filename || '',
+                      path: current.path || current.folder || ''
+                    } : null,
+                    found: !!(ec?.found && current)
+                  });
+                });
+              }
+            });
+
+            // Optional: focus on likely types first (SWMS/FORM/JSEA/RTW/Toolbox/Action Log)
+            const preferred = items.filter(i =>
+              /swms|form|frm|jsea|jsa|rtw|tool\s*box|action\s*log|incident/i.test(i.childName) ||
+              /swms|forms?|jsea|jsa|rtw|tool\s*box|action\s*log|incident/i.test(i.category)
+            );
+            // Include others at the end
+            window.manualItems = [...preferred, ...items.filter(i => !preferred.includes(i))];
+
+            displayManualItems();
+          } catch (e) {
+            list.innerHTML = `<div class="alert alert-danger">
+              <i class="fas fa-exclamation-triangle me-1"></i>
+              Failed to load IMS structure: ${e?.message || e}
+            </div>`;
+          }
+        }
+
+        function displayManualItems() {
+          // Ensure container exists (in case it was injected dynamically)
+          ensureManualUI?.();
+
+          const list = document.getElementById('manual-list');
+          const filterEl = document.getElementById('manual-filter');
+          if (!list) return;
+
+          const items = window.manualItems || [];
+          const filter = (filterEl?.value || '').toLowerCase().trim();
+
+          const filtered = items.filter(i => {
+            if (!filter) return true;
+            const hay = `${i.category} ${i.childName} ${i.current?.name || ''} ${i.current?.path || ''}`.toLowerCase();
+            return hay.includes(filter);
+          });
+
+          console.log('[ManualFix] render items:', { total: items.length, filtered: filtered.length });
+
+          if (!items.length) {
+            list.innerHTML = `
+              <div class="text-center text-muted p-4">
+                <i class="fas fa-info-circle me-1"></i> No rows yet. Click Refresh.
+              </div>`;
+            return;
+          }
+
+          if (!filtered.length) {
+            list.innerHTML = `
+              <div class="text-center text-muted p-4">
+                <i class="fas fa-info-circle me-1"></i> No rows match your filter.
+              </div>`;
+            return;
+          }
+
+          let html = '';
+          filtered.forEach((item, idx) => {
+            const name = item.current?.name || '(not linked)';
+            const path = item.current?.path || '(no path)';
+            html += `
+              <div class="card correction-card ${item.current ? 'suspicious-link' : 'missing-item'}" data-manual-index="${idx}">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-8">
+                      <div class="d-flex align-items-center mb-2">
+                        <i class="fas ${item.current ? 'fa-link text-warning' : 'fa-times-circle text-danger'} me-2"></i>
+                        <strong>${item.category} &gt; ${item.childName}</strong>
+                      </div>
+                      <div class="mb-2">
+                        <small class="text-muted">${item.current ? 'Currently linked to:' : 'Not linked'}</small>
+                        ${item.current ? `
+                          <div class="fw-medium text-primary">${name}</div>
+                          <div class="path-display mt-1"><i class="fas fa-folder me-1"></i>${path}</div>` : ''}
+                      </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                      <div class="btn-group-vertical" role="group">
+                        <button class="btn btn-outline-primary btn-sm mb-2" onclick="findAlternativeForManual(${idx})">
+                          <i class="fas fa-search me-1"></i> Find Alternative
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm mb-2" onclick="unlinkManual(${idx})" ${item.current ? '' : 'disabled'}>
+                          <i class="fas fa-unlink me-1"></i> Unlink
+                        </button>
+                        <button class="btn btn-ignore btn-sm" onclick="markManualCorrect(${idx})" ${item.current ? '' : 'disabled'}>
+                          <i class="fas fa-check-circle me-1"></i> Mark OK
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>`;
+          });
+
+          list.innerHTML = html;
+
+          // Wire live filter once
+          if (filterEl && !filterEl._bound) {
+            filterEl.addEventListener('input', displayManualItems);
+            filterEl._bound = true;
+          }
+        }
+
+
+        function findAlternativeForManual(index) {
+          const item = manualItems[index];
+          const seed = `${item.category} ${item.childName}`;
+          const { terms } = buildSearchTerms(seed); // re-use your helper
+          window.currentManualIndex = index;
+          window.currentSearchCategory = item.category;
+          window.currentSearchDocumentName = item.childName;
+          window.currentSearchPath = item.current?.path || '';
+
+          document.getElementById('search-category').textContent = item.childName;
+          document.getElementById('search-terms').value = terms || seed.toLowerCase();
+          const modal = new bootstrap.Modal(document.getElementById('searchModal'));
+          modal.show();
+          performMissingSearch(document.getElementById('search-terms').value);
+        }
+
+        async function unlinkManual(index) {
+          const item = manualItems[index];
+          try {
+            await apiPost('/api/unlink-document', {
+              categoryKey: item.childName,
+              categoryName: item.category,
+              currentDocumentId: item.current?.id || null,
+              currentDocumentName: item.current?.name || null,
+              currentDocumentPath: item.current?.path || null
+            });
+            item.current = null;
+            item.found = false;
+            correctedCount++;
+            displayManualItems();
+            updateStatistics();
+            showNotification('Link removed.', 'success');
+          } catch (e) {
+            showNotification(`Failed to unlink: ${e?.message || e}`, 'error');
+          }
+        }
+
+        async function markManualCorrect(index) {
+          const item = manualItems[index];
+          try {
+            // optional “learn”
+            try {
+              await apiPost('/api/corrections/learn', {
+                categoryKey: item.childName,
+                categoryName: item.category,
+                chosenDocId: item.current?.id || null,
+                chosenDocName: item.current?.name || null
+              });
+            } catch {}
+            correctedCount++;
+            updateStatistics();
+            showNotification('Marked as correct.', 'success');
+          } catch (e) {
+            showNotification(`Failed to mark: ${e?.message || e}`, 'error');
+          }
+        }
+
+
+        async function generateFallbackMissingItems() {
+            console.log('Generating fallback missing items...');
+            try {
+                const imsData = await getJson('/api/ims-structure');
+                const fallbackMissing = [];
+                Object.keys(imsData || {}).forEach(categoryName => {
+                    const category = imsData[categoryName] || {};
+                    if (Array.isArray(category.children)) {
+                        category.children.forEach(childName => {
+                            let hasDocument = false;
+                            if (Array.isArray(category.enrichedChildren)) {
+                                const enrichedChild = category.enrichedChildren.find(ec => ec.name === childName);
+                                hasDocument = !!(enrichedChild && enrichedChild.found && enrichedChild.document);
+                            }
+                            if (!hasDocument) {
+                              fallbackMissing.push({
+                                  category: categoryName,
+                                  documentName: childName,
+                                  path: `${categoryName} > ${childName}`,
+                                  description: `Required document: ${childName}`,
+                                  lastScanned: null
+                              });
+                            }
+                        });
+                    }
+                });
+                console.log(`Generated ${fallbackMissing.length} fallback missing items`);
+                missingItems = fallbackMissing;
+                updateStatistics(); displayMissingItems();
+                return fallbackMissing;
+            } catch (error) { console.warn('Could not generate fallback missing items:', error); return []; }
+        }
+
+        function debugEndpoints() {
+            console.log('=== DEBUGGING ENDPOINTS ===');
+            ['/api/scan-suspicious-links','/api/scan-missing-items','/api/ims-structure','/api/ims-statistics']
+            .forEach(endpoint => {
+                fetch(endpoint)
+                    .then(response => { console.log(`${endpoint}: ${response.status} ${response.statusText}`); return response.text(); })
+                    .then(text => { console.log(`${endpoint} response:`, (text || '').substring(0, 200) + '...'); })
+                    .catch(error => { console.error(`${endpoint} failed:`, error); });
+            });
+        }
+
+        function fallbackMode() {
+            console.log('Entering fallback mode...');
+            const navTabs = document.querySelector('.nav-tabs'); if (navTabs && navTabs.style) { navTabs.style.display = 'none'; }
+            const issuesTabContent = document.getElementById('issuesTabContent');
+            if (issuesTabContent) {
+                issuesTabContent.innerHTML = `
+                    <div class="card">
+                        <div class="card-body text-center p-5">
+                            <i class="fas fa-tools fa-3x text-muted mb-3"></i>
+                            <h4>Basic Corrections Mode</h4>
+                            <p class="text-muted mb-4">Advanced scanning is unavailable. Use basic IMS management instead.</p>
+                            <div class="btn-group">
+                                <a href="/ims-index" class="btn btn-primary"><i class="fas fa-list me-1"></i> IMS Index</a>
+                                <button onclick="location.reload()" class="btn btn-outline-primary"><i class="fas fa-sync me-1"></i> Try Again</button>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+            document.getElementById('suspicious-count').textContent = '?';
+            document.getElementById('missing-count').textContent = '?';
+            document.getElementById('total-issues-count').textContent = '0';
+        }
+
+        (function injectDebugStyles() {
+            const debugStyles = `
+              .debug-info { background:#f8f9fa; border:1px solid #dee2e6; border-radius:.375rem; padding:1rem; margin:1rem 0; font-family:monospace; font-size:.875rem; }
+              .endpoint-status { display:inline-block; padding:.25rem .5rem; border-radius:.25rem; margin:.25rem; font-size:.75rem; }
+              .endpoint-ok { background:#d1ecf1; color:#0c5460; }
+              .endpoint-error { background:#f8d7da; color:#721c24; }
+              .endpoint-missing { background:#fff3cd; color:#856404; }
+            `;
+            if (!document.getElementById('debug-styles')) {
+                const styleEl = document.createElement('style');
+                styleEl.id = 'debug-styles';
+                styleEl.textContent = debugStyles;
+                document.head.appendChild(styleEl);
+            }
+        })();
+
+        function updateStatistics() {
+            console.log('updateStatistics called - suspicious:', suspiciousLinks.length, 'missing:', missingItems.length);
+            const totalIssues = suspiciousLinks.length + missingItems.length;
+            document.getElementById('suspicious-count').textContent = suspiciousLinks.length;
+            document.getElementById('missing-count').textContent = missingItems.length;
+            document.getElementById('total-issues-count').textContent = totalIssues;
+            document.getElementById('corrected-count').textContent = correctedCount;
+            document.getElementById('suspicious-badge').textContent = suspiciousLinks.length;
+            document.getElementById('missing-badge').textContent = missingItems.length;
+
+            if (window.updatingStatistics) { console.log('updateStatistics already running, skipping...'); return; }
+            window.updatingStatistics = true;
+            try {
+                const emptyState = document.getElementById('empty-state');
+                const issuesTabContent = document.getElementById('issuesTabContent');
+                const navTabs = document.querySelector('.nav-tabs');
+                if (totalIssues === 0) {
+                    if (issuesTabContent) issuesTabContent.style.display = 'none';
+                    if (navTabs) navTabs.style.display = 'none';
+                    if (emptyState) emptyState.style.display = 'block';
+                } else {
+                    if (issuesTabContent) issuesTabContent.style.display = 'block';
+                    if (navTabs) navTabs.style.display = 'block';
+                    if (emptyState) emptyState.style.display = 'none';
+                }
+            } finally { window.updatingStatistics = false; }
+            console.log('updateStatistics completed successfully');
+        }
+
+        function displaySuspiciousLinks() {
+            const container = document.getElementById('suspicious-container');
+            if (!container) return;
+            if (!Array.isArray(suspiciousLinks) || suspiciousLinks.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-4 text-success">
+                        <i class="fas fa-check-circle fa-3x mb-3"></i>
+                        <h4>No Suspicious Links Found!</h4>
+                        <p>All linked documents appear to be appropriate.</p>
+                    </div>`;
+                return;
+            }
+            let html = '';
+            suspiciousLinks.forEach((issue, index) => {
+                const current = issue?.currentDocument || {};
+                const docName = current.name || '(no name)';
+                const docPath = current.path || '(no path)';
+                const reasons = Array.isArray(issue?.reasons) ? issue.reasons.join(', ') : 'This link may not be appropriate';
+                html += `
+                    <div class="card correction-card suspicious-link" data-index="${index}">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                        <strong>${issue?.searchTerm || '(no term)'} </strong>
+                                        <div class="ms-2">
+                                            ${issue?.isContractor ? '<span class="contractor-indicator">Contractor Document</span>' : ''}
+                                            ${issue?.isArchived ? '<span class="contractor-indicator">Archived Document</span>' : ''}
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <small class="text-muted">Currently linked to:</small>
+                                        <div class="fw-medium text-primary">${docName}</div>
+                                        <div class="path-display mt-1"><i class="fas fa-folder me-1"></i>${docPath}</div>
+                                    </div>
+                                    <div class="alert alert-warning py-2"><small><i class="fas fa-info-circle me-1"></i>${reasons}</small></div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="btn-group-vertical" role="group">
+                                        ${issue?.suggestedAlternative ? `
+                                            <button onclick="acceptSuggestion(${index})" class="btn btn-correct btn-sm mb-2">
+                                                <i class="fas fa-check me-1"></i>Use Suggestion
+                                            </button>` : ''}
+                                        <button onclick="unlinkSuspicious(${index})" class="btn btn-outline-danger btn-sm mb-2">
+                                            <i class="fas fa-unlink me-1"></i>Unlink Document
+                                        </button>
+                                        <button onclick="findAlternativeForSuspicious(${index})" class="btn btn-outline-primary btn-sm mb-2">
+                                            <i class="fas fa-search me-1"></i>Find Alternative
+                                        </button>
+                                        <button onclick="markAsCorrect(${index})" class="btn btn-ignore btn-sm">
+                                            <i class="fas fa-check-circle me-1"></i>Mark as Correct
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function displayMissingItems() {
+            const container = document.getElementById('missing-container');
+            if (!container) return;
+            if (!Array.isArray(missingItems) || missingItems.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-4 text-success">
+                        <i class="fas fa-check-circle fa-3x mb-3"></i>
+                        <h4>No Missing Items!</h4>
+                        <p>All required documents are linked.</p>
+                    </div>`;
+                return;
+            }
+            let html = '';
+            missingItems.forEach((item, index) => {
+                const docName = item?.documentName || '(no name)';
+                const path = item?.path || '(no path)';
+                const category = item?.category || '';
+                html += `
+                    <div class="card correction-card missing-item" data-missing-index="${index}">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-times-circle text-danger me-2"></i>
+                                        <strong>${docName}</strong>
+                                        <span class="missing-indicator ms-2">No Document Found</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <small class="text-muted">Category path:</small>
+                                        <div class="fw-medium">${path}</div>
+                                    </div>
+                                    <div class="alert alert-danger py-2"><small><i class="fas fa-info-circle me-1"></i>This required document has no linked file. Search for an appropriate document to link.</small></div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="btn-group-vertical" role="group">
+                                        <button onclick="searchForMissing('${category}', '${docName}', '${path}')" class="btn btn-primary btn-sm mb-2">
+                                            <i class="fas fa-search me-1"></i>Search Documents
+                                        </button>
+                                        <button onclick="autoSearchForMissing('${category}', '${docName}', '${path}')" class="btn btn-secondary btn-sm">
+                                            <i class="fas fa-magic me-1"></i>Auto Search
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function searchForMissing(category, documentName, path) {
+            document.getElementById('search-category').textContent = documentName;
+            document.getElementById('search-terms').value = (documentName || '').toLowerCase();
+            window.currentSearchCategory = category;
+            window.currentSearchDocumentName = documentName;
+            window.currentSearchPath = path;
+            const modal = new bootstrap.Modal(document.getElementById('searchModal')); modal.show();
+        }
+
+        function autoSearchForMissing(category, documentName, path) {
+            const searchTerms = (documentName || '').toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(term => term.length > 2).join(' ');
+            window.currentSearchCategory = category;
+            window.currentSearchDocumentName = documentName;
+            window.currentSearchPath = path;
+            performMissingSearch(searchTerms);
+            const modal = new bootstrap.Modal(document.getElementById('searchModal')); modal.show();
+        }
+
+        async function performMissingSearch(searchTerms) {
+            if (!searchTerms || !window.currentSearchCategory) return;
+            const resultsContainer = document.getElementById('search-results');
+            resultsContainer.innerHTML = `<div class="text-center p-3"><div class="spinner-border spinner-border-sm" role="status"></div><span class="ms-2">Searching...</span></div>`;
+            try {
+                const data = await getJson('/api/search-missing-document', {
+                    timeoutMs: 20000,
+                    options: { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ searchTerm: searchTerms, category: window.currentSearchCategory }) }
+                });
+                if (data?.success && (data.primaryMatch || (Array.isArray(data.alternatives) && data.alternatives.length > 0))) {
+                    let html = '';
+                    if (data.primaryMatch) {
+                        html += `
+                            <div class="mb-3">
+                                <h6 class="text-success"><i class="fas fa-star me-1"></i> Best Match:</h6>
+                                <div class="card border-success">
+                                    <div class="card-body p-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div><strong>${data.primaryMatch.name}</strong><br><small class="text-muted">${data.primaryMatch.path}</small></div>
+                                            <button class="btn btn-success btn-sm" onclick="linkMissingDocument('${data.primaryMatch.id}', '${data.primaryMatch.name}')"><i class="fas fa-link me-1"></i> Link</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+                    if (Array.isArray(data.alternatives) && data.alternatives.length > 0) {
+                        html += `<h6><i class="fas fa-list me-1"></i> Other Matches:</h6>`;
+                        data.alternatives.forEach(alt => {
+                            html += `
+                                <div class="card mb-2">
+                                    <div class="card-body p-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div><strong>${alt.name}</strong><span class="badge bg-secondary ms-2">${alt.score}%</span><br><small class="text-muted">${alt.folder}</small></div>
+                                            <button class="btn btn-outline-primary btn-sm" onclick="linkMissingDocument('${alt.id}', '${alt.name}')"><i class="fas fa-link me-1"></i> Link</button>
+                                        </div>
+                                    </div>
+                                </div>`;
+                        });
+                    }
+                    resultsContainer.innerHTML = html;
+                } else {
+                    resultsContainer.innerHTML = `<div class="text-center p-4 text-muted"><i class="fas fa-search fa-2x mb-2"></i><p>No matching documents found.</p><small>Try different search terms or check if the document exists.</small></div>`;
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsContainer.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Search failed. Please try again.</div>`;
+            }
+        }
+
+                // ---------- Manual Fix Mode (robust) ----------
+       // let manualItems = []; // [{category, childName, current:{id,name,path}, found:boolean}]
+
+        function ensureManualUI() {
+          let wrap = document.getElementById('manual-container');
+          if (!wrap) {
+            // Inject the container right after the tab content
+            const host = document.getElementById('issuesTabContent') || document.body;
+            wrap = document.createElement('div');
+            wrap.id = 'manual-container';
+            wrap.className = 'mt-3';
+            wrap.style.display = 'none';
+            wrap.innerHTML = `
+              <div class="card correction-card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="input-group w-50">
+                      <span class="input-group-text"><i class="fas fa-filter"></i></span>
+                      <input id="manual-filter" class="form-control" placeholder="Filter e.g. SWMS 044, Form 55, Rail">
+                    </div>
+                    <div>
+                      <button class="btn btn-secondary btn-sm" onclick="refreshManualReview()">
+                        <i class="fas fa-sync"></i> Refresh
+                      </button>
+                      <button class="btn btn-outline-secondary btn-sm" onclick="closeManualReview()">
+                        <i class="fas fa-times"></i> Close
+                      </button>
+                    </div>
+                  </div>
+                  <div id="manual-list">
+                    <div class="text-center text-muted p-4">
+                      <i class="fas fa-info-circle me-1"></i> Loading…
+                    </div>
+                  </div>
+                </div>
+              </div>`;
+            host.parentNode.insertBefore(wrap, host.nextSibling);
+          }
+          if (!document.getElementById('manual-list')) {
+            const inner = document.createElement('div');
+            inner.id = 'manual-list';
+            wrap.appendChild(inner);
+          }
+          if (!document.getElementById('manual-filter')) {
+            const header = wrap.querySelector('.input-group');
+            if (header) {
+              header.insertAdjacentHTML('beforeend',
+                '<input id="manual-filter" class="form-control" placeholder="Filter e.g. SWMS 044, Form 55, Rail">');
+            }
+          }
+          return wrap;
+        }
+
+        
+        async function refreshManualReview() {
+          ensureManualUI();
+          const list = document.getElementById('manual-list');
+          list.innerHTML = `
+            <div class="text-center p-3">
+              <div class="spinner-border spinner-border-sm" role="status"></div>
+              <span class="ms-2">Loading…</span>
+            </div>`;
+
+          try {
+            const imsData = await getJson('/api/ims-structure');
+            // Log the shape so we can adjust if needed
+            const sampleKey = Object.keys(imsData || {})[0];
+            console.log('[ManualFix] ims-structure keys:', Object.keys(imsData || {}));
+            if (sampleKey) console.log('[ManualFix] sample category:', sampleKey, imsData[sampleKey]);
+
+            manualItems = buildManualItemsFromIMS(imsData);
+            console.log('[ManualFix] built items:', manualItems.length);
+
+            displayManualItems();
+          } catch (e) {
+            console.error('[ManualFix] load error:', e);
+            list.innerHTML = `<div class="alert alert-danger">
+              <i class="fas fa-exclamation-triangle me-1"></i>
+              Failed to load IMS structure: ${e?.message || e}
+            </div>`;
+          }
+        }
+
+        // Accepts various shapes: {Category:{enrichedChildren:[]}}, array of categories, etc.
+        function buildManualItemsFromIMS(data) {
+          const items = [];
+
+          const takeEnriched = (catName, cat) => {
+            if (Array.isArray(cat.enrichedChildren)) {
+              cat.enrichedChildren.forEach(ec => {
+                const current = ec?.document || null;
+                items.push({
+                  category: catName,
+                  childName: ec?.name || '',
+                  current: current ? {
+                    id: current.id || null,
+                    name: current.name || current.filename || '',
+                    path: current.path || current.folder || ''
+                  } : null,
+                  found: !!(ec?.found && current)
+                });
+              });
+              return true;
+            }
+            return false;
+          };
+
+          const takeChildrenPlusLinks = (catName, cat) => {
+            if (Array.isArray(cat.children)) {
+              cat.children.forEach(childName => {
+                const linkMap = cat.links || cat.linked || cat.mappings || {};
+                const doc = linkMap[childName] || null;
+                const current = doc ? {
+                  id: doc.id || null,
+                  name: doc.name || doc.filename || '',
+                  path: doc.path || doc.folder || ''
+                } : null;
+                items.push({ category: catName, childName, current, found: !!current });
+              });
+              return true;
+            }
+            return false;
+          };
+
+          if (Array.isArray(data)) {
+            data.forEach(cat => {
+              const name = cat?.name || cat?.category || 'Category';
+              if (takeEnriched(name, cat)) return;
+              if (takeChildrenPlusLinks(name, cat)) return;
+              if (Array.isArray(cat.docs)) {
+                cat.docs.forEach(d => items.push({
+                  category: name,
+                  childName: d?.displayName || d?.name || d?.filename || '',
+                  current: { id: d?.id || null, name: d?.name || d?.filename || '', path: d?.path || d?.folder || '' },
+                  found: true
+                }));
+              }
+            });
+          } else if (data && typeof data === 'object') {
+            Object.keys(data).forEach(catName => {
+              const cat = data[catName] || {};
+              if (takeEnriched(catName, cat)) return;
+              if (takeChildrenPlusLinks(catName, cat)) return;
+              if (Array.isArray(cat.docs)) {
+                cat.docs.forEach(d => items.push({
+                  category: catName,
+                  childName: d?.displayName || d?.name || d?.filename || '',
+                  current: { id: d?.id || null, name: d?.name || d?.filename || '', path: d?.path || d?.folder || '' },
+                  found: true
+                }));
+              }
+            });
+          }
+
+          // Prioritise common safety doc types
+          const score = (it) => {
+            const s = `${it.category} ${it.childName}`.toLowerCase();
+            let sc = 0;
+            if (/swms/.test(s)) sc += 3;
+            if (/\bform|frm\b/.test(s)) sc += 3;
+            if (/jsea|jsa/.test(s)) sc += 2;
+            if (/rtw/.test(s)) sc += 2;
+            if (/tool\s*box/.test(s)) sc += 2;
+            if (/action\s*log/.test(s)) sc += 1;
+            if (/incident/.test(s)) sc += 1;
+            return sc;
+          };
+          return items.sort((a,b) => score(b) - score(a));
+        }
+
+
+        
+        function findAlternativeForManual(index) {
+          const item = manualItems[index];
+          const seed = `${item.category} ${item.childName}`;
+          const { terms } = buildSearchTerms(seed);
+          window.currentManualIndex = index;
+          window.currentSearchCategory = item.category;
+          window.currentSearchDocumentName = item.childName;
+          window.currentSearchPath = item.current?.path || '';
+          document.getElementById('search-category').textContent = item.childName;
+          document.getElementById('search-terms').value = terms || seed.toLowerCase();
+          const modal = new bootstrap.Modal(document.getElementById('searchModal'));
+          modal.show();
+          performMissingSearch(document.getElementById('search-terms').value);
+        }
+
+        async function unlinkManual(index) {
+          const item = manualItems[index];
+          try {
+            await apiPost('/api/unlink-document', {
+              categoryKey: item.childName,
+              categoryName: item.category,
+              currentDocumentId: item.current?.id || null,
+              currentDocumentName: item.current?.name || null,
+              currentDocumentPath: item.current?.path || null
+            });
+            item.current = null; item.found = false;
+            correctedCount++; displayManualItems(); updateStatistics();
+            showNotification('Link removed.', 'success');
+          } catch (e) { showNotification(`Failed to unlink: ${e?.message || e}`, 'error'); }
+        }
+
+        async function markManualCorrect(index) {
+          const item = manualItems[index];
+          try {
+            try {
+              await apiPost('/api/corrections/learn', {
+                categoryKey: item.childName,
+                categoryName: item.category,
+                chosenDocId: item.current?.id || null,
+                chosenDocName: item.current?.name || null
+              });
+            } catch {}
+            correctedCount++; updateStatistics();
+            showNotification('Marked as correct.', 'success');
+          } catch (e) { showNotification(`Failed to mark: ${e?.message || e}`, 'error'); }
+        }
+        // ---------- end Manual Fix Mode ----------
+
+
+        async function linkMissingDocument(documentId, documentName) {
+          if (Number.isInteger(window.currentManualIndex)) {
+            const item = manualItems[window.currentManualIndex];
+            await apiPost('/api/replace-link', {
+              categoryKey: item.childName,          // many backends use a single key
+              categoryName: item.category,          // include both; server can ignore what's not needed
+              documentName: item.childName,
+              newDocumentId: documentId,
+              newDocumentName: documentName
+            });
+
+            // learn so it ranks next time (optional)
+            try {
+              await apiPost('/api/corrections/learn', {
+                categoryKey: item.childName,
+                categoryName: item.category,
+                chosenDocId: documentId,
+                chosenDocName: documentName
+              });
+            } catch {}
+
+            item.current = { id: documentId, name: documentName, path: item.current?.path || '' };
+            correctedCount++;
+            displayManualItems();
+            updateStatistics();
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('searchModal'));
+            modal?.hide();
+            window.currentManualIndex = undefined;
+
+            showNotification(`Re-linked to "${documentName}".`, 'success');
+            return;
+          }
+
+          try {
+            if (window.currentSearchIsForSuspicious && Number.isInteger(window.currentSuspiciousIndex)) {
+              const issue = suspiciousLinks[window.currentSuspiciousIndex];
+              await apiPost('/api/replace-link', {
+                categoryKey: issue.searchTerm || issue.category || '',
+                newDocumentId: documentId,
+                newDocumentName: documentName
+              });
+              try { await apiPost('/api/corrections/learn', {
+                categoryKey: issue.searchTerm || issue.category || '',
+                chosenDocId: documentId,
+                chosenDocName: documentName
+              }); } catch {}
+              correctedCount++; removeSuspiciousAt(window.currentSuspiciousIndex);
+              const modal = bootstrap.Modal.getInstance(document.getElementById('searchModal')); modal?.hide();
+              window.currentSearchIsForSuspicious = false; window.currentSuspiciousIndex = undefined;
+              showNotification(`Re-linked to "${documentName}".`, 'success');
+              return;
+            }
+            const data = await apiPost('/api/link-missing-document', {
+              categoryName: window.currentSearchCategory,
+              documentName: window.currentSearchDocumentName,
+              documentId: documentId
+            });
+            if (data?.success) {
+              showNotification(`Successfully linked "${documentName}"!`, 'success');
+              correctedCount++; updateStatistics();
+              const modal = bootstrap.Modal.getInstance(document.getElementById('searchModal')); modal?.hide();
+              const idx = missingItems.findIndex(item => item.category === window.currentSearchCategory && item.documentName === window.currentSearchDocumentName);
+              if (idx >= 0) { missingItems.splice(idx, 1); displayMissingItems(); }
+            } else { showNotification(`Failed to link document: ${data?.message || 'Unknown error'}`, 'error'); }
+          } catch (error) { console.error('Link error:', error); showNotification('Failed to link document', 'error'); }
+        }
+
+        document.getElementById('search-btn').addEventListener('click', function() {
+            const searchTerms = document.getElementById('search-terms').value.trim();
+            if (searchTerms) { performMissingSearch(searchTerms); }
+        });
+
+        document.getElementById('auto-search-btn').addEventListener('click', function() {
+            const docName = window.currentSearchDocumentName;
+            if (docName) {
+                const autoTerms = docName.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(term => term.length > 2).join(' ');
+                document.getElementById('search-terms').value = autoTerms;
+                performMissingSearch(autoTerms);
+            }
+        });
+
+        function showNotification(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
+            const notification = document.createElement('div');
+            notification.className = `alert ${alertClass} position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.setAttribute('role','alert');
+            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : (type === 'error' ? 'exclamation-triangle' : 'info')}-circle me-2"></i>${message}
+                <button type="button" class="btn-close float-end" onclick="this.parentElement.remove()" aria-label="Close"></button>`;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+    </script>
+</body>
+</html>

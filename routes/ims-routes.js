@@ -160,6 +160,1223 @@ router.get("/api/learning-stats", (req, res) => {
   }
 });
 
+// API endpoint to search for document alternatives with UI
+router.post("/api/search-document-alternatives", (req, res) => {
+  try {
+    const { searchTerm, excludeDocumentId, categoryName } = req.body;
+
+    if (!searchTerm) {
+      return res.json({
+        success: false,
+        message: "Search term is required",
+      });
+    }
+
+    console.log(`Searching alternatives for: "${searchTerm}"`);
+
+    // Use enhanced search first
+    let primaryMatch = null;
+    try {
+      primaryMatch = req.app.locals.findDocumentByNameWithLearning
+        ? req.app.locals.findDocumentByNameWithLearning(searchTerm, false)
+        : null;
+    } catch (error) {
+      console.log("Enhanced search failed, using basic search");
+    }
+
+    // Get all possible matches with scoring
+    const allMatches = req.app.locals.documentIndex
+      .filter((doc) => {
+        // Exclude the problematic document
+        if (excludeDocumentId && doc.id === excludeDocumentId) return false;
+
+        // Exclude archived and contractor documents
+        if (doc.isArchived) return false;
+        if (
+          req.app.locals.isArchivedDocument &&
+          req.app.locals.isArchivedDocument(doc.path)
+        )
+          return false;
+        if (
+          req.app.locals.isContractorDocument &&
+          req.app.locals.isContractorDocument(doc.path)
+        )
+          return false;
+
+        return true;
+      })
+      .map((doc) => {
+        const score = calculateDocumentMatchScore(searchTerm, doc);
+        return {
+          id: doc.id,
+          name: doc.name,
+          path: doc.path,
+          folder: doc.folder || "Root",
+          size: doc.size,
+          modified: doc.modified,
+          created: doc.created,
+          extension: doc.extension || "",
+          score: score,
+          isArchived: doc.isArchived || false,
+        };
+      })
+      .filter((doc) => doc.score > 0) // Only include docs with some relevance
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20); // Limit to top 20 results
+
+    res.json({
+      success: true,
+      searchTerm: searchTerm,
+      primaryMatch: primaryMatch
+        ? {
+            id: primaryMatch.id,
+            name: primaryMatch.name,
+            path: primaryMatch.path,
+            folder: primaryMatch.folder || "Root",
+            score: 100, // Primary match gets highest score
+          }
+        : null,
+      alternatives: allMatches,
+      totalFound: allMatches.length,
+    });
+  } catch (error) {
+    console.error("Error searching for alternatives:", error);
+    res.status(500).json({
+      success: false,
+      message: "Search failed: " + error.message,
+    });
+  }
+});
+
+// Enhanced scoring function
+// Enhanced scoring function
+function calculateDocumentMatchScore(searchTerm, document) {
+  let score = 0;
+  const searchLower = searchTerm.toLowerCase();
+  const docNameLower = document.name.toLowerCase();
+  const docPathLower = document.path.toLowerCase();
+  const docFolderLower = (document.folder || "").toLowerCase();
+
+  // Remove file extension for better matching
+  const docNameNoExt = docNameLower.replace(/\.[^/.]+$/, "");
+  const searchNoSpaces = searchLower.replace(/\s+/g, "");
+  const docNameNoSpaces = docNameNoExt.replace(/\s+/g, "");
+
+  // Exact matches (highest scores)
+  if (docNameLower === searchLower) score += 100;
+  if (docNameNoExt === searchLower) score += 95;
+  if (docNameNoSpaces === searchNoSpaces) score += 90;
+
+  // Contains matches
+  if (docNameLower.includes(searchLower)) score += 50;
+  if (docNameNoExt.includes(searchLower)) score += 45;
+  if (searchLower.includes(docNameNoExt) && docNameNoExt.length > 3)
+    score += 40;
+
+  // Word boundary matches
+  const searchWords = searchLower.split(/[\s\-_]+/).filter((w) => w.length > 2);
+  const docWords = docNameNoExt.split(/[\s\-_]+/).filter((w) => w.length > 2);
+
+  searchWords.forEach((searchWord) => {
+    docWords.forEach((docWord) => {
+      if (searchWord === docWord) score += 20;
+      else if (docWord.includes(searchWord)) score += 10;
+      else if (searchWord.includes(docWord)) score += 8;
+    });
+  });
+
+  // Path and folder matches (lower scores)
+  if (docPathLower.includes(searchLower)) score += 15;
+  if (docFolderLower.includes(searchLower)) score += 10;
+
+  // Partial matches with different approaches
+  const searchPhonetic = searchLower.replace(/[^a-z0-9]/g, "");
+  const docPhonetic = docNameNoExt.replace(/[^a-z0-9]/g, "");
+
+  if (searchPhonetic.length > 3 && docPhonetic.includes(searchPhonetic)) {
+    score += 25;
+  }
+
+  // Acronym matching (e.g., "Safety Policy" matches "SP")
+  const searchAcronym = searchWords.map((w) => w[0]).join("");
+  const docAcronym = docWords.map((w) => w[0]).join("");
+  if (
+    searchAcronym.length > 1 &&
+    (searchAcronym === docAcronym || docNameLower.includes(searchAcronym))
+  ) {
+    score += 15;
+  }
+
+  return Math.round(score);
+}
+
+// Replace the placeholder findAlternative function in your ims-corrections.ejs:
+function findAlternative(index) {
+  const issue = suspiciousLinks[index];
+
+  // Show loading state
+  const button = event.target;
+  const originalText = button.innerHTML;
+  button.innerHTML =
+    '<span class="spinner-border spinner-border-sm me-1"></span>Searching...';
+  button.disabled = true;
+
+  // Search for alternatives
+  fetch("/api/search-document-alternatives", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      searchTerm: issue.searchTerm,
+      excludeDocumentId: issue.currentDocument.id,
+      categoryName: issue.category,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        showAlternativeSelectionModal(index, issue, data);
+      } else {
+        throw new Error(data.message);
+      }
+    })
+    .catch((error) => {
+      console.error("Search error:", error);
+      showNotification(
+        "Error searching for alternatives: " + error.message,
+        "error"
+      );
+    })
+    .finally(() => {
+      button.innerHTML = originalText;
+      button.disabled = false;
+    });
+}
+
+// Modal for selecting alternatives
+function showAlternativeSelectionModal(issueIndex, issue, searchData) {
+  const modalHtml = `
+    <div class="modal fade" id="alternativeModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-search me-2"></i>
+              Find Alternative for "${issue.searchTerm}"
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Search Input -->
+            <div class="mb-3">
+              <label class="form-label">Search for different document:</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="alternativeSearch" 
+                       value="${
+                         issue.searchTerm
+                       }" placeholder="Enter search term...">
+                <button class="btn btn-outline-secondary" onclick="searchAlternatives()">
+                  <i class="fas fa-search"></i> Search
+                </button>
+              </div>
+            </div>
+            
+            <!-- Current Problem -->
+            <div class="alert alert-warning mb-3">
+              <strong>Current problematic link:</strong><br>
+              <i class="fas fa-file me-1"></i> ${issue.currentDocument.name}<br>
+              <small class="text-muted">${issue.currentDocument.path}</small>
+            </div>
+            
+            <!-- Search Results -->
+            <div id="alternativeResults">
+              ${generateAlternativeResultsHtml(searchData)}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Remove existing modal if any
+  const existingModal = document.getElementById("alternativeModal");
+  if (existingModal) existingModal.remove();
+
+  // Add new modal to page
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  // Store current issue data for later use
+  window.currentAlternativeIssue = { issueIndex, issue, searchData };
+
+  // Show modal
+  const modal = new bootstrap.Modal(
+    document.getElementById("alternativeModal")
+  );
+  modal.show();
+
+  // Focus search input
+  document.getElementById("alternativeSearch").focus();
+
+  // Add enter key handler
+  document
+    .getElementById("alternativeSearch")
+    .addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        searchAlternatives();
+      }
+    });
+}
+
+function generateAlternativeResultsHtml(data) {
+  let html = "";
+
+  if (data.primaryMatch) {
+    html += `
+      <div class="mb-3">
+        <h6 class="text-success">
+          <i class="fas fa-star me-1"></i> Best Match (Enhanced AI):
+        </h6>
+        <div class="card border-success">
+          <div class="card-body py-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <strong>${data.primaryMatch.name}</strong><br>
+                <small class="text-muted">${data.primaryMatch.path}</small>
+              </div>
+              <button class="btn btn-success btn-sm" 
+                      onclick="selectAlternative('${data.primaryMatch.id}', '${data.primaryMatch.name}')">
+                <i class="fas fa-check me-1"></i> Select This
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (data.alternatives && data.alternatives.length > 0) {
+    html += `
+      <h6><i class="fas fa-list me-1"></i> Other Matches (${data.alternatives.length}):</h6>
+      <div class="alternative-list" style="max-height: 300px; overflow-y: auto;">
+    `;
+
+    data.alternatives.forEach((alt) => {
+      const scoreColor =
+        alt.score > 50 ? "success" : alt.score > 20 ? "warning" : "secondary";
+      html += `
+        <div class="card mb-2 border-light">
+          <div class="card-body py-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center">
+                  <strong>${alt.name}</strong>
+                  <span class="badge bg-${scoreColor} ms-2">${alt.score}%</span>
+                </div>
+                <div class="text-muted small mt-1">
+                  <i class="fas fa-folder me-1"></i> ${alt.folder}
+                  <span class="ms-2">
+                    <i class="fas fa-calendar me-1"></i> ${new Date(
+                      alt.modified
+                    ).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+              <button class="btn btn-outline-primary btn-sm" 
+                      onclick="selectAlternative('${alt.id}', '${alt.name}')">
+                <i class="fas fa-link me-1"></i> Select
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    html += "</div>";
+  } else {
+    html += `
+      <div class="text-center text-muted py-4">
+        <i class="fas fa-search fa-2x mb-2"></i><br>
+        No suitable alternatives found.<br>
+        <small>Try a different search term or check your document library.</small>
+      </div>
+    `;
+  }
+
+  return html;
+}
+
+// Function to search for new alternatives
+function searchAlternatives() {
+  const searchTerm = document.getElementById("alternativeSearch").value.trim();
+  if (!searchTerm) return;
+
+  const resultsDiv = document.getElementById("alternativeResults");
+  resultsDiv.innerHTML =
+    '<div class="text-center py-4"><span class="spinner-border"></span> Searching...</div>';
+
+  const currentIssue = window.currentAlternativeIssue.issue;
+
+  fetch("/api/search-document-alternatives", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      searchTerm: searchTerm,
+      excludeDocumentId: currentIssue.currentDocument.id,
+      categoryName: currentIssue.category,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        resultsDiv.innerHTML = generateAlternativeResultsHtml(data);
+      } else {
+        throw new Error(data.message);
+      }
+    })
+    .catch((error) => {
+      console.error("Search error:", error);
+      resultsDiv.innerHTML = `
+      <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle me-1"></i>
+        Search failed: ${error.message}
+      </div>
+    `;
+    });
+}
+
+// Function to select an alternative
+function selectAlternative(documentId, documentName) {
+  const modalElement = document.getElementById("alternativeModal");
+  const modal = bootstrap.Modal.getInstance(modalElement);
+  const { issueIndex, issue } = window.currentAlternativeIssue;
+
+  // Close modal
+  modal.hide();
+
+  // Apply the selection (same as acceptSuggestion but with selected document)
+  const originalIssue = suspiciousLinks[issueIndex];
+
+  // Show loading
+  showNotification("Applying alternative selection...", "info");
+
+  // First unlink current document
+  unlinkCurrentDocument(originalIssue)
+    .then(() => {
+      // Then link the selected alternative
+      return linkDocument(
+        originalIssue.searchTerm,
+        documentId,
+        originalIssue.category
+      );
+    })
+    .then(() => {
+      // Remove from suspicious links array
+      suspiciousLinks.splice(issueIndex, 1);
+      correctedCount++;
+      updateStatistics();
+
+      // Remove the card from display
+      const card = document.querySelector(`[data-index="${issueIndex}"]`);
+      if (card) {
+        card.style.animation = "slideOut 0.3s ease";
+        setTimeout(() => card.remove(), 300);
+      }
+
+      showNotification(
+        `Successfully linked "${documentName}" to "${originalIssue.searchTerm}"!`,
+        "success"
+      );
+    })
+    .catch((error) => {
+      console.error("Error applying alternative:", error);
+      showNotification("Error applying alternative: " + error.message, "error");
+    });
+}
+
+// API endpoint to scan for suspicious links
+router.get("/api/scan-suspicious-links", (req, res) => {
+  try {
+    console.log("Scanning for suspicious auto-links...");
+
+    const imsIndex = req.app.locals.loadIMSIndex();
+    const suspiciousLinks = [];
+    const learningPatterns = req.app.locals.loadLearningPatterns();
+
+    // Analyze each category for suspicious links
+    Object.keys(imsIndex).forEach((categoryName) => {
+      const category = imsIndex[categoryName];
+
+      if (
+        category.enrichedChildren &&
+        Array.isArray(category.enrichedChildren)
+      ) {
+        category.enrichedChildren.forEach((child) => {
+          if (child.found && child.document) {
+            const document = child.document;
+            let suspicious = false;
+            let reasons = [];
+            let suggestedAlternative = null;
+
+            // Check if it's a contractor document
+            const isContractor = req.app.locals.isContractorDocument(
+              document.path
+            );
+            if (isContractor) {
+              suspicious = true;
+              reasons.push("Document is in contractor/vendor folder");
+            }
+
+            // Check if it's an archived document
+            const isArchived =
+              req.app.locals.isArchivedDocument(document.path) ||
+              document.isArchived;
+            if (isArchived) {
+              suspicious = true;
+              reasons.push("Document appears to be archived or outdated");
+            }
+
+            // Check against negative patterns
+            const negativePatterns = learningPatterns.negativePatterns || [];
+            const hasNegativePattern = negativePatterns.some(
+              (pattern) =>
+                pattern.searchTerm === child.name.toLowerCase() &&
+                pattern.avoidDocumentId === document.id
+            );
+
+            if (hasNegativePattern) {
+              suspicious = true;
+              reasons.push("Previously marked as incorrect by user");
+            }
+
+            // Try to find a better alternative if this link is suspicious
+            if (suspicious) {
+              try {
+                const betterMatch =
+                  req.app.locals.findDocumentByNameWithLearning(
+                    child.name,
+                    false // Don't include archived
+                  );
+
+                // Only suggest if it's different and better
+                if (
+                  betterMatch &&
+                  betterMatch.id !== document.id &&
+                  !req.app.locals.isContractorDocument(betterMatch.path) &&
+                  !req.app.locals.isArchivedDocument(betterMatch.path)
+                ) {
+                  suggestedAlternative = {
+                    id: betterMatch.id,
+                    name: betterMatch.name,
+                    path: betterMatch.path,
+                    isArchived: betterMatch.isArchived || false,
+                  };
+                }
+              } catch (error) {
+                console.log(
+                  `Could not find alternative for ${child.name}:`,
+                  error.message
+                );
+              }
+            }
+
+            // Add to suspicious links if any issues found
+            if (suspicious) {
+              suspiciousLinks.push({
+                searchTerm: child.name,
+                category: categoryName,
+                currentDocument: {
+                  id: document.id,
+                  name: document.name,
+                  path: document.path,
+                  isArchived: document.isArchived || false,
+                },
+                isContractor: isContractor,
+                isArchived: isArchived,
+                suspicious: true,
+                reasons: reasons,
+                suggestedAlternative: suggestedAlternative,
+                autoLinked: child.autoLinked || false,
+                linkedAt: child.linkedAt,
+              });
+            }
+          }
+        });
+      }
+    });
+
+    console.log(`Found ${suspiciousLinks.length} suspicious links`);
+
+    res.json({
+      success: true,
+      suspiciousLinks: suspiciousLinks,
+      totalScanned: Object.keys(imsIndex).reduce(
+        (sum, cat) =>
+          sum +
+          (imsIndex[cat].enrichedChildren
+            ? imsIndex[cat].enrichedChildren.length
+            : 0),
+        0
+      ),
+      suspiciousCount: suspiciousLinks.length,
+    });
+  } catch (error) {
+    console.error("Error scanning for suspicious links:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error scanning for suspicious links: " + error.message,
+    });
+  }
+});
+
+// API endpoint for bulk correction of suspicious links
+router.post("/api/bulk-correct-links", (req, res) => {
+  try {
+    const { unlinkContractors, unlinkArchived, applyAlternatives } = req.body;
+    console.log("Starting bulk correction with options:", {
+      unlinkContractors,
+      unlinkArchived,
+      applyAlternatives,
+    });
+
+    const imsIndex = req.app.locals.loadIMSIndex();
+    let correctedCount = 0;
+    let unlinkedCount = 0;
+    let alternativesApplied = 0;
+
+    // Process each category
+    Object.keys(imsIndex).forEach((categoryName) => {
+      const category = imsIndex[categoryName];
+
+      if (
+        category.enrichedChildren &&
+        Array.isArray(category.enrichedChildren)
+      ) {
+        // Process each child document
+        category.enrichedChildren.forEach((child, childIndex) => {
+          if (child.found && child.document) {
+            const document = child.document;
+            let shouldUnlink = false;
+            let shouldReplace = false;
+            let replacement = null;
+
+            // Check if should unlink contractor documents
+            if (
+              unlinkContractors &&
+              req.app.locals.isContractorDocument(document.path)
+            ) {
+              shouldUnlink = true;
+              console.log(`Unlinking contractor document: ${document.name}`);
+
+              // Record negative learning pattern
+              req.app.locals.recordNegativeLearningPattern(
+                child.name,
+                document,
+                "bulk_contractor_correction",
+                categoryName
+              );
+            }
+
+            // Check if should unlink archived documents
+            if (
+              unlinkArchived &&
+              (req.app.locals.isArchivedDocument(document.path) ||
+                document.isArchived)
+            ) {
+              shouldUnlink = true;
+              console.log(`Unlinking archived document: ${document.name}`);
+
+              // Record negative learning pattern
+              req.app.locals.recordNegativeLearningPattern(
+                child.name,
+                document,
+                "bulk_archive_correction",
+                categoryName
+              );
+            }
+
+            // Try to find alternatives if requested
+            if (applyAlternatives && shouldUnlink) {
+              try {
+                const betterMatch =
+                  req.app.locals.findDocumentByNameWithLearning(
+                    child.name,
+                    false // Don't include archived
+                  );
+
+                if (
+                  betterMatch &&
+                  betterMatch.id !== document.id &&
+                  !req.app.locals.isContractorDocument(betterMatch.path) &&
+                  !req.app.locals.isArchivedDocument(betterMatch.path)
+                ) {
+                  replacement = betterMatch;
+                  shouldReplace = true;
+                  shouldUnlink = false; // We're replacing, not just unlinking
+                  console.log(
+                    `Found replacement for ${child.name}: ${betterMatch.name}`
+                  );
+                }
+              } catch (error) {
+                console.log(`No suitable replacement found for ${child.name}`);
+              }
+            }
+
+            // Apply the correction
+            if (shouldReplace && replacement) {
+              // Replace with better alternative
+              category.enrichedChildren[childIndex].document = {
+                id: replacement.id,
+                name: replacement.name,
+                path: replacement.path,
+                isArchived: replacement.isArchived || false,
+              };
+              category.enrichedChildren[childIndex].found = true;
+              category.enrichedChildren[childIndex].correctedAt =
+                new Date().toISOString();
+              category.enrichedChildren[childIndex].correctionType =
+                "bulk_replacement";
+
+              // Record positive learning pattern
+              req.app.locals.learnFromManualLink(
+                child.name,
+                replacement,
+                categoryName,
+                "bulk_correction"
+              );
+
+              alternativesApplied++;
+              correctedCount++;
+            } else if (shouldUnlink) {
+              // Just unlink the problematic document
+              category.enrichedChildren[childIndex].document = null;
+              category.enrichedChildren[childIndex].found = false;
+              category.enrichedChildren[childIndex].unlinkedAt =
+                new Date().toISOString();
+              category.enrichedChildren[childIndex].unlinkReason =
+                "bulk_correction";
+
+              unlinkedCount++;
+              correctedCount++;
+            }
+          }
+        });
+      }
+    });
+
+    // Save the updated IMS index
+    if (req.app.locals.saveIMSIndex(imsIndex)) {
+      console.log(
+        `Bulk correction completed: ${correctedCount} total corrections`
+      );
+      console.log(`  - ${unlinkedCount} documents unlinked`);
+      console.log(`  - ${alternativesApplied} alternatives applied`);
+
+      res.json({
+        success: true,
+        message: `Bulk correction completed successfully`,
+        correctedCount: correctedCount,
+        unlinkedCount: unlinkedCount,
+        alternativesApplied: alternativesApplied,
+      });
+    } else {
+      throw new Error("Failed to save IMS index after corrections");
+    }
+  } catch (error) {
+    console.error("Error in bulk correction:", error);
+    res.status(500).json({
+      success: false,
+      message: "Bulk correction failed: " + error.message,
+    });
+  }
+});
+
+// API endpoint to search for alternative documents
+router.post("/api/search-alternative-document", (req, res) => {
+  try {
+    const { searchTerm, excludeDocumentId } = req.body;
+
+    if (!searchTerm) {
+      return res.json({
+        success: false,
+        message: "Search term is required",
+      });
+    }
+
+    console.log(`Searching for alternatives to: ${searchTerm}`);
+
+    // Use the enhanced search function
+    const foundDocument = req.app.locals.findDocumentByNameWithLearning
+      ? req.app.locals.findDocumentByNameWithLearning(searchTerm, false)
+      : req.app.locals.findDocumentByName(searchTerm, false);
+
+    // Also search for partial matches in the document index
+    const partialMatches = req.app.locals.documentIndex
+      .filter((doc) => {
+        // Exclude the current document
+        if (excludeDocumentId && doc.id === excludeDocumentId) return false;
+
+        // Exclude archived and contractor documents
+        if (
+          doc.isArchived ||
+          req.app.locals.isArchivedDocument(doc.path) ||
+          req.app.locals.isContractorDocument(doc.path)
+        )
+          return false;
+
+        // Check for name matches
+        const searchLower = searchTerm.toLowerCase();
+        const docNameLower = doc.name.toLowerCase();
+        const docPathLower = doc.path.toLowerCase();
+
+        return (
+          docNameLower.includes(searchLower) ||
+          docPathLower.includes(searchLower) ||
+          searchLower.includes(docNameLower.replace(/\.[^/.]+$/, ""))
+        );
+      })
+      .slice(0, 10) // Limit to 10 results
+      .map((doc) => ({
+        id: doc.id,
+        name: doc.name,
+        path: doc.path,
+        folder: doc.folder,
+        modified: doc.modified,
+        isArchived: doc.isArchived || false,
+        score: calculateMatchScore(searchTerm, doc),
+      }))
+      .sort((a, b) => b.score - a.score);
+
+    res.json({
+      success: true,
+      primaryMatch: foundDocument
+        ? {
+            id: foundDocument.id,
+            name: foundDocument.name,
+            path: foundDocument.path,
+            folder: foundDocument.folder,
+            modified: foundDocument.modified,
+            isArchived: foundDocument.isArchived || false,
+          }
+        : null,
+      alternatives: partialMatches,
+      searchTerm: searchTerm,
+    });
+  } catch (error) {
+    console.error("Error searching for alternatives:", error);
+    res.status(500).json({
+      success: false,
+      message: "Search failed: " + error.message,
+    });
+  }
+});
+
+// Helper function to calculate match score
+function calculateMatchScore(searchTerm, document) {
+  let score = 0;
+  const searchLower = searchTerm.toLowerCase();
+  const docNameLower = document.name.toLowerCase();
+  const docPathLower = document.path.toLowerCase();
+
+  // Exact name match (highest score)
+  if (docNameLower === searchLower) score += 100;
+  else if (docNameLower.includes(searchLower)) score += 50;
+  else if (searchLower.includes(docNameLower.replace(/\.[^/.]+$/, "")))
+    score += 30;
+
+  // Path matches
+  if (docPathLower.includes(searchLower)) score += 10;
+
+  // Word boundary matches
+  const searchWords = searchLower.split(/\s+/);
+  const docWords = docNameLower.split(/\s+/);
+
+  searchWords.forEach((searchWord) => {
+    docWords.forEach((docWord) => {
+      if (searchWord === docWord) score += 20;
+      else if (docWord.includes(searchWord)) score += 10;
+    });
+  });
+
+  return score;
+}
+
+router.get("/api/scan-missing-items", (req, res) => {
+  try {
+    const imsIndex = req.app.locals.loadIMSIndex();
+    const missingItems = [];
+
+    Object.keys(imsIndex).forEach((categoryName) => {
+      const category = imsIndex[categoryName];
+
+      if (category.children && Array.isArray(category.children)) {
+        category.children.forEach((childName) => {
+          // Check if this child exists in enrichedChildren at all
+          let enrichedChild = null;
+          if (category.enrichedChildren) {
+            enrichedChild = category.enrichedChildren.find(
+              (ec) => ec.name === childName
+            );
+          }
+
+          // Item is missing if:
+          // 1. No enrichedChild exists at all, OR
+          // 2. enrichedChild exists but has no document and found = false
+          const isMissing =
+            !enrichedChild || (!enrichedChild.found && !enrichedChild.document);
+
+          if (isMissing) {
+            missingItems.push({
+              category: categoryName,
+              documentName: childName,
+              description: `Required document: ${childName}`,
+              lastScanned: category.lastScanned || null,
+              path: `${categoryName} > ${childName}`,
+              reason: !enrichedChild
+                ? "Never processed during scan"
+                : "No document found",
+            });
+          }
+        });
+      }
+    });
+
+    console.log(`Found ${missingItems.length} missing items`);
+
+    res.json({
+      success: true,
+      missingItems: missingItems,
+      missingCount: missingItems.length,
+      totalScanned: Object.keys(imsIndex).reduce(
+        (sum, cat) =>
+          sum + (imsIndex[cat].children ? imsIndex[cat].children.length : 0),
+        0
+      ),
+    });
+  } catch (error) {
+    console.error("Error scanning for missing items:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error scanning for missing items: " + error.message,
+    });
+  }
+});
+
+// Enhanced corrections endpoint that includes both suspicious and missing
+router.get("/api/corrections-data-enhanced", (req, res) => {
+  try {
+    const imsIndex = req.app.locals.loadIMSIndex();
+    const suspiciousLinks = [];
+    const missingItems = [];
+    const learningPatterns = req.app.locals.loadLearningPatterns();
+
+    Object.keys(imsIndex).forEach((categoryName) => {
+      const category = imsIndex[categoryName];
+
+      if (category.children && Array.isArray(category.children)) {
+        category.children.forEach((childName) => {
+          let enrichedChild = null;
+          if (category.enrichedChildren) {
+            enrichedChild = category.enrichedChildren.find(
+              (ec) => ec.name === childName
+            );
+          }
+
+          if (enrichedChild && enrichedChild.found && enrichedChild.document) {
+            // Check if this is suspicious
+            const document = enrichedChild.document;
+            let suspicious = false;
+            let reasons = [];
+
+            // Your existing suspicious link detection logic
+            const isContractor =
+              req.app.locals.isContractorDocument &&
+              req.app.locals.isContractorDocument(document.path);
+            if (isContractor) {
+              suspicious = true;
+              reasons.push("Document is in contractor/vendor folder");
+            }
+
+            const isArchived =
+              req.app.locals.isArchivedDocument &&
+              (req.app.locals.isArchivedDocument(document.path) ||
+                document.isArchived);
+            if (isArchived) {
+              suspicious = true;
+              reasons.push("Document appears to be archived or outdated");
+            }
+
+            if (suspicious) {
+              suspiciousLinks.push({
+                searchTerm: childName,
+                category: categoryName,
+                currentDocument: document,
+                reasons: reasons,
+                suspicious: true,
+              });
+            }
+          } else {
+            // This is a missing item
+            missingItems.push({
+              category: categoryName,
+              documentName: childName,
+              description: `Required document: ${childName}`,
+              path: `${categoryName} > ${childName}`,
+              lastScanned: category.lastScanned || null,
+            });
+          }
+        });
+      }
+    });
+
+    res.json({
+      success: true,
+      suspiciousLinks: suspiciousLinks,
+      missingItems: missingItems,
+      stats: {
+        totalSuspicious: suspiciousLinks.length,
+        totalMissing: missingItems.length,
+      },
+    });
+  } catch (error) {
+    console.error("Error loading enhanced corrections data:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to load corrections data",
+    });
+  }
+});
+
+// Search endpoint for missing items (similar to your existing search)
+router.post("/api/search-missing-document", (req, res) => {
+  try {
+    const { searchTerm, category } = req.body;
+
+    if (!searchTerm) {
+      return res.json({
+        success: false,
+        message: "Search term is required",
+      });
+    }
+
+    console.log(`Searching for missing document: "${searchTerm}"`);
+
+    // Use your existing enhanced search if available
+    const foundDocument = req.app.locals.findDocumentByNameWithLearning
+      ? req.app.locals.findDocumentByNameWithLearning(searchTerm, false)
+      : null;
+
+    // Get alternative matches using scoring
+    const alternatives = req.app.locals.documentIndex
+      .filter((doc) => {
+        if (doc.isArchived) return false;
+        if (
+          req.app.locals.isArchivedDocument &&
+          req.app.locals.isArchivedDocument(doc.path)
+        )
+          return false;
+        if (
+          req.app.locals.isContractorDocument &&
+          req.app.locals.isContractorDocument(doc.path)
+        )
+          return false;
+        return true;
+      })
+      .map((doc) => {
+        const score = calculateDocumentMatchScore(searchTerm, doc);
+        return { ...doc, score };
+      })
+      .filter((doc) => doc.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 15);
+
+    res.json({
+      success: true,
+      searchTerm: searchTerm,
+      category: category,
+      primaryMatch: foundDocument,
+      alternatives: alternatives,
+      totalFound: alternatives.length,
+    });
+  } catch (error) {
+    console.error("Error searching for missing document:", error);
+    res.status(500).json({
+      success: false,
+      message: "Search failed: " + error.message,
+    });
+  }
+});
+
+// Link missing document endpoint
+// Add this to ims-routes.js
+router.post("/api/link-missing-document", (req, res) => {
+  try {
+    const { categoryName, documentName, documentId } = req.body;
+
+    if (!categoryName || !documentName || !documentId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required parameters",
+      });
+    }
+
+    const imsIndex = req.app.locals.loadIMSIndex();
+    const actualDocument = req.app.locals.documentIndex.find(
+      (doc) => doc.id === documentId
+    );
+
+    if (!actualDocument) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    if (!imsIndex[categoryName]) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
+
+    // Initialize enrichedChildren if needed
+    if (!imsIndex[categoryName].enrichedChildren) {
+      imsIndex[categoryName].enrichedChildren = [];
+    }
+
+    // Find existing enriched child or create new one
+    let enrichedChildIndex = imsIndex[categoryName].enrichedChildren.findIndex(
+      (ec) => ec.name === documentName
+    );
+
+    const enrichedChild = {
+      name: documentName,
+      document: {
+        id: documentId,
+        name: actualDocument.name,
+        path: actualDocument.path,
+        isArchived: actualDocument.isArchived || false,
+      },
+      found: true,
+      linkedAt: new Date().toISOString(),
+      linkedBy: "manual_missing_search",
+    };
+
+    if (enrichedChildIndex >= 0) {
+      imsIndex[categoryName].enrichedChildren[enrichedChildIndex] =
+        enrichedChild;
+    } else {
+      imsIndex[categoryName].enrichedChildren.push(enrichedChild);
+    }
+
+    // Save changes
+    if (req.app.locals.saveIMSIndex(imsIndex)) {
+      // Record learning pattern
+      if (req.app.locals.learnFromManualLink) {
+        req.app.locals.learnFromManualLink(
+          documentName,
+          actualDocument,
+          categoryName,
+          "missing_document_search"
+        );
+      }
+
+      res.json({
+        success: true,
+        message: `Successfully linked "${actualDocument.name}" to "${documentName}"`,
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: "Failed to save changes",
+      });
+    }
+  } catch (error) {
+    console.error("Error linking missing document:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to link document: " + error.message,
+    });
+  }
+});
+
+// API endpoint to get correction statistics
+router.get("/api/correction-statistics", (req, res) => {
+  try {
+    const imsIndex = req.app.locals.loadIMSIndex();
+    const learningPatterns = req.app.locals.loadLearningPatterns();
+
+    let totalLinked = 0;
+    let contractorLinked = 0;
+    let archivedLinked = 0;
+    let correctedLinks = 0;
+    let negativePatterns = (learningPatterns.negativePatterns || []).length;
+
+    Object.values(imsIndex).forEach((category) => {
+      if (category.enrichedChildren) {
+        category.enrichedChildren.forEach((child) => {
+          if (child.found && child.document) {
+            totalLinked++;
+
+            if (req.app.locals.isContractorDocument(child.document.path)) {
+              contractorLinked++;
+            }
+
+            if (
+              req.app.locals.isArchivedDocument(child.document.path) ||
+              child.document.isArchived
+            ) {
+              archivedLinked++;
+            }
+
+            if (child.correctedAt || child.correctionType) {
+              correctedLinks++;
+            }
+          }
+        });
+      }
+    });
+
+    res.json({
+      success: true,
+      statistics: {
+        totalLinked,
+        contractorLinked,
+        archivedLinked,
+        correctedLinks,
+        negativePatterns,
+        suspiciousPercentage:
+          totalLinked > 0
+            ? Math.round(
+                ((contractorLinked + archivedLinked) / totalLinked) * 100
+              )
+            : 0,
+      },
+    });
+  } catch (error) {
+    console.error("Error getting correction statistics:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get statistics: " + error.message,
+    });
+  }
+});
+
+router.get("/ims-corrections", (req, res) => {
+  try {
+    res.render("ims-corrections", {
+      title: "IMS Auto-Link Corrections",
+    });
+  } catch (error) {
+    console.error("Error loading corrections page:", error);
+    res.status(500).send("Error loading corrections page");
+  }
+});
 // Unlink category document
 router.post("/api/unlink-category-document", (req, res) => {
   try {

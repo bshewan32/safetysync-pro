@@ -343,18 +343,28 @@ function getRevisionHistory(documentId) {
 function loadLearningPatterns() {
   try {
     if (fsSync.existsSync(LEARNING_DATA_PATH)) {
-      return JSON.parse(fsSync.readFileSync(LEARNING_DATA_PATH, "utf8"));
+      const data = JSON.parse(fsSync.readFileSync(LEARNING_DATA_PATH, "utf8"));
+
+      // Ensure all required properties exist with proper structure
+      if (!data.documentPatterns) data.documentPatterns = {};
+      if (!data.categoryPatterns) data.categoryPatterns = {};
+      if (!data.keywordWeights) data.keywordWeights = {};
+      if (!data.manualCorrections) data.manualCorrections = [];
+      if (!data.negativePatterns) data.negativePatterns = [];
+
+      return data;
     }
   } catch (err) {
     console.error("Error loading learning patterns:", err);
   }
 
+  // Return default structure
   return {
-    documentPatterns: {}, // Document name -> actual document mappings
-    categoryPatterns: {}, // Category -> document type patterns
-    keywordWeights: {}, // Keyword effectiveness scores
-    manualCorrections: [], // History of manual corrections
-    negativePatterns: [], // Documents to avoid (THIS WAS MISSING)
+    documentPatterns: {},
+    categoryPatterns: {},
+    keywordWeights: {},
+    manualCorrections: [],
+    negativePatterns: [],
     lastUpdated: null,
   };
 }
@@ -376,170 +386,227 @@ function learnFromManualLink(
   category,
   recordType = null
 ) {
-  const patterns = loadLearningPatterns();
+  try {
+    const patterns = loadLearningPatterns();
 
-  // Extract learning signals - MORE SOPHISTICATED ANALYSIS
-  const searchTerms = originalSearch.toLowerCase().split(/[\s\-_]+/);
-  const actualName = actualDocument.name.toLowerCase();
-  const actualPath = actualDocument.path.toLowerCase();
+    // Ensure patterns object has all required properties
+    if (!patterns.documentPatterns) patterns.documentPatterns = {};
+    if (!patterns.categoryPatterns) patterns.categoryPatterns = {};
+    if (!patterns.keywordWeights) patterns.keywordWeights = {};
+    if (!patterns.manualCorrections) patterns.manualCorrections = [];
+    if (!patterns.negativePatterns) patterns.negativePatterns = [];
 
-  console.log(
-    `Learning from correction: "${originalSearch}" -> "${actualDocument.name}"`
-  );
+    const searchTerms = originalSearch.toLowerCase().split(/[\s\-_]+/);
+    const actualName = actualDocument.name.toLowerCase();
+    const actualPath = actualDocument.path.toLowerCase();
 
-  // 1. Document name patterns - ENHANCED STORAGE
-  if (!patterns.documentPatterns[originalSearch.toLowerCase()]) {
-    patterns.documentPatterns[originalSearch.toLowerCase()] = [];
-  }
+    console.log(
+      `Learning from correction: "${originalSearch}" -> "${actualDocument.name}"`
+    );
 
-  patterns.documentPatterns[originalSearch.toLowerCase()].push({
-    documentId: actualDocument.id,
-    documentName: actualDocument.name,
-    path: actualDocument.path,
-    category: category,
-    recordType: recordType,
-    confidence: 1.0, // Full confidence for manual links
-    learnedAt: new Date().toISOString(),
-    searchPattern: searchTerms, // Store the pattern for better matching
-    pathPattern: actualDocument.folder.toLowerCase(), // Store folder patterns
-  });
+    // 1. Document name patterns
+    if (!patterns.documentPatterns[originalSearch.toLowerCase()]) {
+      patterns.documentPatterns[originalSearch.toLowerCase()] = [];
+    }
 
-  // 2. Extract successful keywords - ENHANCED ANALYSIS
-  const successfulKeywords = [];
+    patterns.documentPatterns[originalSearch.toLowerCase()].push({
+      documentId: actualDocument.id,
+      documentName: actualDocument.name,
+      path: actualDocument.path,
+      category: category,
+      recordType: recordType,
+      confidence: 1.0,
+      learnedAt: new Date().toISOString(),
+      searchPattern: searchTerms,
+      pathPattern: actualDocument.folder
+        ? actualDocument.folder.toLowerCase()
+        : "",
+    });
 
-  // More sophisticated keyword extraction
-  searchTerms.forEach((term) => {
-    if (term.length > 2) {
-      // Check various matching patterns
-      if (actualName.includes(term) || actualPath.includes(term)) {
-        successfulKeywords.push({
-          keyword: term,
-          matchType: actualName.includes(term) ? "name" : "path",
-          position: actualName.indexOf(term),
-          context: category,
-        });
-      }
-
-      // Fuzzy matching for close matches
-      if (term.length > 3) {
-        const fuzzyMatch = findFuzzyMatch(term, actualName);
-        if (fuzzyMatch.score > 0.8) {
+    // 2. Extract successful keywords
+    const successfulKeywords = [];
+    searchTerms.forEach((term) => {
+      if (term.length > 2) {
+        if (actualName.includes(term) || actualPath.includes(term)) {
           successfulKeywords.push({
             keyword: term,
-            matchType: "fuzzy",
-            fuzzyScore: fuzzyMatch.score,
-            actualMatch: fuzzyMatch.match,
+            matchType: actualName.includes(term) ? "name" : "path",
+            position: actualName.indexOf(term),
             context: category,
           });
         }
-      }
-    }
-  });
 
-  // 3. Update keyword weights - ENHANCED SCORING
-  successfulKeywords.forEach((keywordData) => {
-    const keyword = keywordData.keyword;
-    if (!patterns.keywordWeights[keyword]) {
-      patterns.keywordWeights[keyword] = {
-        score: 0,
-        uses: 0,
-        contexts: {},
-        matchTypes: {},
-      };
-    }
-
-    // Weight by match type
-    let weight = 1;
-    switch (keywordData.matchType) {
-      case "name":
-        weight = 3;
-        break;
-      case "path":
-        weight = 2;
-        break;
-      case "fuzzy":
-        weight = keywordData.fuzzyScore * 2;
-        break;
-    }
-
-    patterns.keywordWeights[keyword].score += weight;
-    patterns.keywordWeights[keyword].uses += 1;
-
-    // Track contexts and match types
-    if (!patterns.keywordWeights[keyword].contexts[category]) {
-      patterns.keywordWeights[keyword].contexts[category] = 0;
-    }
-    patterns.keywordWeights[keyword].contexts[category] += 1;
-
-    if (!patterns.keywordWeights[keyword].matchTypes[keywordData.matchType]) {
-      patterns.keywordWeights[keyword].matchTypes[keywordData.matchType] = 0;
-    }
-    patterns.keywordWeights[keyword].matchTypes[keywordData.matchType] += 1;
-  });
-
-  // 4. Category patterns - ENHANCED TRACKING
-  if (category) {
-    if (!patterns.categoryPatterns[category]) {
-      patterns.categoryPatterns[category] = {
-        documents: {},
-        folders: {},
-        extensions: {},
-        commonWords: {},
-      };
-    }
-
-    const fileExtension = path.extname(actualDocument.name).toLowerCase();
-    const folderPattern = actualDocument.folder.toLowerCase();
-
-    // Track folder patterns
-    if (!patterns.categoryPatterns[category].folders[folderPattern]) {
-      patterns.categoryPatterns[category].folders[folderPattern] = 0;
-    }
-    patterns.categoryPatterns[category].folders[folderPattern] += 1;
-
-    // Track file extensions
-    if (!patterns.categoryPatterns[category].extensions[fileExtension]) {
-      patterns.categoryPatterns[category].extensions[fileExtension] = 0;
-    }
-    patterns.categoryPatterns[category].extensions[fileExtension] += 1;
-
-    // Track common words in successful matches
-    const words = actualDocument.name.toLowerCase().split(/[\s\-_]+/);
-    words.forEach((word) => {
-      if (word.length > 3) {
-        if (!patterns.categoryPatterns[category].commonWords[word]) {
-          patterns.categoryPatterns[category].commonWords[word] = 0;
+        if (term.length > 3) {
+          try {
+            const fuzzyMatch = findFuzzyMatch(term, actualName);
+            if (fuzzyMatch && fuzzyMatch.score > 0.8) {
+              successfulKeywords.push({
+                keyword: term,
+                matchType: "fuzzy",
+                fuzzyScore: fuzzyMatch.score,
+                actualMatch: fuzzyMatch.match,
+                context: category,
+              });
+            }
+          } catch (fuzzyError) {
+            // Skip fuzzy matching if it fails
+          }
         }
-        patterns.categoryPatterns[category].commonWords[word] += 1;
       }
     });
+
+    // 3. Update keyword weights
+    successfulKeywords.forEach((keywordData) => {
+      const keyword = keywordData.keyword;
+      if (!patterns.keywordWeights[keyword]) {
+        patterns.keywordWeights[keyword] = {
+          score: 0,
+          uses: 0,
+          contexts: {},
+          matchTypes: {},
+        };
+      }
+
+      let weight = 1;
+      switch (keywordData.matchType) {
+        case "name":
+          weight = 3;
+          break;
+        case "path":
+          weight = 2;
+          break;
+        case "fuzzy":
+          weight = keywordData.fuzzyScore * 2;
+          break;
+      }
+
+      patterns.keywordWeights[keyword].score += weight;
+      patterns.keywordWeights[keyword].uses += 1;
+
+      if (!patterns.keywordWeights[keyword].contexts[category]) {
+        patterns.keywordWeights[keyword].contexts[category] = 0;
+      }
+      patterns.keywordWeights[keyword].contexts[category] += 1;
+
+      if (!patterns.keywordWeights[keyword].matchTypes[keywordData.matchType]) {
+        patterns.keywordWeights[keyword].matchTypes[keywordData.matchType] = 0;
+      }
+      patterns.keywordWeights[keyword].matchTypes[keywordData.matchType] += 1;
+    });
+
+    // 4. Category patterns - ROBUST initialization
+    if (category && typeof category === "string") {
+      // Initialize the specific category completely
+      if (!patterns.categoryPatterns[category]) {
+        patterns.categoryPatterns[category] = {
+          documents: {},
+          folders: {},
+          extensions: {},
+          commonWords: {},
+        };
+        console.log(`Initialized new category pattern: ${category}`);
+      }
+
+      // Verify all sub-objects exist
+      if (!patterns.categoryPatterns[category].documents)
+        patterns.categoryPatterns[category].documents = {};
+      if (!patterns.categoryPatterns[category].folders)
+        patterns.categoryPatterns[category].folders = {};
+      if (!patterns.categoryPatterns[category].extensions)
+        patterns.categoryPatterns[category].extensions = {};
+      if (!patterns.categoryPatterns[category].commonWords)
+        patterns.categoryPatterns[category].commonWords = {};
+
+      const fileExtension = path.extname(actualDocument.name).toLowerCase();
+      const folderPattern = actualDocument.folder
+        ? actualDocument.folder.toLowerCase()
+        : "";
+
+      // Track folder patterns
+      if (folderPattern) {
+        if (!patterns.categoryPatterns[category].folders[folderPattern]) {
+          patterns.categoryPatterns[category].folders[folderPattern] = 0;
+        }
+        patterns.categoryPatterns[category].folders[folderPattern] += 1;
+      }
+
+      // Track file extensions
+      if (fileExtension) {
+        if (!patterns.categoryPatterns[category].extensions[fileExtension]) {
+          patterns.categoryPatterns[category].extensions[fileExtension] = 0;
+        }
+        patterns.categoryPatterns[category].extensions[fileExtension] += 1;
+      }
+
+      // Track common words - THIS IS WHERE THE ERROR OCCURS
+      const words = actualDocument.name.toLowerCase().split(/[\s\-_]+/);
+      words.forEach((word) => {
+        if (word && word.length > 3) {
+          // Double-check the category still exists (defensive programming)
+          if (
+            patterns.categoryPatterns[category] &&
+            patterns.categoryPatterns[category].commonWords
+          ) {
+            if (!patterns.categoryPatterns[category].commonWords[word]) {
+              patterns.categoryPatterns[category].commonWords[word] = 0;
+            }
+            patterns.categoryPatterns[category].commonWords[word] += 1;
+          } else {
+            console.error(
+              `Category pattern lost during processing: ${category}`
+            );
+            // Re-initialize if somehow lost
+            patterns.categoryPatterns[category] = {
+              documents: {},
+              folders: {},
+              extensions: {},
+              commonWords: { [word]: 1 },
+            };
+          }
+        }
+      });
+    }
+
+    // 5. Store manual correction
+    patterns.manualCorrections.push({
+      searchTerm: originalSearch,
+      foundDocument: actualDocument.name,
+      category: category,
+      recordType: recordType,
+      successfulKeywords: successfulKeywords,
+      timestamp: new Date().toISOString(),
+      documentPath: actualDocument.path,
+      folderPattern: actualDocument.folder || "",
+      searchComplexity: searchTerms.length,
+      documentComplexity: actualDocument.name.split(/[\s\-_]+/).length,
+      matchScore: calculateMatchScore
+        ? calculateMatchScore(searchTerms, actualDocument)
+        : 0,
+    });
+
+    // Keep only last 1000 corrections
+    if (patterns.manualCorrections.length > 1000) {
+      patterns.manualCorrections = patterns.manualCorrections.slice(-1000);
+    }
+
+    // Save patterns
+    if (saveLearningPatterns(patterns)) {
+      console.log(
+        `Successfully learned from correction: ${successfulKeywords.length} keywords recorded`
+      );
+    } else {
+      console.error("Failed to save learning patterns");
+    }
+  } catch (error) {
+    console.error("Error in learnFromManualLink:", error);
+    console.error("Error details:", {
+      originalSearch,
+      actualDocument: actualDocument ? actualDocument.name : "undefined",
+      category,
+      recordType,
+      line: error.stack ? error.stack.split("\n")[1] : "unknown",
+    });
   }
-
-  // 5. Store manual correction for analysis - ENHANCED METADATA
-  patterns.manualCorrections.push({
-    searchTerm: originalSearch,
-    foundDocument: actualDocument.name,
-    category: category,
-    recordType: recordType,
-    successfulKeywords: successfulKeywords,
-    timestamp: new Date().toISOString(),
-    documentPath: actualDocument.path,
-    folderPattern: actualDocument.folder,
-    searchComplexity: searchTerms.length,
-    documentComplexity: actualDocument.name.split(/[\s\-_]+/).length,
-    matchScore: calculateMatchScore(searchTerms, actualDocument),
-  });
-
-  // Keep only last 1000 corrections to prevent file bloat
-  if (patterns.manualCorrections.length > 1000) {
-    patterns.manualCorrections = patterns.manualCorrections.slice(-1000);
-  }
-
-  saveLearningPatterns(patterns);
-  console.log(
-    `Learned ${successfulKeywords.length} successful keywords:`,
-    successfulKeywords.map((k) => k.keyword)
-  );
 }
 
 // SOPHISTICATED document finding using learned patterns - RESTORED COMPLEXITY
@@ -892,34 +959,60 @@ function recordNegativeLearningPattern(
 // ========================================
 
 function isArchivedDocument(filePath) {
-  const pathParts = filePath.toLowerCase().split(/[\\\/]/);
+  const pathLower = filePath.toLowerCase();
+  const fileName = path.basename(pathLower);
+  const currentYear = new Date().getFullYear();
+
   const archiveKeywords = [
     "archive",
     "archives",
     "archived",
     "old",
     "backup",
+    "backups",
     "previous",
-    "2020",
-    "2021",
-    "2022",
-    "2023",
+    "prev",
     "historical",
     "legacy",
     "superseded",
     "obsolete",
     "replaced",
+    "outdated",
+    "deprecated",
+    "retired",
+    "inactive",
+    "expired",
+    "cancelled",
+    "withdrawn",
   ];
 
-  return pathParts.some((part) => {
-    return (
-      archiveKeywords.some((keyword) => part.includes(keyword)) ||
-      (part.match(/^\d{4}$/) &&
-        parseInt(part) < new Date().getFullYear() - 1) ||
-      part.match(/\d{2}-\d{2}/) ||
-      part.match(/\d{4}-\d{2}/)
-    );
-  });
+  // Check for archive keywords
+  const pathSegments = pathLower.split(/[\\\/]/);
+  const hasArchiveKeyword = archiveKeywords.some(
+    (keyword) =>
+      pathSegments.some((segment) => segment.includes(keyword)) ||
+      fileName.includes(keyword)
+  );
+
+  if (hasArchiveKeyword) return true;
+
+  // Check for old year patterns
+  const yearPattern = /\b(20\d{2})\b/g;
+  const years = pathLower.match(yearPattern);
+  if (years) {
+    const oldYears = years.filter((year) => parseInt(year) < currentYear - 1);
+    if (oldYears.length > 0) return true;
+  }
+
+  // Check for date patterns in filename
+  const datePatterns = [
+    /\b\d{1,2}[-\.]\d{1,2}[-\.](20)\d{2}\b/, // DD-MM-YYYY
+    /\b(20)\d{2}[-\.]\d{1,2}[-\.]\d{1,2}\b/, // YYYY-MM-DD
+    /\bv?\d+[-\.]\d+[-\.](20)\d{2}\b/, // Version with date
+    /\b(20)\d{2}[-_](0[1-9]|1[0-2])\b/, // YYYY-MM format
+  ];
+
+  return datePatterns.some((pattern) => pathLower.match(pattern));
 }
 
 function isContractorDocument(filePath) {
@@ -941,13 +1034,19 @@ function isContractorDocument(filePath) {
     "AA-In-Active",
     "Bellarine Foods",
     "CSIRO",
+    "contractor folder",
+    "vendor folder",
+    "external docs",
+    "client docs",
+    "supplier docs",
   ];
 
+  // Check for keywords in path segments
+  const pathSegments = pathLower.split(/[\\\/]/);
   return contractorKeywords.some(
     (keyword) =>
-      pathLower.includes(keyword) ||
-      pathLower.includes(`\\${keyword}\\`) ||
-      pathLower.includes(`/${keyword}/`)
+      pathSegments.some((segment) => segment.includes(keyword)) ||
+      pathLower.includes(keyword)
   );
 }
 
@@ -966,18 +1065,6 @@ function findDocumentByName(docName, includeArchived = false) {
     );
   });
 }
-
-// ========================================
-// ENHANCED LEARNING SYSTEM FUNCTIONS (Replace the basic ones in app.js)
-// ========================================
-
-//==============================
-// ENHANCED LEARNING SYSTEM FUNCTIONS (Replace the basic ones in app.js)
-// ========================================
-
-// ========================================
-// IMS FUNCTIONS
-// ========================================
 
 function loadIMSIndex() {
   try {
@@ -1114,11 +1201,6 @@ function saveRevisionLog(documentId, revisionData) {
 // IMPORT ROUTE MODULES
 // ========================================
 
-// IMPORT ROUTE MODULES - Add this section to your app.js
-// (Replace the existing route import section around line 1300)
-// ========================================
-
-// Import and mount document access routes (at root level)
 let imsRoutes, isnRoutes, documentRoutes;
 
 // Import and mount document access routes (at root level)

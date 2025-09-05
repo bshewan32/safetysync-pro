@@ -99,6 +99,222 @@
         "confidence": 1,
         "learnedAt": "2025-07-23T00:28:34.625Z"
       }
+    ],
+    "sp37 managing plant and equipment": [
+      {
+        "documentId": "2a9debba-0214-4e03-b5d3-affb5978144d",
+        "documentName": "SP37 Managing Plant and Equipment.pdf",
+        "path": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\2021\\Audits Acted On\\SP37 Managing Plant and Equipment.pdf",
+        "category": "Risk Management",
+        "recordType": "IMS_correction",
+        "confidence": 1,
+        "learnedAt": "2025-09-03T02:32:19.037Z",
+        "searchPattern": [
+          "sp37",
+          "managing",
+          "plant",
+          "and",
+          "equipment"
+        ],
+        "pathPattern": "integrated management system\\section 09 records\\audits\\internal audit records\\internal audit reports\\2021\\audits acted on"
+      },
+      {
+        "documentId": "2a9debba-0214-4e03-b5d3-affb5978144d",
+        "documentName": "SP37 Managing Plant and Equipment.pdf",
+        "path": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\2021\\Audits Acted On\\SP37 Managing Plant and Equipment.pdf",
+        "category": "Risk Management",
+        "recordType": "IMS_correction",
+        "confidence": 1,
+        "learnedAt": "2025-09-03T02:36:25.883Z",
+        "searchPattern": [
+          "sp37",
+          "managing",
+          "plant",
+          "and",
+          "equipment"
+        ],
+        "pathPattern": "integrated management system\\section 09 records\\audits\\internal audit records\\internal audit reports\\2021\\audits acted on"
+      },
+      {
+        "documentId": "2a9debba-0214-4e03-b5d3-affb5978144d",
+        "documentName": "SP37 Managing Plant and Equipment.pdf",
+        "path": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\2021\\Audits Acted On\\SP37 Managing Plant and Equipment.pdf",
+        "category": "Risk Management",
+        "recordType": "IMS_correction",
+        "confidence": 1,
+        "learnedAt": "2025-09-03T03:52:32.189Z",
+        "searchPattern": [
+          "sp37",
+          "managing",
+          "plant",
+          "and",
+          "equipment"
+        ],
+        "pathPattern": "integrated management system\\section 09 records\\audits\\internal audit records\\internal audit reports\\2021\\audits acted on"
+      },
+      {
+        "documentId": "ba7c05fa-2458-4658-b82b-88c00c788110",
+        "documentName": "SP37 Managing  Plant and Equipment.doc",
+        "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP37 Managing  Plant and Equipment.doc",
+        "category": "Risk Management",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-09-03T04:38:45.014Z",
+        "searchPattern": [
+          "sp37",
+          "managing",
+          "plant",
+          "and",
+          "equipment"
+        ],
+        "pathPattern": "integrated management system\\section 02 system procedures"
+      }
+    ],
+    "portable electrical equipment -wi 005": [
+      {
+        "documentId": "6c037af2-a903-41f3-a081-61f16950416a",
+        "documentName": "Portable Electrical Equipment - WI 005.docx",
+        "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Portable Electrical Equipment - WI 005.docx",
+        "category": "Work Instructions",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-09-03T02:32:37.134Z",
+        "searchPattern": [
+          "portable",
+          "electrical",
+          "equipment",
+          "wi",
+          "005"
+        ],
+        "pathPattern": "integrated management system\\section 04b work instructions"
+      }
+    ],
+    "live low voltage-swms 002": [
+      {
+        "documentId": "21933b91-4422-4c0e-9454-5ece2443ac1e",
+        "documentName": "Live Low Voltage SWMS 002.pdf",
+        "path": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Live Low Voltage SWMS 002.pdf",
+        "category": "Safe Work Method Statements",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-09-03T02:32:53.143Z",
+        "searchPattern": [
+          "live",
+          "low",
+          "voltage",
+          "swms",
+          "002"
+        ],
+        "pathPattern": "integrated management system\\section 04 swms"
+      }
+    ],
+    "hot works -swms 007": [
+      {
+        "documentId": "ba7c05fa-2458-4658-b82b-88c00c788110",
+        "documentName": "SP37 Managing  Plant and Equipment.doc",
+        "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP37 Managing  Plant and Equipment.doc",
+        "category": "Safe Work Method Statements",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-09-03T02:36:54.683Z",
+        "searchPattern": [
+          "hot",
+          "works",
+          "swms",
+          "007"
+        ],
+        "pathPattern": "integrated management system\\section 02 system procedures"
+      }
+    ],
+    "working at height -swms 016": [
+      {
+        "documentId": "ba7c05fa-2458-4658-b82b-88c00c788110",
+        "documentName": "SP37 Managing  Plant and Equipment.doc",
+        "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP37 Managing  Plant and Equipment.doc",
+        "category": "Safe Work Method Statements",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-09-03T03:53:01.513Z",
+        "searchPattern": [
+          "working",
+          "at",
+          "height",
+          "swms",
+          "016"
+        ],
+        "pathPattern": "integrated management system\\section 02 system procedures"
+      }
+    ],
+    "energisation of new or modified electrical circuits and equipment wi 047": [
+      {
+        "documentId": "1c142c25-5cb8-4e0f-9d89-105ae9f2c384",
+        "documentName": "Energisation of new or modified electrical circuits and equipment WI 047_backup_2025-07-09_09-57-30.docx",
+        "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Archive\\Energisation of new or modified electrical circuits and equipment WI 047_backup_2025-07-09_09-57-30.docx",
+        "category": "Work Instructions",
+        "recordType": "IMS_correction",
+        "confidence": 1,
+        "learnedAt": "2025-09-03T04:17:28.670Z",
+        "searchPattern": [
+          "energisation",
+          "of",
+          "new",
+          "or",
+          "modified",
+          "electrical",
+          "circuits",
+          "and",
+          "equipment",
+          "wi",
+          "047"
+        ],
+        "pathPattern": "integrated management system\\section 04b work instructions\\archive"
+      },
+      {
+        "documentId": "ba7c05fa-2458-4658-b82b-88c00c788110",
+        "documentName": "SP37 Managing  Plant and Equipment.doc",
+        "path": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP37 Managing  Plant and Equipment.doc",
+        "category": "Work Instructions",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-09-03T04:24:41.826Z",
+        "searchPattern": [
+          "energisation",
+          "of",
+          "new",
+          "or",
+          "modified",
+          "electrical",
+          "circuits",
+          "and",
+          "equipment",
+          "wi",
+          "047"
+        ],
+        "pathPattern": "integrated management system\\section 02 system procedures"
+      },
+      {
+        "documentId": "4579a466-f8ac-4963-88ba-2e67452702bc",
+        "documentName": "Energisation of new or modified electrical circuits and equipment WI 047.docx",
+        "path": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Energisation of new or modified electrical circuits and equipment WI 047.docx",
+        "category": "Work Instructions",
+        "recordType": "IMS",
+        "confidence": 1,
+        "learnedAt": "2025-09-03T04:24:55.874Z",
+        "searchPattern": [
+          "energisation",
+          "of",
+          "new",
+          "or",
+          "modified",
+          "electrical",
+          "circuits",
+          "and",
+          "equipment",
+          "wi",
+          "047"
+        ],
+        "pathPattern": "integrated management system\\section 04b work instructions"
+      }
     ]
   },
   "categoryPatterns": {
@@ -113,6 +329,74 @@
     },
     "OHS Policy": {
       "intergrated management system\\section 01b ims policies": 1
+    },
+    "Risk Management": {
+      "documents": {},
+      "folders": {
+        "integrated management system\\section 09 records\\audits\\internal audit records\\internal audit reports\\2021\\audits acted on": 3,
+        "integrated management system\\section 02 system procedures": 1
+      },
+      "extensions": {
+        ".pdf": 3,
+        ".doc": 1
+      },
+      "commonWords": {
+        "sp37": 4,
+        "managing": 4,
+        "plant": 4,
+        "equipment.pdf": 3,
+        "equipment.doc": 1
+      }
+    },
+    "Work Instructions": {
+      "documents": {},
+      "folders": {
+        "integrated management system\\section 04b work instructions": 2,
+        "integrated management system\\section 04b work instructions\\archive": 1,
+        "integrated management system\\section 02 system procedures": 1
+      },
+      "extensions": {
+        ".docx": 3,
+        ".doc": 1
+      },
+      "commonWords": {
+        "2025": 1,
+        "portable": 1,
+        "electrical": 3,
+        "equipment": 3,
+        "005.docx": 1,
+        "energisation": 2,
+        "modified": 2,
+        "circuits": 2,
+        "backup": 1,
+        "30.docx": 1,
+        "sp37": 1,
+        "managing": 1,
+        "plant": 1,
+        "equipment.doc": 1,
+        "047.docx": 1
+      }
+    },
+    "Safe Work Method Statements": {
+      "documents": {},
+      "folders": {
+        "integrated management system\\section 04 swms": 1,
+        "integrated management system\\section 02 system procedures": 2
+      },
+      "extensions": {
+        ".pdf": 1,
+        ".doc": 2
+      },
+      "commonWords": {
+        "live": 1,
+        "voltage": 1,
+        "swms": 1,
+        "002.pdf": 1,
+        "sp37": 2,
+        "managing": 2,
+        "plant": 2,
+        "equipment.doc": 2
+      }
     }
   },
   "keywordWeights": {
@@ -167,6 +451,200 @@
     "reporting": {
       "score": 1,
       "uses": 1
+    },
+    "sp37": {
+      "score": 20,
+      "uses": 8,
+      "contexts": {
+        "Risk Management": 8
+      },
+      "matchTypes": {
+        "name": 4,
+        "fuzzy": 4
+      }
+    },
+    "managing": {
+      "score": 20,
+      "uses": 8,
+      "contexts": {
+        "Risk Management": 8
+      },
+      "matchTypes": {
+        "name": 4,
+        "fuzzy": 4
+      }
+    },
+    "plant": {
+      "score": 20,
+      "uses": 8,
+      "contexts": {
+        "Risk Management": 8
+      },
+      "matchTypes": {
+        "name": 4,
+        "fuzzy": 4
+      }
+    },
+    "and": {
+      "score": 21,
+      "uses": 7,
+      "contexts": {
+        "Risk Management": 4,
+        "Work Instructions": 3
+      },
+      "matchTypes": {
+        "name": 7
+      }
+    },
+    "equipment": {
+      "score": 30,
+      "uses": 11,
+      "contexts": {
+        "Risk Management": 4,
+        "Work Instructions": 7
+      },
+      "matchTypes": {
+        "name": 8,
+        "fuzzy": 3
+      }
+    },
+    "portable": {
+      "score": 5,
+      "uses": 2,
+      "contexts": {
+        "Work Instructions": 2
+      },
+      "matchTypes": {
+        "name": 1,
+        "fuzzy": 1
+      }
+    },
+    "electrical": {
+      "score": 15,
+      "uses": 6,
+      "contexts": {
+        "Work Instructions": 6
+      },
+      "matchTypes": {
+        "name": 3,
+        "fuzzy": 3
+      }
+    },
+    "005": {
+      "score": 3,
+      "uses": 1,
+      "contexts": {
+        "Work Instructions": 1
+      },
+      "matchTypes": {
+        "name": 1
+      }
+    },
+    "live": {
+      "score": 5,
+      "uses": 2,
+      "contexts": {
+        "Safe Work Method Statements": 2
+      },
+      "matchTypes": {
+        "name": 1,
+        "fuzzy": 1
+      }
+    },
+    "low": {
+      "score": 3,
+      "uses": 1,
+      "contexts": {
+        "Safe Work Method Statements": 1
+      },
+      "matchTypes": {
+        "name": 1
+      }
+    },
+    "voltage": {
+      "score": 5,
+      "uses": 2,
+      "contexts": {
+        "Safe Work Method Statements": 2
+      },
+      "matchTypes": {
+        "name": 1,
+        "fuzzy": 1
+      }
+    },
+    "swms": {
+      "score": 5,
+      "uses": 2,
+      "contexts": {
+        "Safe Work Method Statements": 2
+      },
+      "matchTypes": {
+        "name": 1,
+        "fuzzy": 1
+      }
+    },
+    "002": {
+      "score": 3,
+      "uses": 1,
+      "contexts": {
+        "Safe Work Method Statements": 1
+      },
+      "matchTypes": {
+        "name": 1
+      }
+    },
+    "energisation": {
+      "score": 10,
+      "uses": 4,
+      "contexts": {
+        "Work Instructions": 4
+      },
+      "matchTypes": {
+        "name": 2,
+        "fuzzy": 2
+      }
+    },
+    "new": {
+      "score": 6,
+      "uses": 2,
+      "contexts": {
+        "Work Instructions": 2
+      },
+      "matchTypes": {
+        "name": 2
+      }
+    },
+    "modified": {
+      "score": 10,
+      "uses": 4,
+      "contexts": {
+        "Work Instructions": 4
+      },
+      "matchTypes": {
+        "name": 2,
+        "fuzzy": 2
+      }
+    },
+    "circuits": {
+      "score": 10,
+      "uses": 4,
+      "contexts": {
+        "Work Instructions": 4
+      },
+      "matchTypes": {
+        "name": 2,
+        "fuzzy": 2
+      }
+    },
+    "047": {
+      "score": 6,
+      "uses": 2,
+      "contexts": {
+        "Work Instructions": 2
+      },
+      "matchTypes": {
+        "name": 2
+      }
     }
   },
   "manualCorrections": [
@@ -289,9 +767,639 @@
         "policy"
       ],
       "timestamp": "2025-08-04T04:03:01.784Z"
+    },
+    {
+      "searchTerm": "SP37 Managing Plant and Equipment",
+      "foundDocument": "SP37 Managing Plant and Equipment.pdf",
+      "category": "Risk Management",
+      "recordType": "IMS_correction",
+      "successfulKeywords": [
+        {
+          "keyword": "sp37",
+          "matchType": "name",
+          "position": 0,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "sp37",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "sp37",
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "managing",
+          "matchType": "name",
+          "position": 5,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "managing",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "managing",
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "plant",
+          "matchType": "name",
+          "position": 14,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "plant",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "plant",
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "and",
+          "matchType": "name",
+          "position": 20,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "equipment",
+          "matchType": "name",
+          "position": 24,
+          "context": "Risk Management"
+        }
+      ],
+      "timestamp": "2025-09-03T02:32:19.038Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\2021\\Audits Acted On\\SP37 Managing Plant and Equipment.pdf",
+      "folderPattern": "Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\2021\\Audits Acted On",
+      "searchComplexity": 5,
+      "documentComplexity": 5,
+      "matchScore": 15
+    },
+    {
+      "searchTerm": "Portable Electrical Equipment -WI 005",
+      "foundDocument": "Portable Electrical Equipment - WI 005.docx",
+      "category": "Work Instructions",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        {
+          "keyword": "portable",
+          "matchType": "name",
+          "position": 0,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "portable",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "portable",
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "electrical",
+          "matchType": "name",
+          "position": 9,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "electrical",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "electrical",
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "equipment",
+          "matchType": "name",
+          "position": 20,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "equipment",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "equipment",
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "005",
+          "matchType": "name",
+          "position": 35,
+          "context": "Work Instructions"
+        }
+      ],
+      "timestamp": "2025-09-03T02:32:37.135Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Portable Electrical Equipment - WI 005.docx",
+      "folderPattern": "Integrated Management System\\Section 04B Work Instructions",
+      "searchComplexity": 5,
+      "documentComplexity": 5,
+      "matchScore": 15
+    },
+    {
+      "searchTerm": "Live Low Voltage-SWMS 002",
+      "foundDocument": "Live Low Voltage SWMS 002.pdf",
+      "category": "Safe Work Method Statements",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        {
+          "keyword": "live",
+          "matchType": "name",
+          "position": 0,
+          "context": "Safe Work Method Statements"
+        },
+        {
+          "keyword": "live",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "live",
+          "context": "Safe Work Method Statements"
+        },
+        {
+          "keyword": "low",
+          "matchType": "name",
+          "position": 5,
+          "context": "Safe Work Method Statements"
+        },
+        {
+          "keyword": "voltage",
+          "matchType": "name",
+          "position": 9,
+          "context": "Safe Work Method Statements"
+        },
+        {
+          "keyword": "voltage",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "voltage",
+          "context": "Safe Work Method Statements"
+        },
+        {
+          "keyword": "swms",
+          "matchType": "name",
+          "position": 17,
+          "context": "Safe Work Method Statements"
+        },
+        {
+          "keyword": "swms",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "swms",
+          "context": "Safe Work Method Statements"
+        },
+        {
+          "keyword": "002",
+          "matchType": "name",
+          "position": 22,
+          "context": "Safe Work Method Statements"
+        }
+      ],
+      "timestamp": "2025-09-03T02:32:53.143Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Live Low Voltage SWMS 002.pdf",
+      "folderPattern": "Integrated Management System\\Section 04 SWMS",
+      "searchComplexity": 5,
+      "documentComplexity": 5,
+      "matchScore": 15
+    },
+    {
+      "searchTerm": "SP37 Managing Plant and Equipment",
+      "foundDocument": "SP37 Managing Plant and Equipment.pdf",
+      "category": "Risk Management",
+      "recordType": "IMS_correction",
+      "successfulKeywords": [
+        {
+          "keyword": "sp37",
+          "matchType": "name",
+          "position": 0,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "sp37",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "sp37",
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "managing",
+          "matchType": "name",
+          "position": 5,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "managing",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "managing",
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "plant",
+          "matchType": "name",
+          "position": 14,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "plant",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "plant",
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "and",
+          "matchType": "name",
+          "position": 20,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "equipment",
+          "matchType": "name",
+          "position": 24,
+          "context": "Risk Management"
+        }
+      ],
+      "timestamp": "2025-09-03T02:36:25.883Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\2021\\Audits Acted On\\SP37 Managing Plant and Equipment.pdf",
+      "folderPattern": "Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\2021\\Audits Acted On",
+      "searchComplexity": 5,
+      "documentComplexity": 5,
+      "matchScore": 15
+    },
+    {
+      "searchTerm": "Hot Works -SWMS 007",
+      "foundDocument": "SP37 Managing  Plant and Equipment.doc",
+      "category": "Safe Work Method Statements",
+      "recordType": "IMS",
+      "successfulKeywords": [],
+      "timestamp": "2025-09-03T02:36:54.683Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP37 Managing  Plant and Equipment.doc",
+      "folderPattern": "Integrated Management System\\Section 02 System Procedures",
+      "searchComplexity": 4,
+      "documentComplexity": 5,
+      "matchScore": 0
+    },
+    {
+      "searchTerm": "SP37 Managing Plant and Equipment",
+      "foundDocument": "SP37 Managing Plant and Equipment.pdf",
+      "category": "Risk Management",
+      "recordType": "IMS_correction",
+      "successfulKeywords": [
+        {
+          "keyword": "sp37",
+          "matchType": "name",
+          "position": 0,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "sp37",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "sp37",
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "managing",
+          "matchType": "name",
+          "position": 5,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "managing",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "managing",
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "plant",
+          "matchType": "name",
+          "position": 14,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "plant",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "plant",
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "and",
+          "matchType": "name",
+          "position": 20,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "equipment",
+          "matchType": "name",
+          "position": 24,
+          "context": "Risk Management"
+        }
+      ],
+      "timestamp": "2025-09-03T03:52:32.189Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\2021\\Audits Acted On\\SP37 Managing Plant and Equipment.pdf",
+      "folderPattern": "Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\2021\\Audits Acted On",
+      "searchComplexity": 5,
+      "documentComplexity": 5,
+      "matchScore": 15
+    },
+    {
+      "searchTerm": "Working at Height -SWMS 016",
+      "foundDocument": "SP37 Managing  Plant and Equipment.doc",
+      "category": "Safe Work Method Statements",
+      "recordType": "IMS",
+      "successfulKeywords": [],
+      "timestamp": "2025-09-03T03:53:01.513Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP37 Managing  Plant and Equipment.doc",
+      "folderPattern": "Integrated Management System\\Section 02 System Procedures",
+      "searchComplexity": 5,
+      "documentComplexity": 5,
+      "matchScore": 1
+    },
+    {
+      "searchTerm": "Energisation of new or modified electrical circuits and equipment WI 047",
+      "foundDocument": "Energisation of new or modified electrical circuits and equipment WI 047_backup_2025-07-09_09-57-30.docx",
+      "category": "Work Instructions",
+      "recordType": "IMS_correction",
+      "successfulKeywords": [
+        {
+          "keyword": "energisation",
+          "matchType": "name",
+          "position": 0,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "energisation",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "energisation",
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "new",
+          "matchType": "name",
+          "position": 16,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "modified",
+          "matchType": "name",
+          "position": 23,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "modified",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "modified",
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "electrical",
+          "matchType": "name",
+          "position": 32,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "electrical",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "electrical",
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "circuits",
+          "matchType": "name",
+          "position": 43,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "circuits",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "circuits",
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "and",
+          "matchType": "name",
+          "position": 52,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "equipment",
+          "matchType": "name",
+          "position": 56,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "equipment",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "equipment",
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "047",
+          "matchType": "name",
+          "position": 69,
+          "context": "Work Instructions"
+        }
+      ],
+      "timestamp": "2025-09-03T04:17:28.671Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Archive\\Energisation of new or modified electrical circuits and equipment WI 047_backup_2025-07-09_09-57-30.docx",
+      "folderPattern": "Integrated Management System\\Section 04B Work Instructions\\Archive",
+      "searchComplexity": 11,
+      "documentComplexity": 18,
+      "matchScore": 33
+    },
+    {
+      "searchTerm": "Energisation of new or modified electrical circuits and equipment WI 047",
+      "foundDocument": "SP37 Managing  Plant and Equipment.doc",
+      "category": "Work Instructions",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        {
+          "keyword": "and",
+          "matchType": "name",
+          "position": 21,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "equipment",
+          "matchType": "name",
+          "position": 25,
+          "context": "Work Instructions"
+        }
+      ],
+      "timestamp": "2025-09-03T04:24:41.827Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP37 Managing  Plant and Equipment.doc",
+      "folderPattern": "Integrated Management System\\Section 02 System Procedures",
+      "searchComplexity": 11,
+      "documentComplexity": 5,
+      "matchScore": 6
+    },
+    {
+      "searchTerm": "Energisation of new or modified electrical circuits and equipment WI 047",
+      "foundDocument": "Energisation of new or modified electrical circuits and equipment WI 047.docx",
+      "category": "Work Instructions",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        {
+          "keyword": "energisation",
+          "matchType": "name",
+          "position": 0,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "energisation",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "energisation",
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "new",
+          "matchType": "name",
+          "position": 16,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "modified",
+          "matchType": "name",
+          "position": 23,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "modified",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "modified",
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "electrical",
+          "matchType": "name",
+          "position": 32,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "electrical",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "electrical",
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "circuits",
+          "matchType": "name",
+          "position": 43,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "circuits",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "circuits",
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "and",
+          "matchType": "name",
+          "position": 52,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "equipment",
+          "matchType": "name",
+          "position": 56,
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "equipment",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "equipment",
+          "context": "Work Instructions"
+        },
+        {
+          "keyword": "047",
+          "matchType": "name",
+          "position": 69,
+          "context": "Work Instructions"
+        }
+      ],
+      "timestamp": "2025-09-03T04:24:55.875Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Energisation of new or modified electrical circuits and equipment WI 047.docx",
+      "folderPattern": "Integrated Management System\\Section 04B Work Instructions",
+      "searchComplexity": 11,
+      "documentComplexity": 11,
+      "matchScore": 33
+    },
+    {
+      "searchTerm": "SP37 Managing Plant and Equipment",
+      "foundDocument": "SP37 Managing  Plant and Equipment.doc",
+      "category": "Risk Management",
+      "recordType": "IMS",
+      "successfulKeywords": [
+        {
+          "keyword": "sp37",
+          "matchType": "name",
+          "position": 0,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "sp37",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "sp37",
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "managing",
+          "matchType": "name",
+          "position": 5,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "managing",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "managing",
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "plant",
+          "matchType": "name",
+          "position": 15,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "plant",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "plant",
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "and",
+          "matchType": "name",
+          "position": 21,
+          "context": "Risk Management"
+        },
+        {
+          "keyword": "equipment",
+          "matchType": "name",
+          "position": 25,
+          "context": "Risk Management"
+        }
+      ],
+      "timestamp": "2025-09-03T04:38:45.014Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP37 Managing  Plant and Equipment.doc",
+      "folderPattern": "Integrated Management System\\Section 02 System Procedures",
+      "searchComplexity": 5,
+      "documentComplexity": 5,
+      "matchScore": 15
     }
   ],
-  "lastUpdated": "2025-08-04T04:03:01.784Z",
+  "lastUpdated": "2025-09-03T04:38:45.014Z",
   "negativePatterns": [
     {
       "searchTerm": "sp24 hs&e response",
@@ -316,6 +1424,188 @@
       "category": "Core Policies",
       "reason": "manual_unlink",
       "timestamp": "2025-07-17T03:35:27.908Z"
+    },
+    {
+      "searchTerm": "ohs policy",
+      "avoidDocumentId": "8ccf2f14-6833-408a-9591-c433fc03765f",
+      "avoidDocumentName": "SPO-06 OHS Policy.pdf",
+      "avoidDocumentPath": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Approved Supplier's and Sub-Contractors\\Sub Contractor Information\\AA-In-Active\\DIRECTBOR\\Policies\\SPO-06 OHS Policy.pdf",
+      "isContractorDoc": true,
+      "isArchiveDoc": false,
+      "unlinkType": "child_unlink",
+      "category": "OHS Policy",
+      "reason": "contractor_document",
+      "timestamp": "2025-09-03T02:02:25.421Z",
+      "confidence": 1,
+      "folderPattern": null
+    },
+    {
+      "searchTerm": "ohs policy",
+      "avoidDocumentId": "29440b3e-98d1-44c1-a2e2-e8d5fcc7bbb3",
+      "avoidDocumentName": "GMK - Occupational Health & Safety Policy.pdf",
+      "avoidDocumentPath": "I:\\IMS\\Integrated Management System\\Section 01B IMS Policies\\GMK - Occupational Health & Safety Policy.pdf",
+      "isContractorDoc": false,
+      "isArchiveDoc": false,
+      "unlinkType": "child_unlink",
+      "category": "OHS Policy",
+      "reason": "manual_unlink",
+      "timestamp": "2025-09-03T02:09:55.374Z",
+      "confidence": 1,
+      "folderPattern": null
+    },
+    {
+      "searchTerm": "plant & equipment policy",
+      "avoidDocumentId": "3c5a4194-9c46-4538-b635-2952dd619eb9",
+      "avoidDocumentName": "Plant & Equipment Policy.pdf",
+      "avoidDocumentPath": "I:\\IMS\\Integrated Management System\\Section 01B IMS Policies\\Archive 2023 copies\\Plant & Equipment Policy.pdf",
+      "isContractorDoc": false,
+      "isArchiveDoc": true,
+      "unlinkType": "child_unlink",
+      "category": "Core Policies",
+      "reason": "archived_document",
+      "timestamp": "2025-09-03T02:17:57.837Z",
+      "confidence": 1,
+      "folderPattern": null
+    },
+    {
+      "searchTerm": "portable electrical equipment -wi 005",
+      "avoidDocumentId": "c8c21d81-29dd-4681-bc19-4881ced9eaa1",
+      "avoidDocumentName": "Portable Electrical Equipment.pdf",
+      "avoidDocumentPath": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\~~Archived\\2012-2013\\2013 March\\Portable Electrical Equipment.pdf",
+      "isContractorDoc": false,
+      "isArchiveDoc": true,
+      "unlinkType": "child_unlink",
+      "category": "Work Instructions",
+      "reason": "archived_document",
+      "timestamp": "2025-09-03T02:32:37.082Z",
+      "confidence": 1,
+      "folderPattern": null
+    },
+    {
+      "searchTerm": "live low voltage-swms 002",
+      "avoidDocumentId": "31c704c1-0c32-4e45-afdd-473585b25419",
+      "avoidDocumentName": "Live Low Voltage-SWMS 002 - issue 5.docx",
+      "avoidDocumentPath": "I:\\IMS\\Integrated Management System\\Section 10 Document Change and Archived Records\\Archive\\SWMS (SWI & EWI)\\SWMS 02 Live Low Voltage\\Live Low Voltage-SWMS 002 - issue 5.docx",
+      "isContractorDoc": false,
+      "isArchiveDoc": true,
+      "unlinkType": "child_unlink",
+      "category": "Safe Work Method Statements",
+      "reason": "archived_document",
+      "timestamp": "2025-09-03T02:32:53.089Z",
+      "confidence": 1,
+      "folderPattern": null
+    },
+    {
+      "searchTerm": "toolbox minutes",
+      "avoidDocumentId": "31c4f26b-9d62-427a-8f26-a0fd568631b3",
+      "avoidDocumentName": "Manual handling toolbox minutes 16-06-15.pdf",
+      "avoidDocumentPath": "I:\\IMS\\Integrated Management System\\Section 15 Marketing Material\\Awards\\NECA Excellence Awards\\2016 Viva Energy PEDR\\Attachments\\Manual handling toolbox minutes 16-06-15.pdf",
+      "isContractorDoc": false,
+      "isArchiveDoc": true,
+      "unlinkType": "child_unlink",
+      "category": "FORMS",
+      "reason": "archived_document",
+      "timestamp": "2025-09-03T02:32:59.093Z",
+      "confidence": 1,
+      "folderPattern": null
+    },
+    {
+      "searchTerm": "hot works -swms 007",
+      "avoidDocumentId": "617d031e-6544-4b45-acf4-15886315c501",
+      "avoidDocumentName": "Hot Works -SWMS 007.docx",
+      "avoidDocumentPath": "I:\\IMS\\Integrated Management System\\Section 10 Document Change and Archived Records\\Archive\\SWMS (SWI & EWI)\\~~Swms Prior to formating chnage Jul 2015\\Hot Works -SWMS 007.docx",
+      "isContractorDoc": false,
+      "isArchiveDoc": true,
+      "unlinkType": "child_unlink",
+      "category": "Safe Work Method Statements",
+      "reason": "archived_document",
+      "timestamp": "2025-09-03T02:36:54.624Z",
+      "confidence": 1,
+      "folderPattern": null
+    },
+    {
+      "searchTerm": "working at height -swms 016",
+      "avoidDocumentId": "3e944194-4872-44cc-bb60-a1df9d33b797",
+      "avoidDocumentName": "Working at Height -SWMS 016.docx",
+      "avoidDocumentPath": "I:\\IMS\\Integrated Management System\\Section 10 Document Change and Archived Records\\Archive\\SWMS (SWI & EWI)\\~~Swms Prior to formating chnage Jul 2015\\Working at Height -SWMS 016.docx",
+      "isContractorDoc": false,
+      "isArchiveDoc": true,
+      "unlinkType": "child_unlink",
+      "category": "Safe Work Method Statements",
+      "reason": "archived_document",
+      "timestamp": "2025-09-03T03:53:01.435Z",
+      "confidence": 1,
+      "folderPattern": null
+    },
+    {
+      "searchTerm": "sp32 internal-external consultation meeting",
+      "avoidDocumentId": "4b797364-f4f4-4f5b-b8e0-fece425f9bb0",
+      "avoidDocumentName": "SP32 Internal-external Consultation Me.doc",
+      "avoidDocumentPath": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP32 Internal-external Consultation Me.doc",
+      "isContractorDoc": true,
+      "isArchiveDoc": false,
+      "unlinkType": "child_unlink",
+      "category": "Consultation and Communication",
+      "reason": "contractor_document",
+      "timestamp": "2025-09-03T04:17:16.614Z",
+      "confidence": 1,
+      "folderPattern": null
+    },
+    {
+      "searchTerm": "fatigue management policy",
+      "avoidDocumentId": "b4fa37f2-21aa-44eb-9dcb-bd1aa127caf7",
+      "avoidDocumentName": "Fatigue Management Policy.pdf",
+      "avoidDocumentPath": "I:\\IMS\\Integrated Management System\\Section 01B IMS Policies\\Archive 2023 copies\\Fatigue Management Policy.pdf",
+      "isContractorDoc": false,
+      "isArchiveDoc": true,
+      "unlinkType": "child_unlink",
+      "category": "Core Policies",
+      "reason": "archived_document",
+      "timestamp": "2025-09-03T04:24:21.100Z",
+      "confidence": 1,
+      "folderPattern": null
+    },
+    {
+      "searchTerm": "energisation of new or modified electrical circuits and equipment wi 047",
+      "avoidDocumentId": "1c142c25-5cb8-4e0f-9d89-105ae9f2c384",
+      "avoidDocumentName": "Energisation of new or modified electrical circuits and equipment WI 047_backup_2025-07-09_09-57-30.docx",
+      "avoidDocumentPath": "I:\\IMS\\Integrated Management System\\Section 04B Work Instructions\\Archive\\Energisation of new or modified electrical circuits and equipment WI 047_backup_2025-07-09_09-57-30.docx",
+      "isContractorDoc": false,
+      "isArchiveDoc": true,
+      "unlinkType": "child_unlink",
+      "category": "Work Instructions",
+      "reason": "archived_document",
+      "timestamp": "2025-09-03T04:24:41.726Z",
+      "confidence": 1,
+      "folderPattern": null
+    },
+    {
+      "searchTerm": "energisation of new or modified electrical circuits and equipment wi 047",
+      "avoidDocumentId": "ba7c05fa-2458-4658-b82b-88c00c788110",
+      "avoidDocumentName": "SP37 Managing  Plant and Equipment.doc",
+      "avoidDocumentPath": "I:\\IMS\\Integrated Management System\\Section 02 System Procedures\\SP37 Managing  Plant and Equipment.doc",
+      "isContractorDoc": false,
+      "isArchiveDoc": false,
+      "unlinkType": "child_unlink",
+      "category": "Work Instructions",
+      "reason": "manual_unlink",
+      "timestamp": "2025-09-03T04:24:55.800Z",
+      "confidence": 1,
+      "folderPattern": null
+    },
+    {
+      "searchTerm": "sp37 managing plant and equipment",
+      "avoidDocumentId": "2a9debba-0214-4e03-b5d3-affb5978144d",
+      "avoidDocumentName": "SP37 Managing Plant and Equipment.pdf",
+      "avoidDocumentPath": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\2021\\Audits Acted On\\SP37 Managing Plant and Equipment.pdf",
+      "isContractorDoc": false,
+      "isArchiveDoc": true,
+      "unlinkType": "child_unlink",
+      "category": "Risk Management",
+      "reason": "archived_document",
+      "timestamp": "2025-09-03T04:38:44.958Z",
+      "confidence": 1,
+      "folderPattern": null
     }
   ]
 }
