@@ -243,6 +243,23 @@
           "016"
         ],
         "pathPattern": "integrated management system\\section 02 system procedures"
+      },
+      {
+        "documentId": "ed0b3369-1735-48de-9936-d4d2810d0fc4",
+        "documentName": "Working at height SWMS 016.docx",
+        "path": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Working at height SWMS 016.docx",
+        "category": "Safe Work Method Statements",
+        "recordType": "manual_correction",
+        "confidence": 1,
+        "learnedAt": "2025-09-08T04:30:39.136Z",
+        "searchPattern": [
+          "working",
+          "at",
+          "height",
+          "swms",
+          "016"
+        ],
+        "pathPattern": "integrated management system\\section 04 swms"
       }
     ],
     "energisation of new or modified electrical circuits and equipment wi 047": [
@@ -315,6 +332,36 @@
         ],
         "pathPattern": "integrated management system\\section 04b work instructions"
       }
+    ],
+    "rtw form": [
+      {
+        "documentId": "f54a846c-8533-4909-b60f-c4542c0ac479",
+        "documentName": "Form Incident & Action Advice & Investigation form - 045.doc",
+        "path": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Incident Reports and Reviews\\21600 - 21699\\21611 - Jamie Wekworth\\Form Incident & Action Advice & Investigation form - 045.doc",
+        "category": "FORMS",
+        "recordType": "manual_correction",
+        "confidence": 1,
+        "learnedAt": "2025-09-08T04:28:58.661Z",
+        "searchPattern": [
+          "rtw",
+          "form"
+        ],
+        "pathPattern": "integrated management system\\section 09 records\\incident reports and reviews\\21600 - 21699\\21611 - jamie wekworth"
+      },
+      {
+        "documentId": "6d3a3a4c-49ab-45c4-aea4-f8e57c2af576",
+        "documentName": "Return to Work Plan - 111.docx",
+        "path": "I:\\IMS\\Integrated Management System\\Section 03 Proforma Docs\\Work Safe, Work Cover, Return to work forms\\Return to Work Plan - 111.docx",
+        "category": "FORMS",
+        "recordType": "manual_correction",
+        "confidence": 1,
+        "learnedAt": "2025-09-08T04:30:01.491Z",
+        "searchPattern": [
+          "rtw",
+          "form"
+        ],
+        "pathPattern": "integrated management system\\section 03 proforma docs\\work safe, work cover, return to work forms"
+      }
     ]
   },
   "categoryPatterns": {
@@ -380,22 +427,49 @@
     "Safe Work Method Statements": {
       "documents": {},
       "folders": {
-        "integrated management system\\section 04 swms": 1,
+        "integrated management system\\section 04 swms": 2,
         "integrated management system\\section 02 system procedures": 2
       },
       "extensions": {
         ".pdf": 1,
-        ".doc": 2
+        ".doc": 2,
+        ".docx": 1
       },
       "commonWords": {
         "live": 1,
         "voltage": 1,
-        "swms": 1,
+        "swms": 2,
         "002.pdf": 1,
         "sp37": 2,
         "managing": 2,
         "plant": 2,
-        "equipment.doc": 2
+        "equipment.doc": 2,
+        "working": 1,
+        "height": 1,
+        "016.docx": 1
+      }
+    },
+    "FORMS": {
+      "documents": {},
+      "folders": {
+        "integrated management system\\section 09 records\\incident reports and reviews\\21600 - 21699\\21611 - jamie wekworth": 1,
+        "integrated management system\\section 03 proforma docs\\work safe, work cover, return to work forms": 1
+      },
+      "extensions": {
+        ".doc": 1,
+        ".docx": 1
+      },
+      "commonWords": {
+        "form": 2,
+        "incident": 1,
+        "action": 1,
+        "advice": 1,
+        "investigation": 1,
+        "045.doc": 1,
+        "return": 1,
+        "work": 1,
+        "plan": 1,
+        "111.docx": 1
       }
     }
   },
@@ -573,14 +647,14 @@
       }
     },
     "swms": {
-      "score": 5,
-      "uses": 2,
+      "score": 10,
+      "uses": 4,
       "contexts": {
-        "Safe Work Method Statements": 2
+        "Safe Work Method Statements": 4
       },
       "matchTypes": {
-        "name": 1,
-        "fuzzy": 1
+        "name": 2,
+        "fuzzy": 2
       }
     },
     "002": {
@@ -644,6 +718,50 @@
       },
       "matchTypes": {
         "name": 2
+      }
+    },
+    "form": {
+      "score": 7,
+      "uses": 3,
+      "contexts": {
+        "FORMS": 3
+      },
+      "matchTypes": {
+        "name": 1,
+        "fuzzy": 1,
+        "path": 1
+      }
+    },
+    "working": {
+      "score": 5,
+      "uses": 2,
+      "contexts": {
+        "Safe Work Method Statements": 2
+      },
+      "matchTypes": {
+        "name": 1,
+        "fuzzy": 1
+      }
+    },
+    "height": {
+      "score": 5,
+      "uses": 2,
+      "contexts": {
+        "Safe Work Method Statements": 2
+      },
+      "matchTypes": {
+        "name": 1,
+        "fuzzy": 1
+      }
+    },
+    "016": {
+      "score": 3,
+      "uses": 1,
+      "contexts": {
+        "Safe Work Method Statements": 1
+      },
+      "matchTypes": {
+        "name": 1
       }
     }
   },
@@ -1397,9 +1515,115 @@
       "searchComplexity": 5,
       "documentComplexity": 5,
       "matchScore": 15
+    },
+    {
+      "searchTerm": "RTW Form",
+      "foundDocument": "Form Incident & Action Advice & Investigation form - 045.doc",
+      "category": "FORMS",
+      "recordType": "manual_correction",
+      "successfulKeywords": [
+        {
+          "keyword": "form",
+          "matchType": "name",
+          "position": 0,
+          "context": "FORMS"
+        },
+        {
+          "keyword": "form",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "form",
+          "context": "FORMS"
+        }
+      ],
+      "timestamp": "2025-09-08T04:28:58.662Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Incident Reports and Reviews\\21600 - 21699\\21611 - Jamie Wekworth\\Form Incident & Action Advice & Investigation form - 045.doc",
+      "folderPattern": "Integrated Management System\\Section 09 Records\\Incident Reports and Reviews\\21600 - 21699\\21611 - Jamie Wekworth",
+      "searchComplexity": 2,
+      "documentComplexity": 9,
+      "matchScore": 3
+    },
+    {
+      "searchTerm": "RTW Form",
+      "foundDocument": "Return to Work Plan - 111.docx",
+      "category": "FORMS",
+      "recordType": "manual_correction",
+      "successfulKeywords": [
+        {
+          "keyword": "form",
+          "matchType": "path",
+          "position": -1,
+          "context": "FORMS"
+        }
+      ],
+      "timestamp": "2025-09-08T04:30:01.491Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 03 Proforma Docs\\Work Safe, Work Cover, Return to work forms\\Return to Work Plan - 111.docx",
+      "folderPattern": "Integrated Management System\\Section 03 Proforma Docs\\Work Safe, Work Cover, Return to work forms",
+      "searchComplexity": 2,
+      "documentComplexity": 5,
+      "matchScore": 1
+    },
+    {
+      "searchTerm": "Working at Height -SWMS 016",
+      "foundDocument": "Working at height SWMS 016.docx",
+      "category": "Safe Work Method Statements",
+      "recordType": "manual_correction",
+      "successfulKeywords": [
+        {
+          "keyword": "working",
+          "matchType": "name",
+          "position": 0,
+          "context": "Safe Work Method Statements"
+        },
+        {
+          "keyword": "working",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "working",
+          "context": "Safe Work Method Statements"
+        },
+        {
+          "keyword": "height",
+          "matchType": "name",
+          "position": 11,
+          "context": "Safe Work Method Statements"
+        },
+        {
+          "keyword": "height",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "height",
+          "context": "Safe Work Method Statements"
+        },
+        {
+          "keyword": "swms",
+          "matchType": "name",
+          "position": 18,
+          "context": "Safe Work Method Statements"
+        },
+        {
+          "keyword": "swms",
+          "matchType": "fuzzy",
+          "fuzzyScore": 1,
+          "actualMatch": "swms",
+          "context": "Safe Work Method Statements"
+        },
+        {
+          "keyword": "016",
+          "matchType": "name",
+          "position": 23,
+          "context": "Safe Work Method Statements"
+        }
+      ],
+      "timestamp": "2025-09-08T04:30:39.136Z",
+      "documentPath": "I:\\IMS\\Integrated Management System\\Section 04 SWMS\\Working at height SWMS 016.docx",
+      "folderPattern": "Integrated Management System\\Section 04 SWMS",
+      "searchComplexity": 5,
+      "documentComplexity": 5,
+      "matchScore": 15
     }
   ],
-  "lastUpdated": "2025-09-03T04:38:45.014Z",
+  "lastUpdated": "2025-09-08T04:30:39.136Z",
   "negativePatterns": [
     {
       "searchTerm": "sp24 hs&e response",

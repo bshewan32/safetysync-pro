@@ -1,0 +1,17 @@
+{
+  "documentsDirs": [
+    "I:\\IMS",
+    "I:\\IMS\\Integrated Management System\\templates"
+  ],
+  "exclusions": [
+    "**/node_modules/**",
+    "**/.git/**",
+    "**/~$*"
+  ],
+  "ai": {
+    "provider": "openai",
+    "baseURL": "https://api.openai.com/v1",
+    "model": "gpt-4o-mini",
+    "apiKey": "sk-e566b9f7a2394216b1ea7196c5793d06"
+  }
+}

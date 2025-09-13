@@ -1,0 +1,6 @@
+Placeholder NVD (National Vendor Declaration)
+From PIC: SA123456
+To PIC: SA654321
+Consignment Date: 2025-08-30
+Headcount: 120
+Notes: Sample only.

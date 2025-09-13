@@ -14,12 +14,27 @@ const port = 3000;
 // ========================================
 
 const APPLICATION_DIR = process.cwd();
+//const VIEWS_DIR = path.join(APPLICATION_DIR, "views");
+//const DOCUMENTS_DIR = process.env.DOCUMENTS_DIR || "I:/IMS";
+const { loadConfig } = require("./config");
+const cfg = loadConfig();
+
 const VIEWS_DIR = path.join(APPLICATION_DIR, "views");
-const DOCUMENTS_DIR = process.env.DOCUMENTS_DIR || "I:/IMS";
+const ENV_DOCUMENTS_DIR = process.env.DOCUMENTS_DIR || "I:/IMS";
+
+// NEW: prefer config.json list; if empty, use env var as the only root
+const DOCUMENTS_DIRS =
+  cfg.documentsDirs && cfg.documentsDirs.length
+    ? cfg.documentsDirs
+    : [ENV_DOCUMENTS_DIR];
 
 console.log("Application directory:", APPLICATION_DIR);
 console.log("Views directory:", VIEWS_DIR);
-console.log("Documents directory:", DOCUMENTS_DIR);
+console.log("Documents directories:", DOCUMENTS_DIRS);
+
+// Legacy alias so existing functions keep working:
+const DOCUMENTS_DIR = DOCUMENTS_DIRS[0];
+app.locals.DOCUMENTS_DIR = DOCUMENTS_DIR; // if any routes read from app.locals
 
 // File paths for JSON data storage (all in root directory)
 const INDEX_FILE = path.join(APPLICATION_DIR, "document-index.json");
@@ -1247,6 +1262,11 @@ try {
   console.log("Error:", error.message);
 }
 
+// AI specific routes
+app.use(require("./routes/ai-routes"));
+app.use(require("./routes/ai-docs-routes"));
+app.use("/", require("./routes/config-routes"));
+
 // ========================================
 // MAIN ROUTES
 // ========================================
@@ -1658,62 +1678,6 @@ function formatFileSize(bytes) {
   else if (bytes < 1073741824) return (bytes / 1048576).toFixed(2) + " MB";
   else return (bytes / 1073741824).toFixed(2) + " GB";
 }
-
-// Show document location in file explorer - IMPROVED VERSION
-
-// Mandatory records API - Fixed to use correct file
-// app.get("/api/mandatory-records", async (req, res) => {
-//   try {
-//     let mandatoryRecords = {};
-
-//     if (fsSync.existsSync(MANDATORY_RECORDS_FILE)) {
-//       const data = fsSync.readFileSync(MANDATORY_RECORDS_FILE, "utf8");
-//       mandatoryRecords = JSON.parse(data);
-//     }
-
-//     res.json({
-//       success: true,
-//       mandatoryRecords: mandatoryRecords,
-//     });
-//   } catch (error) {
-//     console.error("Error loading mandatory records:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to load mandatory records",
-//     });
-//   }
-// });
-
-// // ISN Mandatory records API
-// app.get("/api/isn-mandatory-records", async (req, res) => {
-//   try {
-//     let mandatoryRecords = {};
-
-//     if (fsSync.existsSync(ISN_MANDATORY_RECORDS_FILE)) {
-//       const data = fsSync.readFileSync(ISN_MANDATORY_RECORDS_FILE, "utf8");
-//       mandatoryRecords = JSON.parse(data);
-//     }
-
-//     res.json({
-//       success: true,
-//       mandatoryRecords: mandatoryRecords,
-//     });
-//   } catch (error) {
-//     console.error("Error loading ISN mandatory records:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to load ISN mandatory records",
-//     });
-//   }
-// });
-
-// Auto-link documents API
-
-// ========================================
-// MISSING API ENDPOINT - Add this to your app.js API ROUTES section
-// ========================================
-
-// Unlink IMS document
 
 // ========================================
 // DOCUMENT INDEXING FUNCTIONS

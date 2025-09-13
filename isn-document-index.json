@@ -1,0 +1,302 @@
+{
+  "Farm Compliance — SA × Sheep": {
+    "level": 1,
+    "type": "policy",
+    "description": "Top-level pack for South Australia sheep producers.",
+    "documentId": "db3c8eb0-4cf2-46f6-9686-ecaa4cb401fd",
+    "children": [
+      "Property & IDs",
+      "Food Safety & Traceability (LPA)",
+      "Chemical Use",
+      "Animal Welfare (Sheep)",
+      "Biosecurity (SA)"
+    ],
+    "enrichedChildren": [
+      {
+        "name": "Property & IDs",
+        "document": {
+          "id": "219c9b82-7e89-41c2-b553-833d7f7bc770",
+          "name": "COVIDSafe Plan-21 Geelong.docx",
+          "path": "I:\\IMS\\Integrated Management System\\Section 06 Risk Assessments & Mgmnt including Plant and Haz Substance\\COVID 19\\COVID-19 Safe Plan\\COVIDSafe Plan-21 Geelong.docx",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:27.134Z"
+      },
+      {
+        "name": "Food Safety & Traceability (LPA)",
+        "document": {
+          "id": "ed20363f-afe4-499c-9aab-d7acbaf08973",
+          "name": "GMK - Occupational Health & Safety Policy.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 01B IMS Policies\\GMK - Occupational Health & Safety Policy.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:27.201Z"
+      },
+      {
+        "name": "Chemical Use",
+        "document": {
+          "id": "d855f1f0-9bf3-4d29-a1f7-80dddd6796ec",
+          "name": "RWJ, DC Q4 2020 LOD 1 - GLG - Personal Safety Critical Inspection - Housekeeping.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Audits\\Internal Audit Records\\Internal Audit Reports\\2020\\Site Inspection Audits\\RWJ, DC Q4 2020 LOD 1 - GLG - Personal Safety Critical Inspection - Housekeeping.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:27.258Z"
+      }
+    ]
+  },
+  "Property & IDs": {
+    "level": 2,
+    "type": "category",
+    "description": "PIC, LPA accreditation, NLIS device registers and NVD book register.",
+    "documentId": "219c9b82-7e89-41c2-b553-833d7f7bc770",
+    "children": [
+      "PIC Record",
+      "LPA Accreditation",
+      "NVD Register",
+      "NLIS Device Register"
+    ],
+    "enrichedChildren": [
+      {
+        "name": "PIC Record",
+        "document": {
+          "id": "d8c98eae-6e36-4f65-95d9-f70de8354955",
+          "name": "Form 115 Occupational Health and Safety Policy.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 10 Document Change and Archived Records\\Archive\\Insurances & licences\\Client Specific Infomation\\PICS upload\\Manual and Procedures\\Form 115 Occupational Health and Safety Policy.pdf",
+          "isArchived": true
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:27.508Z"
+      },
+      {
+        "name": "LPA Accreditation",
+        "document": {
+          "id": "db3c8eb0-4cf2-46f6-9686-ecaa4cb401fd",
+          "name": "LPA_NVD_Sample.txt",
+          "path": "I:\\IMS\\Integrated Management System\\templates\\docs\\Farm\\SA\\Sheep\\LPA_NVD_Sample.txt",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:27.572Z"
+      },
+      {
+        "name": "NVD Register",
+        "document": {
+          "id": "db3c8eb0-4cf2-46f6-9686-ecaa4cb401fd",
+          "name": "LPA_NVD_Sample.txt",
+          "path": "I:\\IMS\\Integrated Management System\\templates\\docs\\Farm\\SA\\Sheep\\LPA_NVD_Sample.txt",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:27.632Z"
+      },
+      {
+        "name": "NLIS Device Register",
+        "document": {
+          "id": "946fd2a4-41a2-4dc7-9b67-cb55f5e9721e",
+          "name": "NLIS_Transfer_Instructions.txt",
+          "path": "I:\\IMS\\Integrated Management System\\templates\\docs\\Farm\\SA\\Sheep\\NLIS_Transfer_Instructions.txt",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:27.693Z"
+      }
+    ]
+  },
+  "Food Safety & Traceability (LPA)": {
+    "level": 2,
+    "type": "category",
+    "description": "LPA-aligned movement and treatment records for traceability.",
+    "documentId": "ed20363f-afe4-499c-9aab-d7acbaf08973",
+    "children": [
+      "NVD Consignments",
+      "NLIS Transfers",
+      "Animal Treatment Records",
+      "Purchased Feed Declarations"
+    ],
+    "enrichedChildren": [
+      {
+        "name": "NVD Consignments",
+        "document": {
+          "id": "db3c8eb0-4cf2-46f6-9686-ecaa4cb401fd",
+          "name": "LPA_NVD_Sample.txt",
+          "path": "I:\\IMS\\Integrated Management System\\templates\\docs\\Farm\\SA\\Sheep\\LPA_NVD_Sample.txt",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:27.821Z"
+      },
+      {
+        "name": "NLIS Transfers",
+        "document": {
+          "id": "946fd2a4-41a2-4dc7-9b67-cb55f5e9721e",
+          "name": "NLIS_Transfer_Instructions.txt",
+          "path": "I:\\IMS\\Integrated Management System\\templates\\docs\\Farm\\SA\\Sheep\\NLIS_Transfer_Instructions.txt",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:27.883Z"
+      },
+      {
+        "name": "Animal Treatment Records",
+        "document": {
+          "id": "c24fcc52-69c3-4493-b9aa-6a936e09abbc",
+          "name": "Signed Quesionnaire 2020.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Approved Supplier's and Sub-Contractors\\Sub Contractor Information\\AA-In-Active\\Geelong Industrial Maintenance Services\\Signed Quesionnaire 2020.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:27.952Z"
+      }
+    ]
+  },
+  "Chemical Use": {
+    "level": 2,
+    "type": "category",
+    "description": "APVMA label compliance: spray diary, PPE/inductions, WHP/ESI tracker.",
+    "documentId": "d855f1f0-9bf3-4d29-a1f7-80dddd6796ec",
+    "children": [
+      "Spray Diary",
+      "Label Snapshots",
+      "PPE & Inductions",
+      "WHP/ESI Tracker"
+    ],
+    "enrichedChildren": [
+      {
+        "name": "Spray Diary",
+        "document": {
+          "id": "cab63bff-1abc-4cd6-b7e0-b1aa10fe1784",
+          "name": "MSDS DY-MARK ZINC-GAL SPRAY.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 06 Risk Assessments & Mgmnt including Plant and Haz Substance\\Haz Sub Management Folder\\Electronic Copies of MSDS Sheets\\MSDS Archive\\MSDS DY-MARK ZINC-GAL SPRAY.pdf",
+          "isArchived": true
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:28.138Z"
+      },
+      {
+        "name": "PPE & Inductions",
+        "document": {
+          "id": "ed20363f-afe4-499c-9aab-d7acbaf08973",
+          "name": "GMK - Occupational Health & Safety Policy.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 01B IMS Policies\\GMK - Occupational Health & Safety Policy.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:28.254Z"
+      }
+    ]
+  },
+  "Animal Welfare (Sheep)": {
+    "level": 2,
+    "type": "category",
+    "description": "Standards & Guidelines for Sheep—husbandry, handling, transport readiness.",
+    "documentId": null,
+    "children": [
+      "Husbandry Procedures Log",
+      "Fitness to Transport",
+      "Feed/Water Contingency"
+    ],
+    "enrichedChildren": [
+      {
+        "name": "Husbandry Procedures Log",
+        "document": {
+          "id": "139fdae1-ceb3-4d32-9c38-c9b3671e448b",
+          "name": "Operation and Maintenance Manual.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 06 Risk Assessments & Mgmnt including Plant and Haz Substance\\Plant Management Folder\\PLANT SOP (Safe Operating Procedures)\\Battery Cable Cutting Shear\\Operation and Maintenance Manual.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:28.433Z"
+      },
+      {
+        "name": "Fitness to Transport",
+        "document": {
+          "id": "feab1f49-86cf-433c-9034-617a56d19cb9",
+          "name": "Work Place Health and Safety QLD Incident Form - 200.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 03 Proforma Docs\\Work Safe, Work Cover, Return to work forms\\Work Place Health and Safety QLD Incident Form - 200.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:28.495Z"
+      }
+    ]
+  },
+  "Biosecurity (SA)": {
+    "level": 2,
+    "type": "category",
+    "description": "Property biosecurity planning, inductions/sign-in, quarantine and carcass disposal.",
+    "documentId": null,
+    "children": [
+      "Farm Biosecurity Plan",
+      "Visitor/Contractor Sign-in",
+      "Livestock Introductions & Quarantine",
+      "Carcass Disposal Records"
+    ],
+    "enrichedChildren": [
+      {
+        "name": "Farm Biosecurity Plan",
+        "document": {
+          "id": "5d5d34f7-f92f-4a15-a49c-fb83b3a8d195",
+          "name": "COVID-19 Safe Plan Geelong.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 06 Risk Assessments & Mgmnt including Plant and Haz Substance\\COVID 19\\COVID-19 Safe Plan\\COVID-19 Safe Plan Geelong.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:28.684Z"
+      },
+      {
+        "name": "Visitor/Contractor Sign-in",
+        "document": {
+          "id": "dc8ae416-9c55-49fb-ba42-6447407d282c",
+          "name": "Drapers Safety , Quality , Enviro Policies Signed.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Approved Supplier's and Sub-Contractors\\archive\\Drapers Civil\\Drapers Safety , Quality , Enviro Policies Signed.pdf",
+          "isArchived": true
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:28.749Z"
+      },
+      {
+        "name": "Livestock Introductions & Quarantine",
+        "document": {
+          "id": "ed20363f-afe4-499c-9aab-d7acbaf08973",
+          "name": "GMK - Occupational Health & Safety Policy.pdf",
+          "path": "I:\\IMS\\Integrated Management System\\Section 01B IMS Policies\\GMK - Occupational Health & Safety Policy.pdf",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:28.812Z"
+      },
+      {
+        "name": "Carcass Disposal Records",
+        "document": {
+          "id": "38a1c9ac-e2ec-4ddc-93a5-7e86d077ab3f",
+          "name": "GM SWP 010 Waste Disposal.doc",
+          "path": "I:\\IMS\\Integrated Management System\\Section 09 Records\\Project Management Plans\\Vic Roads Contact 7775 Project Plan\\Other reference SWPs and JSAs\\GM SWP 010 Waste Disposal.doc",
+          "isArchived": false
+        },
+        "found": true,
+        "autoLinked": true,
+        "linkedAt": "2025-09-09T03:36:28.872Z"
+      }
+    ]
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "pack": "Farm Pack \u2014 SA \u00d7 Sheep",
+    "created": "2025-09-08T21:28:49.008392Z",
+    "jurisdiction": "SA",
+    "enterprise": "sheep",
+    "version": "0.1-test"
+  },
+  "categories": [
+    {
+      "name": "Property & IDs",
+      "type": "compliance",
+      "level": 1,
+      "children": [
+        "PIC Record",
+        "LPA Accreditation",
+        "NVD Register",
+        "NLIS Device Register"
+      ]
+    },
+    {
+      "name": "Food Safety & Traceability (LPA)",
+      "type": "compliance",
+      "level": 1,
+      "children": [
+        "NVD Consignments",
+        "NLIS Transfers",
+        "Animal Treatment Records",
+        "Purchased Feed Declarations"
+      ]
+    },
+    {
+      "name": "Chemical Use",
+      "type": "operational",
+      "level": 1,
+      "children": [
+        "Spray Diary",
+        "Label Snapshots",
+        "PPE & Inductions",
+        "WHP/ESI Tracker"
+      ]
+    },
+    {
+      "name": "Animal Welfare (Sheep)",
+      "type": "compliance",
+      "level": 1,
+      "children": [
+        "Husbandry Procedures Log",
+        "Fitness to Transport",
+        "Feed/Water Contingency"
+      ]
+    },
+    {
+      "name": "Biosecurity (SA)",
+      "type": "risk",
+      "level": 1,
+      "children": [
+        "Farm Biosecurity Plan",
+        "Visitor/Contractor Sign-in",
+        "Livestock Introductions & Quarantine",
+        "Carcass Disposal Records"
+      ]
+    }
+  ],
+  "mandatoryRecords": {
+    "PIC Record": {
+      "description": "PIC number and status."
+    },
+    "NVD Consignments": {
+      "description": "All consignments (from/to PIC, date, headcount)."
+    },
+    "NLIS Transfers": {
+      "description": "Tag device movements lodged in NLIS."
+    },
+    "Animal Treatment Records": {
+      "description": "Drenches/vaccines/antibiotics incl. WHP/ESI."
+    },
+    "Spray Diary": {
+      "description": "APVMA/label-compliant application records + weather."
+    },
+    "Farm Biosecurity Plan": {
+      "description": "Property biosecurity plan and logs."
+    },
+    "Sheep Welfare Checklist": {
+      "description": "Routine welfare checks / transport readiness."
+    }
+  }
+}

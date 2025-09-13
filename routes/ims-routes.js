@@ -62,6 +62,50 @@ router.post("/api/learn-from-correction", (req, res) => {
   }
 });
 
+// Alias for your existing learning endpoint to match frontend calls
+router.post("/api/corrections/learn", (req, res) => {
+  // Just redirect to your existing endpoint with parameter mapping
+  const mappedBody = {
+    originalSearch: req.body.categoryKey || req.body.categoryName,
+    actualDocumentId: req.body.chosenDocId,
+    category: req.body.categoryName || req.body.categoryKey,
+    recordType: "manual_correction",
+  };
+
+  // Call your existing learning function
+  if (req.app.locals.learnFromManualLink) {
+    try {
+      const actualDocument = req.app.locals.documentIndex.find(
+        (doc) => doc.id === mappedBody.actualDocumentId
+      );
+
+      if (actualDocument) {
+        req.app.locals.learnFromManualLink(
+          mappedBody.originalSearch,
+          actualDocument,
+          mappedBody.category,
+          mappedBody.recordType
+        );
+      }
+
+      res.json({
+        success: true,
+        message: "Learning recorded",
+      });
+    } catch (error) {
+      console.error("Learning error:", error);
+      res.json({
+        success: false,
+        message: "Error recording learning data",
+      });
+    }
+  } else {
+    res.json({
+      success: true,
+      message: "Learning function not available",
+    });
+  }
+});
 // Add this to routes/ims-routes.js
 router.post("/api/fix-stale-links", (req, res) => {
   try {
@@ -1377,6 +1421,197 @@ router.get("/ims-corrections", (req, res) => {
     res.status(500).send("Error loading corrections page");
   }
 });
+
+// Add these to your ims-routes.js file, replacing the broken app.post versions
+
+// Main endpoint to replace/update document links
+router.post("/api/replace-link", async (req, res) => {
+  try {
+    const {
+      categoryKey,
+      categoryName,
+      documentName,
+      newDocumentId,
+      newDocumentName,
+      newDocumentPath
+    } = req.body;
+
+    console.log('Replace link request:', { categoryKey, categoryName, documentName, newDocumentId, newDocumentName });
+
+    if (!categoryKey && !documentName) {
+      return res.json({
+        success: false,
+        message: "Either categoryKey or documentName is required"
+      });
+    }
+
+    if (!newDocumentId) {
+      return res.json({
+        success: false,
+        message: "New document ID is required"
+      });
+    }
+
+    // Find the new document in the index
+    const newDocument = req.app.locals.documentIndex.find(doc => doc.id === newDocumentId);
+    if (!newDocument) {
+      return res.json({
+        success: false,
+        message: "New document not found in index"
+      });
+    }
+
+    // Load current IMS structure using app.locals
+    const imsData = req.app.locals.loadIMSIndex();
+    const targetKey = categoryKey || documentName;
+    let updated = false;
+
+    // Method 1: Direct category match
+    if (imsData[targetKey]) {
+      const category = imsData[targetKey];
+      
+      // Update enrichedChildren if present
+      if (Array.isArray(category.enrichedChildren)) {
+        const enrichedChild = category.enrichedChildren.find(ec => 
+          ec.name === targetKey || ec.name === documentName
+        );
+        
+        if (enrichedChild) {
+          enrichedChild.document = {
+            id: newDocument.id,
+            name: newDocument.name || newDocument.filename,
+            path: newDocument.path || newDocument.folder,
+            filename: newDocument.filename || newDocument.name
+          };
+          enrichedChild.found = true;
+          updated = true;
+        }
+      }
+    }
+
+    // Method 2: Search through all categories
+    if (!updated) {
+      for (const [catName, category] of Object.entries(imsData)) {
+        if (Array.isArray(category.enrichedChildren)) {
+          const enrichedChild = category.enrichedChildren.find(ec => 
+            ec.name === targetKey || ec.name === documentName
+          );
+          
+          if (enrichedChild) {
+            enrichedChild.document = {
+              id: newDocument.id,
+              name: newDocument.name || newDocument.filename,
+              path: newDocument.path || newDocument.folder,
+              filename: newDocument.filename || newDocument.name
+            };
+            enrichedChild.found = true;
+            updated = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!updated) {
+      return res.json({
+        success: false,
+        message: `Could not find item to update: ${targetKey}`
+      });
+    }
+
+    // Save the updated structure
+    if (req.app.locals.saveIMSIndex(imsData)) {
+      console.log(`Successfully linked ${targetKey} to document ${newDocument.name}`);
+
+      res.json({
+        success: true,
+        message: `Successfully linked to ${newDocument.name}`,
+        document: {
+          id: newDocument.id,
+          name: newDocument.name || newDocument.filename,
+          path: newDocument.path || newDocument.folder
+        }
+      });
+    } else {
+      res.json({
+        success: false,
+        message: "Failed to save changes"
+      });
+    }
+
+  } catch (error) {
+    console.error('Error in replace-link:', error);
+    res.json({
+      success: false,
+      message: "Error updating document link",
+      error: error.message
+    });
+  }
+});
+
+// Endpoint to unlink documents
+router.post("/api/unlink-document", async (req, res) => {
+  try {
+    const {
+      categoryKey,
+      categoryName,
+      currentDocumentId,
+      currentDocumentName
+    } = req.body;
+
+    console.log('Unlink request:', { categoryKey, categoryName, currentDocumentName });
+
+    const imsData = req.app.locals.loadIMSIndex();
+    const targetKey = categoryKey || currentDocumentName;
+    let updated = false;
+
+    // Search and unlink
+    for (const [catName, category] of Object.entries(imsData)) {
+      if (Array.isArray(category.enrichedChildren)) {
+        const enrichedChild = category.enrichedChildren.find(ec => 
+          ec.name === targetKey || ec.name === currentDocumentName
+        );
+        
+        if (enrichedChild && enrichedChild.document) {
+          enrichedChild.document = null;
+          enrichedChild.found = false;
+          updated = true;
+          console.log(`Unlinked document from ${catName} > ${enrichedChild.name}`);
+          break;
+        }
+      }
+    }
+
+    if (!updated) {
+      return res.json({
+        success: false,
+        message: `Could not find item to unlink: ${targetKey}`
+      });
+    }
+
+    // Save updated structure
+    if (req.app.locals.saveIMSIndex(imsData)) {
+      res.json({
+        success: true,
+        message: `Successfully unlinked ${targetKey}`
+      });
+    } else {
+      res.json({
+        success: false,
+        message: "Failed to save changes"
+      });
+    }
+
+  } catch (error) {
+    console.error('Error in unlink-document:', error);
+    res.json({
+      success: false,
+      message: "Error unlinking document",
+      error: error.message
+    });
+  }
+});
+
 // Unlink category document
 router.post("/api/unlink-category-document", (req, res) => {
   try {

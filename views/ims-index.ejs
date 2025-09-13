@@ -313,6 +313,9 @@
                     <button onclick="openCorrections()" class="btn btn-warning btn-modern me-2">
                         <i class="fas fa-tools me-1"></i> Fix Auto-Links
                     </button>
+                    <button onclick="fixStaleLinks()" class="btn btn-warning btn-modern me-2">
+                        <i class="fas fa-wrench me-1"></i> Fix Stale Links
+                    </button>
                 </div>
                 <div class="col-md-6">
                     <button onclick="quickScanIssues()" class="btn btn-outline-warning btn-modern me-2">
@@ -641,6 +644,30 @@
             });
         }
 
+        function fixStaleLinks() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Fixing...';
+            btn.disabled = true;
+            
+            fetch('/api/fix-stale-links', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`Fixed! ${data.relinkedCount} relinked, ${data.clearedCount} cleared`);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                })
+                .finally(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        }
         function openCorrections() {
         window.location.href = '/ims-corrections';
         }

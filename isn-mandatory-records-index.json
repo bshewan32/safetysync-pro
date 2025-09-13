@@ -1,0 +1,69 @@
+{
+  "PIC Record": {
+    "description": "Property Identification Code record and status.",
+    "autoDetectKeywords": [
+      "PIC",
+      "Property Identification Code"
+    ],
+    "enrichedDocuments": [],
+    "category": "property"
+  },
+  "NVD Consignments": {
+    "description": "All National Vendor Declarations for livestock consignments.",
+    "autoDetectKeywords": [
+      "NVD",
+      "Vendor Declaration",
+      "National Vendor Declaration"
+    ],
+    "enrichedDocuments": [],
+    "category": "traceability"
+  },
+  "NLIS Transfers": {
+    "description": "NLIS device/visual tag movement lodgements.",
+    "autoDetectKeywords": [
+      "NLIS",
+      "transfer"
+    ],
+    "enrichedDocuments": [],
+    "category": "traceability"
+  },
+  "Animal Treatment Records": {
+    "description": "Drenches/vaccines/antibiotics with WHP/ESI.",
+    "autoDetectKeywords": [
+      "treatment",
+      "dose",
+      "WHP",
+      "ESI"
+    ],
+    "enrichedDocuments": [],
+    "category": "welfare"
+  },
+  "Spray Diary": {
+    "description": "APVMA-compliant application records and weather.",
+    "autoDetectKeywords": [
+      "spray diary",
+      "application",
+      "APVMA"
+    ],
+    "enrichedDocuments": [],
+    "category": "chemical"
+  },
+  "Farm Biosecurity Plan": {
+    "description": "Property biosecurity plan and logs (visitors, quarantine).",
+    "autoDetectKeywords": [
+      "biosecurity plan",
+      "biosecurity"
+    ],
+    "enrichedDocuments": [],
+    "category": "biosecurity"
+  },
+  "Sheep Welfare Checklist": {
+    "description": "Routine welfare checks and fit-to-transport readiness.",
+    "autoDetectKeywords": [
+      "welfare checklist",
+      "sheep welfare"
+    ],
+    "enrichedDocuments": [],
+    "category": "welfare"
+  }
+}

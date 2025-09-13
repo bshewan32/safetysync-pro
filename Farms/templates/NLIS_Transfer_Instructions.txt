@@ -1,0 +1,5 @@
+NLIS Transfer — Quick Steps (Sample)
+1) Log in to NLIS.
+2) Record movement from PIC to PIC.
+3) Confirm tag type and headcount.
+4) Save receipt.
